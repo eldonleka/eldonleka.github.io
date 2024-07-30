@@ -1,81 +1,69 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-}
-
-.cv-container {
-    display: flex;
-    max-width: 1200px;
-    margin: 20px auto;
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    flex-wrap: wrap;
-}
-
-.left-column {
-    background-color: #e8e8e8;
-    padding: 20px;
-    width: 100%;
-    text-align: center;
-    box-sizing: border-box;
-}
-
-.right-column {
-    padding: 20px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.profile-pic {
-    width: 100px;  /* Smaller size */
-    height: 100px; /* Smaller size */
-    border-radius: 50%;
-    margin-bottom: 20px;
-}
-
-h2, h3 {
-    margin: 10px 0;
-}
-
-.contact, .skills, .languages, .experience, .education, .internships {
-    margin-bottom: 20px;
-}
-
-.contact h4, .skills h4, .languages h4, .experience h4, .education h4, .internships h4 {
-    margin-bottom: 10px;
-    color: #333;
-}
-
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-ul li {
-    margin-bottom: 10px;
-}
-
-.job h5 {
-    margin: 5px 0;
-    color: #333;
-}
-
-/* Media Queries for responsiveness */
-@media (min-width: 768px) {
-    .left-column, .right-column {
-        width: 50%;
-    }
-}
-
-@media (min-width: 1024px) {
-    .left-column {
-        width: 30%;
-    }
-    .right-column {
-        width: 70%;
-    }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Template</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="cv-container">
+        <div class="left-column">
+            <img src="profile.jpg" alt="Profile Picture" class="profile-pic">
+            <h2>Eldon Leka</h2>
+            <h3>Sales Specialist</h3>
+            <div class="contact">
+                <h4>Contact</h4>
+                <p>Str „Steliano Nosi“, Elbasan, Albania</p>
+                <p>00355 67 6378255</p>
+                <p><a href="mailto:eldonleka@gmail.com">eldonleka@gmail.com</a></p>
+                <p><a href="https://www.linkedin.com/in/eldon-leka-09027113a">LinkedIn Profile</a></p>
+                <p><a href="https://github.com/eldonleka">Github: eldonleka</a></p>
+            </div>
+            <div class="skills">
+                <h4>Skills & Expertise</h4>
+                <ul>
+                    <li>HTML, CSS, C, Python, JS, React, SQLite, Flask, Django, Git</li>
+                    <li>MS Office, VB Excel, VB Access</li>
+                </ul>
+            </div>
+            <div class="languages">
+                <h4>Languages</h4>
+                <p>English - Certificate C1 at British Council APTIS (23 Sep 2017)</p>
+                <p>Albanian - Mother tongue</p>
+                <p>German - Basic knowledge</p>
+                <p>Italian - Good knowledge</p>
+            </div>
+        </div>
+        <div class="right-column">
+            <div class="experience">
+                <h4>Experience</h4>
+                <div class="job">
+                    <h5>Sales Specialist</h5>
+                    <p>Kurum International Sh.A. | Dec 2021 – Now</p>
+                </div>
+                <div class="job">
+                    <h5>Sales Specialist</h5>
+                    <p>Albametal Sh.A. | May 2018 – Nov 2021</p>
+                </div>
+            </div>
+            <div class="education">
+                <h4>Education</h4>
+                <p>Master's Degree in Business Informatics</p>
+                <p>European University Of Tirana | 2017-2019</p>
+                <p>Bachelor's Degree in Business Informatics</p>
+                <p>European University Of Tirana | 2014-2017</p>
+            </div>
+            <div class="internships">
+                <h4>Internships & Trainings</h4>
+                <p>Digital Marketing</p>
+                <p>Local Web | Mar 2017-May 2017</p>
+                <p>Accounting Basics</p>
+                <p>Kurum International Sh.A | Aug 2017- Mar 2018</p>
+                <p>IT</p>
+                <p>Kurum International Sh.A | Aug 2017- Mar 2018</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
