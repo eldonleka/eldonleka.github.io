@@ -13,23 +13,26 @@ body {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
 }
 
 .left-column {
     background-color: #e8e8e8;
     padding: 20px;
-    width: 30%;
+    width: 100%;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .right-column {
     padding: 20px;
-    width: 70%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .profile-pic {
-    width: 100px;
-    height: 100px;
+    width: 100px;  /* Smaller size */
+    height: 100px; /* Smaller size */
     border-radius: 50%;
     margin-bottom: 20px;
 }
@@ -59,4 +62,20 @@ ul li {
 .job h5 {
     margin: 5px 0;
     color: #333;
+}
+
+/* Media Queries for responsiveness */
+@media (min-width: 768px) {
+    .left-column, .right-column {
+        width: 50%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .left-column {
+        width: 30%;
+    }
+    .right-column {
+        width: 70%;
+    }
 }
