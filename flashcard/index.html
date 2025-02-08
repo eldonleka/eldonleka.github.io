@@ -1,508 +1,508 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flashcards App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #f9f9f9;
-    }
-
-    h1 {
-      margin: 20px 0;
-      color: #333;
-    }
-
-    #lesson-select {
-      margin-bottom: 20px;
-    }
-
-    .flashcard {
-      width: 300px;
-      height: 200px;
-      background: #ffffff;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .flashcard p {
-      font-size: 1.2rem;
-      margin: 0;
-      padding: 10px;
-      color: #333;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      color: #fff;
-      background: #007BFF;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    button:hover:not(:disabled) {
-      background: #0056b3;
-    }
-  </style>
-</head>
-<body>
-  <h1>Flashcards App</h1>
-  <div id="lesson-select">
-    <label for="lessons">Choose a lesson: </label>
-    <select id="lessons">
-      <option value="1">Lesson 1</option>
-      <option value="2">Lesson 2</option>
-      <option value="3">Lesson 3</option>
-    </select>
-  </div>
-
-  <div class="flashcard" id="flashcard">
-    <p id="flashcard-content">Click to reveal translation</p>
-  </div>
-
-  <button id="mark-learned">Next</button>
-
-  <script>
-    // Sample data for lessons
-    const lessons = {
-      1: [
-{ shqip: "aeroport", gjermanisht: "der Flughafen" },
-{ shqip: "njoh", gjermanisht: "Kennenlernen" },
-{ shqip: "e vetme", gjermanisht: "die Einzige" },
-{ shqip: "Au pair", gjermanisht: "das Au-pair-Mädchen" },
-{ shqip: "së shpejti", gjermanisht: "Bald" },
-{ shqip: "pas pak", gjermanisht: "Bis bald" },
-{ shqip: "pse", gjermanisht: "Warum" },
-{ shqip: "i lodhur", gjermanisht: "Müde" },
-{ shqip: "marr", gjermanisht: "Abholen" },
-{ shqip: "i mërzitur", gjermanisht: "Traurig" },
-{ shqip: "shkoj për të ngrënë", gjermanisht: "Essen gehen" },
-{ shqip: "justifikimi", gjermanisht: "die Ausrede" },
-{ shqip: "qeni", gjermanisht: "der Hund" },
-{ shqip: "humbet", gjermanisht: "Verpassen" },
-{ shqip: "dje", gjermanisht: "Gestern" },
-{ shqip: "orë", gjermanisht: "die Stunden" },
-{ shqip: "pres", gjermanisht: "Warten" },
-{ shqip: "sëmurë", gjermanisht: "Krank" },
-{ shqip: "trafik", gjermanisht: "der Stau" },
-{ shqip: "ka/ekziston", gjermanisht: "Es gibt" },
-{ shqip: "udhëtim", gjermanisht: "die Reise" },
-{ shqip: "më në fund", gjermanisht: "Endlich" },
-{ shqip: "mbërrij", gjermanisht: "Ankommen" },
-{ shqip: "vizitoj", gjermanisht: "Besuchen" },
-{ shqip: "e sjellshme", gjermanisht: "Nett" },
-{ shqip: "faktikisht", gjermanisht: "Nämlich" },
-{ shqip: "me zë gjumi", gjermanisht: "Einschlafen" },
-{ shqip: "sa turp", gjermanisht: "Wie peinlich" },
-{ shqip: "zgjohem", gjermanisht: "Aufstehen" },
-{ shqip: "valixhe", gjermanisht: "der Koffer" },
-{ shqip: "çpaketoj", gjermanisht: "Auspacken" },
-{ shqip: "var", gjermanisht: "Aufhängen" },
-{ shqip: "pije", gjermanisht: "die Getränke" },
-{ shqip: "komshi", gjermanisht: "der Nachbar" },
-{ shqip: "stacion treni", gjermanisht: "der Bahnhof" },
-{ shqip: "ters", gjermanisht: "das Pech" },
-{ shqip: "pse", gjermanisht: "Wieso" },
-{ shqip: "ja dal", gjermanisht: "Schaffen" },
-{ shqip: "hip", gjermanisht: "Steigen" },
-{ shqip: "vrapoj", gjermanisht: "Rennen" },
-{ shqip: "bagazhe", gjermanisht: "das Gepäck" },
-{ shqip: "lajmërim", gjermanisht: "die Durchsage" },
-{ shqip: "patjetër", gjermanisht: "Natürlich" },
-{ shqip: "e gabuar", gjermanisht: "Falsch" },
-{ shqip: "tregoj", gjermanisht: "Erzählen" },
-{ shqip: "rrotë", gjermanisht: "das Rad" },
-{ shqip: "humbas", gjermanisht: "Verlieren" },
-{ shqip: "filxhan", gjermanisht: "die Tasse" },
-{ shqip: "mungon", gjermanisht: "Vermissen" },
-{ shqip: "të paktën", gjermanisht: "Wenigstens" },
-{ shqip: "përpiqem", gjermanisht: "Versuchen" },
-{ shqip: "sedile", gjermanisht: "die Sitze" },
-{ shqip: "e parehatshme", gjermanisht: "Unbequem" },
-{ shqip: "e rehatshme", gjermanisht: "Bequem" },
-{ shqip: "e rehatshme", gjermanisht: "Gemütlich" },
-{ shqip: "vizitoj", gjermanisht: "Besichtigen" },
-{ shqip: "kartolinë", gjermanisht: "die Postkarte" },
-{ shqip: "sqaroj", gjermanisht: "Erklären" },
-{ shqip: "përjetoj", gjermanisht: "Erleben" },
-{ shqip: "besoj", gjermanisht: "Glauben" },
-{ shqip: "imagjinoj", gjermanisht: "Vorstellen" },
-{ shqip: "nervoz", gjermanisht: "Nervös" },
-{ shqip: "rastësi", gjermanisht: "der Zufall" },
-{ shqip: "kontaktoj", gjermanisht: "Melden" },
-{ shqip: "në fillim", gjermanisht: "Erst" },
-{ shqip: "harroj", gjermanisht: "Vergessen" },
-{ shqip: "i qetë", gjermanisht: "Ruhig" },
-{ shqip: "qetësi", gjermanisht: "die Ruhe" },
-{ shqip: "pushime", gjermanisht: "der Urlaub" },
-{ shqip: "pema e familjes", gjermanisht: "der Stammbaum" },
-{ shqip: "kushëriri", gjermanisht: "der Cousin" },
-{ shqip: "kushërira", gjermanisht: "die Cousine" },
-{ shqip: "mbesa", gjermanisht: "die Nichte" },
-{ shqip: "hallë/teze/teta", gjermanisht: "die Tante" },
-{ shqip: "kunati", gjermanisht: "der Schwager" },
-{ shqip: "shtatzënë", gjermanisht: "Schwanger" },
-{ shqip: "mbesa", gjermanisht: "die Enkelin" },
-{ shqip: "nip", gjermanisht: "das Enkelkind" },
-{ shqip: "nipi", gjermanisht: "der Neffe" },
-{ shqip: "vjehrra", gjermanisht: "die Schwiegermutter" },
-{ shqip: "vjehërrit", gjermanisht: "die Schwiegereltern" },
-{ shqip: "kunata", gjermanisht: "die Schwägerin" },
-{ shqip: "vjerri", gjermanisht: "der Schwiegervater" },
-{ shqip: "xhaxhai/daja", gjermanisht: "der Onkel" },
-{ shqip: "bashkëshort", gjermanisht: "der Ehemann" },
-{ shqip: "motra vëllezër", gjermanisht: "die Geschwister" },
-{ shqip: "vëllezër", gjermanisht: "die Brüder" },
-{ shqip: "dhëndër", gjermanisht: "der Bräutigam" },
-{ shqip: "e rëndësishme", gjermanisht: "Wichtig" },
-{ shqip: "beqar", gjermanisht: "Ledig" },
-{ shqip: "familje e madhe", gjermanisht: "die Großfamilie" },
-{ shqip: "papafingo", gjermanisht: "die Dachwonung" },
-{ shqip: "kat", gjermanisht: "der Stock" },
-{ shqip: "ndoshta", gjermanisht: "Wahrscheinlich" },
-{ shqip: "shpërngulem", gjermanisht: "Einziehen" },
-{ shqip: "mjaftueshëm", gjermanisht: "Genug" },
-{ shqip: "përgjigjem", gjermanisht: "Beantworten" },
-{ shqip: "çift", gjermanisht: "das Ehepaar" },
-{ shqip: "vizitorë/miq", gjermanisht: "der Besuch" },
-{ shqip: "banesë", gjermanisht: "die Wohnung" },
-{ shqip: "detyrë", gjermanisht: "die Aufgabe" },
-{ shqip: "dhimbje", gjermanisht: "die Schmerzen" },
-{ shqip: "shkallë", gjermanisht: "die Treppe" },
-{ shqip: "dhomë", gjermanisht: "das Zimmer" },
-{ shqip: "lagje", gjermanisht: "die Nachbarschaft" },
-{ shqip: "të afërm", gjermanisht: "der Bekannte" },
-{ shqip: "të famshëm", gjermanisht: "Berühmte" },
-{ shqip: "komshinj", gjermanisht: "die Nachbarn" },
-{ shqip: "konvikt/hostel", gjermanisht: "die Wohngemeinschaft" },
-{ shqip: "atlet", gjermanisht: "der Sportler" },
-{ shqip: "shpresoj", gjermanisht: "Hoffe" },
-{ shqip: "kur", gjermanisht: "Wann" },
-{ shqip: "nëse", gjermanisht: "Wenn" },
-{ shqip: "ndihmoj", gjermanisht: "Helfen" },
-{ shqip: "brenda", gjermanisht: "Drinnen" },
-{ shqip: "jashtë", gjermanisht: "Draußen" },
-{ shqip: "kam qenë", gjermanisht: "Bin gewesen" }
-
-      ],
-      2: [
-  { "shqip": "ndahet", "gjermanisht": "trennen" },
-  { "shqip": "vazhdimisht", "gjermanisht": "dauernd" },
-  { "shqip": "grindem", "gjermanisht": "streiten" },
-  { "shqip": "zhurmë/i zhurmshëm", "gjermanisht": "laut" },
-  { "shqip": "sipas profesionit", "gjermanisht": "beruflich" },
-  { "shqip": "bashkëjetoj", "gjermanisht": "zusammenleben" },
-  { "shqip": "përvjetor", "gjermanisht": "der Hochzeitstag" },
-  { "shqip": "rrugës/në lëvizje", "gjermanisht": "unterwegs" },
-  { "shqip": "di", "gjermanisht": "wissen" },
-  { "shqip": "prishet", "gjermanisht": "kaputt" },
-  { "shqip": "s'ja kam idenë", "gjermanisht": "keine Ahnung" },
-  { "shqip": "e heshtur", "gjermanisht": "stille" },
-  { "shqip": "pëshpërit", "gjermanisht": "flüstern" },
-  { "shqip": "të puthesh", "gjermanisht": "küssen" },
-  { "shqip": "përqafoj", "gjermanisht": "umarmen" },
-  { "shqip": "konvikt/hostel", "gjermanisht": "die WG" },
-  { "shqip": "pusull", "gjermanisht": "der Zettel" },
-  { "shqip": "pusull", "gjermanisht": "die Mitteilung" },
-  { "shqip": "meqë ra fjala", "gjermanisht": "übrigens" },
-  { "shqip": "menjëherë/me patjetër", "gjermanisht": "unbedingt" },
-  { "shqip": "rreth", "gjermanisht": "gegen" },
-  { "shqip": "universitet", "gjermanisht": "die Uni" },
-  { "shqip": "gjumash", "gjermanisht": "die Langschläferinnen" },
-  { "shqip": "bimë", "gjermanisht": "die Pflanzen" },
-  { "shqip": "ujit", "gjermanisht": "gießen" },
-  { "shqip": "faktikisht", "gjermanisht": "eigentlich" },
-  { "shqip": "pastroj", "gjermanisht": "sauber machen" },
-  { "shqip": "fatura e energjisë", "gjermanisht": "die Stromrechnung" },
-  { "shqip": "çmendurisht", "gjermanisht": "wahnsinnig" },
-  { "shqip": "shpenzojmë", "gjermanisht": "verbrauchen" },
-  { "shqip": "me nxitim", "gjermanisht": "eilig" },
-  { "shqip": "kontrolloj", "gjermanisht": "nachsehen" },
-  { "shqip": "telefonatë", "gjermanisht": "der Anruf" },
-  { "shqip": "marr borxh", "gjermanisht": "ausleihen" },
-  { "shqip": "ndez", "gjermanisht": "anstellen" },
-  { "shqip": "pastroj", "gjermanisht": "putzen" },
-  { "shqip": "prezantoj/imagjinoj", "gjermanisht": "vorstellen" },
-  { "shqip": "zgjedh", "gjermanisht": "wählen" },
-  { "shqip": "kujdesem për", "gjermanisht": "aufpassen auf" },
-  { "shqip": "bashkëjetues", "gjermanisht": "der Mitbewohner" },
-  { "shqip": "fik", "gjermanisht": "ausstellen" },
-  { "shqip": "e pastër", "gjermanisht": "sauber" },
-  { "shqip": "ritelefonoj", "gjermanisht": "zurückrufen" },
-  { "shqip": "ndahet", "gjermanisht": "trennen" },
-  { "shqip": "vazhdimisht", "gjermanisht": "dauernd" },
-  { "shqip": "grindem", "gjermanisht": "streiten" },
-  { "shqip": "zhurmë/i zhurmshëm", "gjermanisht": "laut" },
-  { "shqip": "sipas profesionit", "gjermanisht": "beruflich" },
-  { "shqip": "bashkëjetoj", "gjermanisht": "zusammenleben" },
-  { "shqip": "përvjetor", "gjermanisht": "der Hochzeitstag" },
-  { "shqip": "rrugës/në lëvizje", "gjermanisht": "unterwegs" },
-  { "shqip": "di", "gjermanisht": "wissen" },
-  { "shqip": "prishet", "gjermanisht": "kaputt" },
-  { "shqip": "s'ja kam idenë", "gjermanisht": "keine Ahnung" },
-  { "shqip": "e heshtur", "gjermanisht": "stille" },
-  { "shqip": "pëshpërit", "gjermanisht": "flüstern" },
-  { "shqip": "të puthesh", "gjermanisht": "küssen" },
-  { "shqip": "përqafoj", "gjermanisht": "umarmen" },
-  { "shqip": "konvikt/hostel", "gjermanisht": "die WG" },
-  { "shqip": "pusull", "gjermanisht": "der Zettel" },
-  { "shqip": "pusull", "gjermanisht": "die Mitteilung" },
-  { "shqip": "meqë ra fjala", "gjermanisht": "übrigens" },
-  { "shqip": "menjëherë/me patjetër", "gjermanisht": "unbedingt" },
-  { "shqip": "rreth", "gjermanisht": "gegen" },
-  { "shqip": "universitet", "gjermanisht": "die Uni" },
-  { "shqip": "gjumash", "gjermanisht": "die Langschläferinnen" },
-  { "shqip": "bimë", "gjermanisht": "die Pflanzen" },
-  { "shqip": "ujit", "gjermanisht": "gießen" },
-  { "shqip": "faktikisht", "gjermanisht": "eigentlich" },
-  { "shqip": "pastroj", "gjermanisht": "sauber machen" },
-  { "shqip": "fatura e energjisë", "gjermanisht": "die Stromrechnung" },
-  { "shqip": "çmendurisht", "gjermanisht": "wahnsinnig" },
-  { "shqip": "shpenzojmë", "gjermanisht": "verbrauchen" },
-  { "shqip": "me nxitim", "gjermanisht": "eilig" },
-  { "shqip": "kontrolloj", "gjermanisht": "nachsehen" },
-  { "shqip": "telefonatë", "gjermanisht": "der Anruf" },
-  { "shqip": "marr borxh", "gjermanisht": "ausleihen" },
-  { "shqip": "ndez", "gjermanisht": "anstellen" },
-  { "shqip": "pastroj", "gjermanisht": "putzen" },
-  { "shqip": "prezantoj/imagjinoj", "gjermanisht": "vorstellen" },
-  { "shqip": "zgjedh", "gjermanisht": "wählen" },
-  { "shqip": "kujdesem për", "gjermanisht": "aufpassen auf" },
-  { "shqip": "bashkëjetues", "gjermanisht": "der Mitbewohner" },
-  { "shqip": "fik", "gjermanisht": "ausstellen" },
-  { "shqip": "e pastër", "gjermanisht": "sauber" },
-  { "shqip": "ritelefonoj", "gjermanisht": "zurückrufen" },
-  { "shqip": "të falënderoj", "gjermanisht": "sich bedanken" },
-  { "shqip": "i/e dashur", "gjermanisht": "lieb" },
-  { "shqip": "përshëndetje të shumta", "gjermanisht": "Viele Grüße" },
-  { "shqip": "përshëndetje të përzemërta", "gjermanisht": "Liebe Grüße" },
-  { "shqip": "acaruese", "gjermanisht": "ärgerlich" },
-  { "shqip": "tavolinë kuzhine", "gjermanisht": "der Küchentisch" },
-  { "shqip": "e tmerrshme", "gjermanisht": "furchtbar" },
-  { "shqip": "ji kaq i sjellshëm", "gjermanisht": "sei so nett" },
-  { "shqip": "lajmëroj", "gjermanisht": "Bescheid sagen" },
-  { "shqip": "me shpresë", "gjermanisht": "hoffentlich" },
-  { "shqip": "kuti postare", "gjermanisht": "der Briefkasten" },
-  { "shqip": "e pisët", "gjermanisht": "schmutzig" },
-  { "shqip": "zgjoj", "gjermanisht": "wecken" }
-      ],
-      3: [
-  { "shqip": "biftek derri", "gjermanisht": "Schweinebraten" },
-  { "shqip": "perime", "gjermanisht": "Gemüse" },
-  { "shqip": "faturë", "gjermanisht": "Rechnung" },
-  { "shqip": "porosis", "gjermanisht": "bestellen" },
-  { "shqip": "të ankohesh", "gjermanisht": "reklamieren" },
-  { "shqip": "vend ulje", "gjermanisht": "Sitzplatz" },
-  { "shqip": "kërkoj", "gjermanisht": "suchen" },
-  { "shqip": "këngë", "gjermanisht": "Lied" },
-  { "shqip": "pjesë", "gjermanisht": "Ausschnitt" },
-  { "shqip": "gril", "gjermanisht": "Grill" },
-  { "shqip": "fast food", "gjermanisht": "Imbissbude" },
-  { "shqip": "quaj", "gjermanisht": "nennen" },
-  { "shqip": "mishtore", "gjermanisht": "Metzgerei" },
-  { "shqip": "proshutë", "gjermanisht": "Schinken" },
-  { "shqip": "askund", "gjermanisht": "nirgends" },
-  { "shqip": "e ndryshme", "gjermanisht": "unterschiedlich" },
-  { "shqip": "vakt", "gjermanisht": "Mahlzeit" },
-  { "shqip": "më në fund", "gjermanisht": "schließlich" },
-  { "shqip": "lloj", "gjermanisht": "Art" },
-  { "shqip": "e tij/e saj", "gjermanisht": "eigen" },
-  { "shqip": "pikante", "gjermanisht": "scharf" },
-  { "shqip": "e zier", "gjermanisht": "gekocht" },
-  { "shqip": "mustardë", "gjermanisht": "Senf" },
-  { "shqip": "e pjekur", "gjermanisht": "gebraten" },
-  { "shqip": "lakër turshi", "gjermanisht": "Sauerkraut" },
-  { "shqip": "angazhohet", "gjermanisht": "beschäftigt" },
-  { "shqip": "dedikoj", "gjermanisht": "widmen" },
-  { "shqip": "e copëtuar", "gjermanisht": "geschnitten" },
-  { "shqip": "sipër", "gjermanisht": "darüber" },
-  { "shqip": "bulevard", "gjermanisht": "Allee" },
-  { "shqip": "ish", "gjermanisht": "ehemalige" },
-  { "shqip": "rreshte", "gjermanisht": "Zeile" },
-  { "shqip": "prodhoj", "gjermanisht": "herstellen" },
-  { "shqip": "sekret", "gjermanisht": "geheim" },
-  { "shqip": "salcë", "gjermanisht": "Soße" },
-  { "shqip": "kryeministër", "gjermanisht": "Regierungschef" },
-  { "shqip": "pjek", "gjermanisht": "braten" },
-  { "shqip": "përrallore", "gjermanisht": "himmlisch" },
-  { "shqip": "dekadë", "gjermanisht": "Jahrzehnt" },
-  { "shqip": "ëmbëlsira", "gjermanisht": "Süßigkeiten" },
-  { "shqip": "i ftuar", "gjermanisht": "Gast" },
-  { "shqip": "urrej", "gjermanisht": "hassen" },
-  { "shqip": "mikpritës", "gjermanisht": "Gastgeber" },
-  { "shqip": "ha të gjithë ushqimin", "gjermanisht": "aufessen" },
-  { "shqip": "radio", "gjermanisht": "Funk" },
-  { "shqip": "thesar/zemër", "gjermanisht": "Schatz" },
-  { "shqip": "bie dakord", "gjermanisht": "ausmachen" },
-  { "shqip": "gati", "gjermanisht": "fertig" },
-  { "shqip": "vonesë", "gjermanisht": "Verspätung" },
-  { "shqip": "dalloj", "gjermanisht": "merken" },
-  { "shqip": "zgjat", "gjermanisht": "dauern" },
-  { "shqip": "i përpiktë", "gjermanisht": "pünktlich" },
-  { "shqip": "tramvaj", "gjermanisht": "Straßenbahn" },
-  { "shqip": "keq", "gjermanisht": "schlimm" },
-  { "shqip": "lule", "gjermanisht": "Blume" },
-  { "shqip": "pres", "gjermanisht": "ankommen" },
-  { "shqip": "i inatosur", "gjermanisht": "sauer" },
-  { "shqip": "dhuratë/suvenir", "gjermanisht": "Mitbringsel" },
-  { "shqip": "duket", "gjermanisht": "aussehen" },
-  { "shqip": "nuhas", "gjermanisht": "riechen" },
-  { "shqip": "momentalisht", "gjermanisht": "zurzeit" },
-  { "shqip": "vetëm", "gjermanisht": "nur" },
-  { "shqip": "e pasjellshme", "gjermanisht": "unhöflich" },
-  { "shqip": "më parë", "gjermanisht": "vorher" },
-  { "shqip": "mjaftueshëm", "gjermanisht": "genug" },
-  { "shqip": "shijon", "gjermanisht": "schmecken" },
-  { "shqip": "tepër", "gjermanisht": "übrig" },
-  { "shqip": "i ngopur", "gjermanisht": "satt" },
-  { "shqip": "iki", "gjermanisht": "los" },
-  { "shqip": "e rëndë", "gjermanisht": "hart" },
-  { "shqip": "ëmbëlsirë", "gjermanisht": "Nachspeise" },
-  { "shqip": "goxha", "gjermanisht": "ziemlich" },
-  { "shqip": "një çast", "gjermanisht": "eine Weile" },
-  { "shqip": "i hapet goja për gjumë", "gjermanisht": "gähnen" },
-  { "shqip": "emision", "gjermanisht": "Sendung" },
-  { "shqip": "makarona", "gjermanisht": "Nudeln" },
-  { "shqip": "spaghetti", "gjermanisht": "Spaghetti" },
-  { "shqip": "makarona me djathë", "gjermanisht": "Käsenudeln" },
-  { "shqip": "patate të skuqura", "gjermanisht": "Pommes frites" },
-  { "shqip": "fërgim", "gjermanisht": "frittieren" },
-  { "shqip": "tërshërë", "gjermanisht": "Haferflocken" },
-  { "shqip": "përbërës", "gjermanisht": "Zutat" },
-  { "shqip": "shok", "gjermanisht": "Freund" },
-  { "shqip": "një copë", "gjermanisht": "Stück" },
-  { "shqip": "ngrohtë", "gjermanisht": "warm" },
-  { "shqip": "kripë", "gjermanisht": "Salz" },
-  { "shqip": "shurup", "gjermanisht": "Sirup" },
-  { "shqip": "çokollatë", "gjermanisht": "Schokolade" },
-  { "shqip": "karamele", "gjermanisht": "Bonbon" },
-  { "shqip": "gjalpë", "gjermanisht": "Butter" },
-  { "shqip": "krema", "gjermanisht": "Sahne" },
-  { "shqip": "lëng", "gjermanisht": "Saft" },
-  { "shqip": "shushunjë", "gjermanisht": "Schnecke" },
-  { "shqip": "lëng mishi", "gjermanisht": "Brühe" },
-  { "shqip": "verë", "gjermanisht": "Wein" },
-  { "shqip": "pije", "gjermanisht": "Getränk" },
-  { "shqip": "përshesh", "gjermanisht": "Kloß" },
-  { "shqip": "patate të pjekura", "gjermanisht": "Bratkartoffeln" },
-  { "shqip": "biskota", "gjermanisht": "Kekse" },
-  { "shqip": "lëng limoni", "gjermanisht": "Zitronensaft" },
-  { "shqip": "biskotë me kikirikë", "gjermanisht": "Erdnusskeks" },
-  { "shqip": "kanellë", "gjermanisht": "Zimt" },
-  { "shqip": "mish i skuqur", "gjermanisht": "Braten" },
-  { "shqip": "supa", "gjermanisht": "Suppe" },
-  { "shqip": "salcë mishi", "gjermanisht": "Fleischsoße" },
-  { "shqip": "ushqim", "gjermanisht": "Essen" },
-  { "shqip": "sallatë me djathë", "gjermanisht": "Käse-Salat" },
-  { "shqip": "embëlsirë", "gjermanisht": "Dessert" },
-  { "shqip": "fruta", "gjermanisht": "Früchte" },
-  { "shqip": "sallatë me perime", "gjermanisht": "Gemüsesalat" },
-  { "shqip": "mish pule", "gjermanisht": "Hähnchenfleisch" },
-  { "shqip": "mish viçi", "gjermanisht": "Rindfleisch" },
-  { "shqip": "mish qingji", "gjermanisht": "Lammfleisch" },
-  { "shqip": "mish derri", "gjermanisht": "Schweinefleisch" },
-  { "shqip": "mish i zier", "gjermanisht": "Gekochtes Fleisch" },
-  { "shqip": "mish i pjekur", "gjermanisht": "Gebratenes Fleisch" },
-  { "shqip": "peshk", "gjermanisht": "Fisch" },
-  { "shqip": "karotë", "gjermanisht": "Karotte" },
-  { "shqip": "piper", "gjermanisht": "Pfeffer" },
-  { "shqip": "përzierje", "gjermanisht": "Mischung" },
-  { "shqip": "lëng frutash", "gjermanisht": "Fruchtsaft" },
-  { "shqip": "bukë", "gjermanisht": "Brot" },
-  { "shqip": "bukë e freskët", "gjermanisht": "Frisches Brot" },
-  { "shqip": "qumësht", "gjermanisht": "Milch" },
-  { "shqip": "ajkë", "gjermanisht": "Sahne" },
-  { "shqip": "kos", "gjermanisht": "Joghurt" },
-  { "shqip": "lëng narazhi", "gjermanisht": "Orangensaft" },
-  { "shqip": "limon", "gjermanisht": "Zitrone" },
-  { "shqip": "lëng portokalli", "gjermanisht": "Apfelsaft" },
-  { "shqip": "kivi", "gjermanisht": "Kiwi" },
-  { "shqip": "kumbull", "gjermanisht": "Pflaume" },
-  { "shqip": "kajsi", "gjermanisht": "Aprikose" },
-  { "shqip": "luleshtrydhe", "gjermanisht": "Erdbeere" },
-  { "shqip": "qershi", "gjermanisht": "Kirsche" },
-  { "shqip": "mollë", "gjermanisht": "Apfel" },
-  { "shqip": "dardhë", "gjermanisht": "Birne" },
-  { "shqip": "bajame", "gjermanisht": "Mandel" },
-  { "shqip": "arra", "gjermanisht": "Walnuss" },
-  { "shqip": "kikirikë", "gjermanisht": "Erdnuss" },
-  { "shqip": "pecan", "gjermanisht": "Pekannuss" },
-  { "shqip": "kocka", "gjermanisht": "Kern" },
-  { "shqip": "sheqer", "gjermanisht": "Zucker" },
-  { "shqip": "mjaltë", "gjermanisht": "Honig" }
-],
-
-    };
-
-    const flashcard = document.getElementById('flashcard');
-    const flashcardContent = document.getElementById('flashcard-content');
-    const markLearnedButton = document.getElementById('mark-learned');
-    const lessonsDropdown = document.getElementById('lessons');
-
-    let currentLesson = 1;
-    let currentWords = [...lessons[currentLesson]];
-    let currentWordIndex = 0;
-    let showTranslation = false;
-
-    function updateFlashcard() {
-      if (currentWords.length === 0) {
-        flashcardContent.textContent = "No more words!";
-        markLearnedButton.disabled = true;
-        return;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flashcards App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #f9f9f9;
       }
 
-      const word = currentWords[currentWordIndex];
-      flashcardContent.textContent = showTranslation ? word.gjermanisht : word.shqip;
-    }
+      h1 {
+        margin: 20px 0;
+        color: #333;
+      }
 
-    flashcard.addEventListener('click', () => {
-      showTranslation = !showTranslation;
+      #lesson-select {
+        margin-bottom: 20px;
+      }
+
+      .flashcard {
+        width: 300px;
+        height: 200px;
+        background: #ffffff;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        text-align: center;
+      }
+
+      .flashcard p {
+        font-size: 1.2rem;
+        margin: 0;
+        padding: 10px;
+        color: #333;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        color: #fff;
+        background: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      button:hover:not(:disabled) {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Flashcards App</h1>
+    <div id="lesson-select">
+      <label for="lessons">Zgjidh leksionin </label>
+      <select id="lessons">
+        <option value="1">Leksion 1</option>
+        <option value="2">Leksion 2</option>
+        <option value="3">Leksion 3</option>
+      </select>
+    </div>
+
+    <div class="flashcard" id="flashcard">
+      <p id="flashcard-content">Click to reveal translation</p>
+    </div>
+
+    <button id="mark-learned">Tjetra</button>
+
+    <script>
+      // Sample data for lessons
+      const lessons = {
+        1: [
+          { shqip: "aeroport", gjermanisht: "der Flughafen" },
+          { shqip: "njoh", gjermanisht: "Kennenlernen" },
+          { shqip: "e vetme", gjermanisht: "die Einzige" },
+          { shqip: "Au pair", gjermanisht: "das Au-pair-Mädchen" },
+          { shqip: "së shpejti", gjermanisht: "Bald" },
+          { shqip: "pas pak", gjermanisht: "Bis bald" },
+          { shqip: "pse", gjermanisht: "Warum" },
+          { shqip: "i lodhur", gjermanisht: "Müde" },
+          { shqip: "marr", gjermanisht: "Abholen" },
+          { shqip: "i mërzitur", gjermanisht: "Traurig" },
+          { shqip: "shkoj për të ngrënë", gjermanisht: "Essen gehen" },
+          { shqip: "justifikimi", gjermanisht: "die Ausrede" },
+          { shqip: "qeni", gjermanisht: "der Hund" },
+          { shqip: "humbet", gjermanisht: "Verpassen" },
+          { shqip: "dje", gjermanisht: "Gestern" },
+          { shqip: "orë", gjermanisht: "die Stunden" },
+          { shqip: "pres", gjermanisht: "Warten" },
+          { shqip: "sëmurë", gjermanisht: "Krank" },
+          { shqip: "trafik", gjermanisht: "der Stau" },
+          { shqip: "ka/ekziston", gjermanisht: "Es gibt" },
+          { shqip: "udhëtim", gjermanisht: "die Reise" },
+          { shqip: "më në fund", gjermanisht: "Endlich" },
+          { shqip: "mbërrij", gjermanisht: "Ankommen" },
+          { shqip: "vizitoj", gjermanisht: "Besuchen" },
+          { shqip: "e sjellshme", gjermanisht: "Nett" },
+          { shqip: "faktikisht", gjermanisht: "Nämlich" },
+          { shqip: "me zë gjumi", gjermanisht: "Einschlafen" },
+          { shqip: "sa turp", gjermanisht: "Wie peinlich" },
+          { shqip: "zgjohem", gjermanisht: "Aufstehen" },
+          { shqip: "valixhe", gjermanisht: "der Koffer" },
+          { shqip: "çpaketoj", gjermanisht: "Auspacken" },
+          { shqip: "var", gjermanisht: "Aufhängen" },
+          { shqip: "pije", gjermanisht: "die Getränke" },
+          { shqip: "komshi", gjermanisht: "der Nachbar" },
+          { shqip: "stacion treni", gjermanisht: "der Bahnhof" },
+          { shqip: "ters", gjermanisht: "das Pech" },
+          { shqip: "pse", gjermanisht: "Wieso" },
+          { shqip: "ja dal", gjermanisht: "Schaffen" },
+          { shqip: "hip", gjermanisht: "Steigen" },
+          { shqip: "vrapoj", gjermanisht: "Rennen" },
+          { shqip: "bagazhe", gjermanisht: "das Gepäck" },
+          { shqip: "lajmërim", gjermanisht: "die Durchsage" },
+          { shqip: "patjetër", gjermanisht: "Natürlich" },
+          { shqip: "e gabuar", gjermanisht: "Falsch" },
+          { shqip: "tregoj", gjermanisht: "Erzählen" },
+          { shqip: "rrotë", gjermanisht: "das Rad" },
+          { shqip: "humbas", gjermanisht: "Verlieren" },
+          { shqip: "filxhan", gjermanisht: "die Tasse" },
+          { shqip: "mungon", gjermanisht: "Vermissen" },
+          { shqip: "të paktën", gjermanisht: "Wenigstens" },
+          { shqip: "përpiqem", gjermanisht: "Versuchen" },
+          { shqip: "sedile", gjermanisht: "die Sitze" },
+          { shqip: "e parehatshme", gjermanisht: "Unbequem" },
+          { shqip: "e rehatshme", gjermanisht: "Bequem" },
+          { shqip: "e rehatshme", gjermanisht: "Gemütlich" },
+          { shqip: "vizitoj", gjermanisht: "Besichtigen" },
+          { shqip: "kartolinë", gjermanisht: "die Postkarte" },
+          { shqip: "sqaroj", gjermanisht: "Erklären" },
+          { shqip: "përjetoj", gjermanisht: "Erleben" },
+          { shqip: "besoj", gjermanisht: "Glauben" },
+          { shqip: "imagjinoj", gjermanisht: "Vorstellen" },
+          { shqip: "nervoz", gjermanisht: "Nervös" },
+          { shqip: "rastësi", gjermanisht: "der Zufall" },
+          { shqip: "kontaktoj", gjermanisht: "Melden" },
+          { shqip: "në fillim", gjermanisht: "Erst" },
+          { shqip: "harroj", gjermanisht: "Vergessen" },
+          { shqip: "i qetë", gjermanisht: "Ruhig" },
+          { shqip: "qetësi", gjermanisht: "die Ruhe" },
+          { shqip: "pushime", gjermanisht: "der Urlaub" },
+          { shqip: "pema e familjes", gjermanisht: "der Stammbaum" },
+          { shqip: "kushëriri", gjermanisht: "der Cousin" },
+          { shqip: "kushërira", gjermanisht: "die Cousine" },
+          { shqip: "mbesa", gjermanisht: "die Nichte" },
+          { shqip: "hallë/teze/teta", gjermanisht: "die Tante" },
+          { shqip: "kunati", gjermanisht: "der Schwager" },
+          { shqip: "shtatzënë", gjermanisht: "Schwanger" },
+          { shqip: "mbesa", gjermanisht: "die Enkelin" },
+          { shqip: "nip", gjermanisht: "das Enkelkind" },
+          { shqip: "nipi", gjermanisht: "der Neffe" },
+          { shqip: "vjehrra", gjermanisht: "die Schwiegermutter" },
+          { shqip: "vjehërrit", gjermanisht: "die Schwiegereltern" },
+          { shqip: "kunata", gjermanisht: "die Schwägerin" },
+          { shqip: "vjerri", gjermanisht: "der Schwiegervater" },
+          { shqip: "xhaxhai/daja", gjermanisht: "der Onkel" },
+          { shqip: "bashkëshort", gjermanisht: "der Ehemann" },
+          { shqip: "motra vëllezër", gjermanisht: "die Geschwister" },
+          { shqip: "vëllezër", gjermanisht: "die Brüder" },
+          { shqip: "dhëndër", gjermanisht: "der Bräutigam" },
+          { shqip: "e rëndësishme", gjermanisht: "Wichtig" },
+          { shqip: "beqar", gjermanisht: "Ledig" },
+          { shqip: "familje e madhe", gjermanisht: "die Großfamilie" },
+          { shqip: "papafingo", gjermanisht: "die Dachwonung" },
+          { shqip: "kat", gjermanisht: "der Stock" },
+          { shqip: "ndoshta", gjermanisht: "Wahrscheinlich" },
+          { shqip: "shpërngulem", gjermanisht: "Einziehen" },
+          { shqip: "mjaftueshëm", gjermanisht: "Genug" },
+          { shqip: "përgjigjem", gjermanisht: "Beantworten" },
+          { shqip: "çift", gjermanisht: "das Ehepaar" },
+          { shqip: "vizitorë/miq", gjermanisht: "der Besuch" },
+          { shqip: "banesë", gjermanisht: "die Wohnung" },
+          { shqip: "detyrë", gjermanisht: "die Aufgabe" },
+          { shqip: "dhimbje", gjermanisht: "die Schmerzen" },
+          { shqip: "shkallë", gjermanisht: "die Treppe" },
+          { shqip: "dhomë", gjermanisht: "das Zimmer" },
+          { shqip: "lagje", gjermanisht: "die Nachbarschaft" },
+          { shqip: "të afërm", gjermanisht: "der Bekannte" },
+          { shqip: "të famshëm", gjermanisht: "Berühmte" },
+          { shqip: "komshinj", gjermanisht: "die Nachbarn" },
+          { shqip: "konvikt/hostel", gjermanisht: "die Wohngemeinschaft" },
+          { shqip: "atlet", gjermanisht: "der Sportler" },
+          { shqip: "shpresoj", gjermanisht: "Hoffe" },
+          { shqip: "kur", gjermanisht: "Wann" },
+          { shqip: "nëse", gjermanisht: "Wenn" },
+          { shqip: "ndihmoj", gjermanisht: "Helfen" },
+          { shqip: "brenda", gjermanisht: "Drinnen" },
+          { shqip: "jashtë", gjermanisht: "Draußen" },
+          { shqip: "kam qenë", gjermanisht: "Bin gewesen" },
+        ],
+        2: [
+          { shqip: "ndahet", gjermanisht: "trennen" },
+          { shqip: "vazhdimisht", gjermanisht: "dauernd" },
+          { shqip: "grindem", gjermanisht: "streiten" },
+          { shqip: "zhurmë/i zhurmshëm", gjermanisht: "laut" },
+          { shqip: "sipas profesionit", gjermanisht: "beruflich" },
+          { shqip: "bashkëjetoj", gjermanisht: "zusammenleben" },
+          { shqip: "përvjetor", gjermanisht: "der Hochzeitstag" },
+          { shqip: "rrugës/në lëvizje", gjermanisht: "unterwegs" },
+          { shqip: "di", gjermanisht: "wissen" },
+          { shqip: "prishet", gjermanisht: "kaputt" },
+          { shqip: "s'ja kam idenë", gjermanisht: "keine Ahnung" },
+          { shqip: "e heshtur", gjermanisht: "stille" },
+          { shqip: "pëshpërit", gjermanisht: "flüstern" },
+          { shqip: "të puthesh", gjermanisht: "küssen" },
+          { shqip: "përqafoj", gjermanisht: "umarmen" },
+          { shqip: "konvikt/hostel", gjermanisht: "die WG" },
+          { shqip: "pusull", gjermanisht: "der Zettel" },
+          { shqip: "pusull", gjermanisht: "die Mitteilung" },
+          { shqip: "meqë ra fjala", gjermanisht: "übrigens" },
+          { shqip: "menjëherë/me patjetër", gjermanisht: "unbedingt" },
+          { shqip: "rreth", gjermanisht: "gegen" },
+          { shqip: "universitet", gjermanisht: "die Uni" },
+          { shqip: "gjumash", gjermanisht: "die Langschläferinnen" },
+          { shqip: "bimë", gjermanisht: "die Pflanzen" },
+          { shqip: "ujit", gjermanisht: "gießen" },
+          { shqip: "faktikisht", gjermanisht: "eigentlich" },
+          { shqip: "pastroj", gjermanisht: "sauber machen" },
+          { shqip: "fatura e energjisë", gjermanisht: "die Stromrechnung" },
+          { shqip: "çmendurisht", gjermanisht: "wahnsinnig" },
+          { shqip: "shpenzojmë", gjermanisht: "verbrauchen" },
+          { shqip: "me nxitim", gjermanisht: "eilig" },
+          { shqip: "kontrolloj", gjermanisht: "nachsehen" },
+          { shqip: "telefonatë", gjermanisht: "der Anruf" },
+          { shqip: "marr borxh", gjermanisht: "ausleihen" },
+          { shqip: "ndez", gjermanisht: "anstellen" },
+          { shqip: "pastroj", gjermanisht: "putzen" },
+          { shqip: "prezantoj/imagjinoj", gjermanisht: "vorstellen" },
+          { shqip: "zgjedh", gjermanisht: "wählen" },
+          { shqip: "kujdesem për", gjermanisht: "aufpassen auf" },
+          { shqip: "bashkëjetues", gjermanisht: "der Mitbewohner" },
+          { shqip: "fik", gjermanisht: "ausstellen" },
+          { shqip: "e pastër", gjermanisht: "sauber" },
+          { shqip: "ritelefonoj", gjermanisht: "zurückrufen" },
+          { shqip: "ndahet", gjermanisht: "trennen" },
+          { shqip: "vazhdimisht", gjermanisht: "dauernd" },
+          { shqip: "grindem", gjermanisht: "streiten" },
+          { shqip: "zhurmë/i zhurmshëm", gjermanisht: "laut" },
+          { shqip: "sipas profesionit", gjermanisht: "beruflich" },
+          { shqip: "bashkëjetoj", gjermanisht: "zusammenleben" },
+          { shqip: "përvjetor", gjermanisht: "der Hochzeitstag" },
+          { shqip: "rrugës/në lëvizje", gjermanisht: "unterwegs" },
+          { shqip: "di", gjermanisht: "wissen" },
+          { shqip: "prishet", gjermanisht: "kaputt" },
+          { shqip: "s'ja kam idenë", gjermanisht: "keine Ahnung" },
+          { shqip: "e heshtur", gjermanisht: "stille" },
+          { shqip: "pëshpërit", gjermanisht: "flüstern" },
+          { shqip: "të puthesh", gjermanisht: "küssen" },
+          { shqip: "përqafoj", gjermanisht: "umarmen" },
+          { shqip: "konvikt/hostel", gjermanisht: "die WG" },
+          { shqip: "pusull", gjermanisht: "der Zettel" },
+          { shqip: "pusull", gjermanisht: "die Mitteilung" },
+          { shqip: "meqë ra fjala", gjermanisht: "übrigens" },
+          { shqip: "menjëherë/me patjetër", gjermanisht: "unbedingt" },
+          { shqip: "rreth", gjermanisht: "gegen" },
+          { shqip: "universitet", gjermanisht: "die Uni" },
+          { shqip: "gjumash", gjermanisht: "die Langschläferinnen" },
+          { shqip: "bimë", gjermanisht: "die Pflanzen" },
+          { shqip: "ujit", gjermanisht: "gießen" },
+          { shqip: "faktikisht", gjermanisht: "eigentlich" },
+          { shqip: "pastroj", gjermanisht: "sauber machen" },
+          { shqip: "fatura e energjisë", gjermanisht: "die Stromrechnung" },
+          { shqip: "çmendurisht", gjermanisht: "wahnsinnig" },
+          { shqip: "shpenzojmë", gjermanisht: "verbrauchen" },
+          { shqip: "me nxitim", gjermanisht: "eilig" },
+          { shqip: "kontrolloj", gjermanisht: "nachsehen" },
+          { shqip: "telefonatë", gjermanisht: "der Anruf" },
+          { shqip: "marr borxh", gjermanisht: "ausleihen" },
+          { shqip: "ndez", gjermanisht: "anstellen" },
+          { shqip: "pastroj", gjermanisht: "putzen" },
+          { shqip: "prezantoj/imagjinoj", gjermanisht: "vorstellen" },
+          { shqip: "zgjedh", gjermanisht: "wählen" },
+          { shqip: "kujdesem për", gjermanisht: "aufpassen auf" },
+          { shqip: "bashkëjetues", gjermanisht: "der Mitbewohner" },
+          { shqip: "fik", gjermanisht: "ausstellen" },
+          { shqip: "e pastër", gjermanisht: "sauber" },
+          { shqip: "ritelefonoj", gjermanisht: "zurückrufen" },
+          { shqip: "të falënderoj", gjermanisht: "sich bedanken" },
+          { shqip: "i/e dashur", gjermanisht: "lieb" },
+          { shqip: "përshëndetje të shumta", gjermanisht: "Viele Grüße" },
+          { shqip: "përshëndetje të përzemërta", gjermanisht: "Liebe Grüße" },
+          { shqip: "acaruese", gjermanisht: "ärgerlich" },
+          { shqip: "tavolinë kuzhine", gjermanisht: "der Küchentisch" },
+          { shqip: "e tmerrshme", gjermanisht: "furchtbar" },
+          { shqip: "ji kaq i sjellshëm", gjermanisht: "sei so nett" },
+          { shqip: "lajmëroj", gjermanisht: "Bescheid sagen" },
+          { shqip: "me shpresë", gjermanisht: "hoffentlich" },
+          { shqip: "kuti postare", gjermanisht: "der Briefkasten" },
+          { shqip: "e pisët", gjermanisht: "schmutzig" },
+          { shqip: "zgjoj", gjermanisht: "wecken" },
+        ],
+        3: [
+          { shqip: "biftek derri", gjermanisht: "Schweinebraten" },
+          { shqip: "perime", gjermanisht: "Gemüse" },
+          { shqip: "faturë", gjermanisht: "Rechnung" },
+          { shqip: "porosis", gjermanisht: "bestellen" },
+          { shqip: "të ankohesh", gjermanisht: "reklamieren" },
+          { shqip: "vend ulje", gjermanisht: "Sitzplatz" },
+          { shqip: "kërkoj", gjermanisht: "suchen" },
+          { shqip: "këngë", gjermanisht: "Lied" },
+          { shqip: "pjesë", gjermanisht: "Ausschnitt" },
+          { shqip: "gril", gjermanisht: "Grill" },
+          { shqip: "fast food", gjermanisht: "Imbissbude" },
+          { shqip: "quaj", gjermanisht: "nennen" },
+          { shqip: "mishtore", gjermanisht: "Metzgerei" },
+          { shqip: "proshutë", gjermanisht: "Schinken" },
+          { shqip: "askund", gjermanisht: "nirgends" },
+          { shqip: "e ndryshme", gjermanisht: "unterschiedlich" },
+          { shqip: "vakt", gjermanisht: "Mahlzeit" },
+          { shqip: "më në fund", gjermanisht: "schließlich" },
+          { shqip: "lloj", gjermanisht: "Art" },
+          { shqip: "e tij/e saj", gjermanisht: "eigen" },
+          { shqip: "pikante", gjermanisht: "scharf" },
+          { shqip: "e zier", gjermanisht: "gekocht" },
+          { shqip: "mustardë", gjermanisht: "Senf" },
+          { shqip: "e pjekur", gjermanisht: "gebraten" },
+          { shqip: "lakër turshi", gjermanisht: "Sauerkraut" },
+          { shqip: "angazhohet", gjermanisht: "beschäftigt" },
+          { shqip: "dedikoj", gjermanisht: "widmen" },
+          { shqip: "e copëtuar", gjermanisht: "geschnitten" },
+          { shqip: "sipër", gjermanisht: "darüber" },
+          { shqip: "bulevard", gjermanisht: "Allee" },
+          { shqip: "ish", gjermanisht: "ehemalige" },
+          { shqip: "rreshte", gjermanisht: "Zeile" },
+          { shqip: "prodhoj", gjermanisht: "herstellen" },
+          { shqip: "sekret", gjermanisht: "geheim" },
+          { shqip: "salcë", gjermanisht: "Soße" },
+          { shqip: "kryeministër", gjermanisht: "Regierungschef" },
+          { shqip: "pjek", gjermanisht: "braten" },
+          { shqip: "përrallore", gjermanisht: "himmlisch" },
+          { shqip: "dekadë", gjermanisht: "Jahrzehnt" },
+          { shqip: "ëmbëlsira", gjermanisht: "Süßigkeiten" },
+          { shqip: "i ftuar", gjermanisht: "Gast" },
+          { shqip: "urrej", gjermanisht: "hassen" },
+          { shqip: "mikpritës", gjermanisht: "Gastgeber" },
+          { shqip: "ha të gjithë ushqimin", gjermanisht: "aufessen" },
+          { shqip: "radio", gjermanisht: "Funk" },
+          { shqip: "thesar/zemër", gjermanisht: "Schatz" },
+          { shqip: "bie dakord", gjermanisht: "ausmachen" },
+          { shqip: "gati", gjermanisht: "fertig" },
+          { shqip: "vonesë", gjermanisht: "Verspätung" },
+          { shqip: "dalloj", gjermanisht: "merken" },
+          { shqip: "zgjat", gjermanisht: "dauern" },
+          { shqip: "i përpiktë", gjermanisht: "pünktlich" },
+          { shqip: "tramvaj", gjermanisht: "Straßenbahn" },
+          { shqip: "keq", gjermanisht: "schlimm" },
+          { shqip: "lule", gjermanisht: "Blume" },
+          { shqip: "pres", gjermanisht: "ankommen" },
+          { shqip: "i inatosur", gjermanisht: "sauer" },
+          { shqip: "dhuratë/suvenir", gjermanisht: "Mitbringsel" },
+          { shqip: "duket", gjermanisht: "aussehen" },
+          { shqip: "nuhas", gjermanisht: "riechen" },
+          { shqip: "momentalisht", gjermanisht: "zurzeit" },
+          { shqip: "vetëm", gjermanisht: "nur" },
+          { shqip: "e pasjellshme", gjermanisht: "unhöflich" },
+          { shqip: "më parë", gjermanisht: "vorher" },
+          { shqip: "mjaftueshëm", gjermanisht: "genug" },
+          { shqip: "shijon", gjermanisht: "schmecken" },
+          { shqip: "tepër", gjermanisht: "übrig" },
+          { shqip: "i ngopur", gjermanisht: "satt" },
+          { shqip: "iki", gjermanisht: "los" },
+          { shqip: "e rëndë", gjermanisht: "hart" },
+          { shqip: "ëmbëlsirë", gjermanisht: "Nachspeise" },
+          { shqip: "goxha", gjermanisht: "ziemlich" },
+          { shqip: "një çast", gjermanisht: "eine Weile" },
+          { shqip: "i hapet goja për gjumë", gjermanisht: "gähnen" },
+          { shqip: "emision", gjermanisht: "Sendung" },
+          { shqip: "makarona", gjermanisht: "Nudeln" },
+          { shqip: "spaghetti", gjermanisht: "Spaghetti" },
+          { shqip: "makarona me djathë", gjermanisht: "Käsenudeln" },
+          { shqip: "patate të skuqura", gjermanisht: "Pommes frites" },
+          { shqip: "fërgim", gjermanisht: "frittieren" },
+          { shqip: "tërshërë", gjermanisht: "Haferflocken" },
+          { shqip: "përbërës", gjermanisht: "Zutat" },
+          { shqip: "shok", gjermanisht: "Freund" },
+          { shqip: "një copë", gjermanisht: "Stück" },
+          { shqip: "ngrohtë", gjermanisht: "warm" },
+          { shqip: "kripë", gjermanisht: "Salz" },
+          { shqip: "shurup", gjermanisht: "Sirup" },
+          { shqip: "çokollatë", gjermanisht: "Schokolade" },
+          { shqip: "karamele", gjermanisht: "Bonbon" },
+          { shqip: "gjalpë", gjermanisht: "Butter" },
+          { shqip: "krema", gjermanisht: "Sahne" },
+          { shqip: "lëng", gjermanisht: "Saft" },
+          { shqip: "shushunjë", gjermanisht: "Schnecke" },
+          { shqip: "lëng mishi", gjermanisht: "Brühe" },
+          { shqip: "verë", gjermanisht: "Wein" },
+          { shqip: "pije", gjermanisht: "Getränk" },
+          { shqip: "përshesh", gjermanisht: "Kloß" },
+          { shqip: "patate të pjekura", gjermanisht: "Bratkartoffeln" },
+          { shqip: "biskota", gjermanisht: "Kekse" },
+          { shqip: "lëng limoni", gjermanisht: "Zitronensaft" },
+          { shqip: "biskotë me kikirikë", gjermanisht: "Erdnusskeks" },
+          { shqip: "kanellë", gjermanisht: "Zimt" },
+          { shqip: "mish i skuqur", gjermanisht: "Braten" },
+          { shqip: "supa", gjermanisht: "Suppe" },
+          { shqip: "salcë mishi", gjermanisht: "Fleischsoße" },
+          { shqip: "ushqim", gjermanisht: "Essen" },
+          { shqip: "sallatë me djathë", gjermanisht: "Käse-Salat" },
+          { shqip: "embëlsirë", gjermanisht: "Dessert" },
+          { shqip: "fruta", gjermanisht: "Früchte" },
+          { shqip: "sallatë me perime", gjermanisht: "Gemüsesalat" },
+          { shqip: "mish pule", gjermanisht: "Hähnchenfleisch" },
+          { shqip: "mish viçi", gjermanisht: "Rindfleisch" },
+          { shqip: "mish qingji", gjermanisht: "Lammfleisch" },
+          { shqip: "mish derri", gjermanisht: "Schweinefleisch" },
+          { shqip: "mish i zier", gjermanisht: "Gekochtes Fleisch" },
+          { shqip: "mish i pjekur", gjermanisht: "Gebratenes Fleisch" },
+          { shqip: "peshk", gjermanisht: "Fisch" },
+          { shqip: "karotë", gjermanisht: "Karotte" },
+          { shqip: "piper", gjermanisht: "Pfeffer" },
+          { shqip: "përzierje", gjermanisht: "Mischung" },
+          { shqip: "lëng frutash", gjermanisht: "Fruchtsaft" },
+          { shqip: "bukë", gjermanisht: "Brot" },
+          { shqip: "bukë e freskët", gjermanisht: "Frisches Brot" },
+          { shqip: "qumësht", gjermanisht: "Milch" },
+          { shqip: "ajkë", gjermanisht: "Sahne" },
+          { shqip: "kos", gjermanisht: "Joghurt" },
+          { shqip: "lëng narazhi", gjermanisht: "Orangensaft" },
+          { shqip: "limon", gjermanisht: "Zitrone" },
+          { shqip: "lëng portokalli", gjermanisht: "Apfelsaft" },
+          { shqip: "kivi", gjermanisht: "Kiwi" },
+          { shqip: "kumbull", gjermanisht: "Pflaume" },
+          { shqip: "kajsi", gjermanisht: "Aprikose" },
+          { shqip: "luleshtrydhe", gjermanisht: "Erdbeere" },
+          { shqip: "qershi", gjermanisht: "Kirsche" },
+          { shqip: "mollë", gjermanisht: "Apfel" },
+          { shqip: "dardhë", gjermanisht: "Birne" },
+          { shqip: "bajame", gjermanisht: "Mandel" },
+          { shqip: "arra", gjermanisht: "Walnuss" },
+          { shqip: "kikirikë", gjermanisht: "Erdnuss" },
+          { shqip: "pecan", gjermanisht: "Pekannuss" },
+          { shqip: "kocka", gjermanisht: "Kern" },
+          { shqip: "sheqer", gjermanisht: "Zucker" },
+          { shqip: "mjaltë", gjermanisht: "Honig" },
+        ],
+      };
+
+      const flashcard = document.getElementById("flashcard");
+      const flashcardContent = document.getElementById("flashcard-content");
+      const markLearnedButton = document.getElementById("mark-learned");
+      const lessonsDropdown = document.getElementById("lessons");
+
+      let currentLesson = 1;
+      let currentWords = [...lessons[currentLesson]];
+      let currentWordIndex = 0;
+      let showTranslation = false;
+
+      function updateFlashcard() {
+        if (currentWords.length === 0) {
+          flashcardContent.textContent = "Ska me fjale te reja!";
+          markLearnedButton.disabled = true;
+          return;
+        }
+
+        const word = currentWords[currentWordIndex];
+        flashcardContent.textContent = showTranslation
+          ? word.gjermanisht
+          : word.shqip;
+      }
+
+      flashcard.addEventListener("click", () => {
+        showTranslation = !showTranslation;
+        updateFlashcard();
+      });
+
+      markLearnedButton.addEventListener("click", () => {
+        currentWords.splice(currentWordIndex, 1);
+        showTranslation = false;
+        currentWordIndex = 0;
+        updateFlashcard();
+      });
+
+      lessonsDropdown.addEventListener("change", (event) => {
+        currentLesson = event.target.value;
+        currentWords = [...lessons[currentLesson]];
+        currentWordIndex = 0;
+        showTranslation = false;
+        markLearnedButton.disabled = false;
+        updateFlashcard();
+      });
+
+      // Initialize the first flashcard
       updateFlashcard();
-    });
-
-    markLearnedButton.addEventListener('click', () => {
-      currentWords.splice(currentWordIndex, 1);
-      showTranslation = false;
-      currentWordIndex = 0;
-      updateFlashcard();
-    });
-
-    lessonsDropdown.addEventListener('change', (event) => {
-      currentLesson = event.target.value;
-      currentWords = [...lessons[currentLesson]];
-      currentWordIndex = 0;
-      showTranslation = false;
-      markLearnedButton.disabled = false;
-      updateFlashcard();
-    });
-
-    // Initialize the first flashcard
-    updateFlashcard();
-  </script>
-</body>
+    </script>
+  </body>
 </html>
