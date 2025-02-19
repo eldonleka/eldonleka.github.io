@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Flashcards App</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <h1>Flashcards App</h1>
@@ -15,6 +15,8 @@
         <option value="2">Leksion 2</option>
         <option value="3">Leksion 3</option>
         <option value="4">Leksion 4</option>
+        <option value="5">Leksion 5</option>
+        <option value="6">Leksion 6</option>
       </select>
     </div>
 
@@ -147,7 +149,7 @@
           { AL: "e paster", DE: "sauber" },
           { AL: "te pastrosh", DE: "sauber machen" },
           { AL: "e piset", DE: "schmutzig" },
-          { AL: "meqe ra fjala", DE: "übrigens" }
+          { AL: "meqe ra fjala", DE: "übrigens" },
         ],
         3: [
           { AL: "sa shpesh ? / kur ?", DE: "wie oft ? / wann ?" },
@@ -235,7 +237,7 @@
           { AL: "po ashtu", DE: "genauso" },
           { AL: "askush", DE: "nirgends" },
           { AL: "teper", DE: "übrig" },
-        ],   
+        ],
         4: [
           { AL: "Zyre", DE: "das Büro" },
           { AL: "Recepsion", DE: "der Empfang" },
@@ -302,7 +304,6 @@
           { AL: "teper shume", DE: "zu viel" },
           { AL: "aq shume sa", DE: "so viel" },
           { AL: "nese", DE: "wenn" },
-                    
         ],
       };
 
@@ -324,9 +325,7 @@
         }
 
         const word = currentWords[currentWordIndex];
-        flashcardContent.textContent = showTranslation
-          ? word.DE
-          : word.AL
+        flashcardContent.textContent = showTranslation ? word.DE : word.AL;
       }
 
       flashcard.addEventListener("click", () => {
@@ -339,8 +338,6 @@
         showTranslation = false;
         currentWordIndex = 0;
         updateFlashcard();
-
-
       });
 
       lessonsDropdown.addEventListener("change", (event) => {
