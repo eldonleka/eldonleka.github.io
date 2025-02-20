@@ -42,7 +42,7 @@ h1 {
   display: none;
 }
 
-button {
+.button-container {
   display: flex;
   margin-top: 20px;
   padding: 10px 20px;
