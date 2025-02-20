@@ -45,11 +45,10 @@ h1 {
 .button-container {
   display: flex;
   margin-top: 20px;
-  gap: 50px;
+  gap: 20px;
   padding: 10px 20px;
   font-size: 1rem;
   color: #ffffff;
-  background: #007bff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
