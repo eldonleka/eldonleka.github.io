@@ -24,10 +24,11 @@
       <p id="flashcard-content">Click to reveal translation</p>
     </div>
 
-    <button id="mark-learned">Tjetra</button>
+    <button id="mark-learned">Mark as Learned</button>
+    <button id="next-word">Next</button>
+    <button id="back-word">Back</button>
 
     <script>
-      // Fjalet e reja per cdo leksion
       const lessons = {
         1: [
           { AL: "cift", DE: "das Ehepar" },
@@ -407,6 +408,8 @@
       const flashcard = document.getElementById("flashcard");
       const flashcardContent = document.getElementById("flashcard-content");
       const markLearnedButton = document.getElementById("mark-learned");
+      const nextWordButton = document.getElementById("next-word");
+      const backWordButton = document.getElementById("back-word");
       const lessonsDropdown = document.getElementById("lessons");
 
       let currentLesson = 1;
@@ -434,6 +437,26 @@
         currentWords.splice(currentWordIndex, 1);
         showTranslation = false;
         currentWordIndex = 0;
+        updateFlashcard();
+      });
+
+      nextWordButton.addEventListener("click", () => {
+        if (currentWordIndex < currentWords.length - 1) {
+          currentWordIndex++;
+        } else {
+          currentWordIndex = 0; // Go back to the first word if at the end
+        }
+        showTranslation = false;
+        updateFlashcard();
+      });
+
+      backWordButton.addEventListener("click", () => {
+        if (currentWordIndex > 0) {
+          currentWordIndex--;
+        } else {
+          currentWordIndex = currentWords.length - 1; // Go to the last word if at the start
+        }
+        showTranslation = false;
         updateFlashcard();
       });
 
