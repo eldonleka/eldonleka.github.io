@@ -43,6 +43,7 @@ h1 {
 }
 
 button {
+  display: flex;
   margin-top: 20px;
   padding: 10px 20px;
   font-size: 1rem;
@@ -60,18 +61,4 @@ button:disabled {
 
 button:hover:not(:disabled) {
   background: #0056b3;
-}
-
-/* Container for the buttons */
-.button-container {
-  display: flex;
-  justify-content: space-between; /* Space buttons evenly */
-  gap: 10px; /* Optional: Adds space between the buttons */
-}
-
-/* Button styles (optional for appearance) */
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
 }
