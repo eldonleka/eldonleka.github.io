@@ -320,12 +320,6 @@ html {
     text-align: center;
  }
 
- .flashcard_box p {
-    font-size: 1.2rem;
-    margin: 0;
-    padding: 10px;
-    color: #333;
-  }
  
  .card--primary .card__header {
      background: var(--color-primary);
