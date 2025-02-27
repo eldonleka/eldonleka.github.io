@@ -307,6 +307,7 @@ html {
      padding: 2rem 3rem;
  }
  .flashcard_box {
+    margin: 100px;
     width: 300px;
     height: 200px;
     background: #ffffff;
