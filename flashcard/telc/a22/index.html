@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flashcards App</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>TELC A2.2</h1>
+    <div class="select-box" id="lesson-select">
+      <label for="lessons">Zgjidh leksionin: </label>
+      <select id="lessons">
+        <option value="1">Lektion 7</option>
+        <option value="2">Leksion 8</option>
+        <option value="3">Leksion 9</option>
+        <option value="4">Leksion 10</option>
+        <option value="5">Leksion 11</option>
+        <option value="6">Leksion 12</option>
+        <option value="7">lektion 13</option>
+      </select>
+    </div>
+
+    <div class="flashcard_box" id="flashcard">
+      <p id="flashcard-content">Click to reveal translation</p>
+    </div>
+
+    <div class="button-container">
+      <button id="back-word" class="btn btn--outline">Back</button>
+      <button id="mark-learned" class="btn btn--outline">Learned</button>
+      <button id="next-word" class="btn btn--outline">Next</button>
+    </div>
+
+    <script>
+      const lessons = {
+        1: [
+  { AL: "skuq (në vaj)", DE: "frittieren" },
+  { AL: "lasanja me perime", DE: "die Gemüselasagne" },
+  { AL: "me pika (dizajn)", DE: "gepunktet" },
+  { AL: "pjatë, gjellë", DE: "das Gericht" },
+  { AL: "me vija", DE: "gestreift" },
+  { AL: "i/e lëmuar", DE: "glatt" },
+  { AL: "kokë tullace", DE: "die Glatze" },
+  { AL: "ari", DE: "das Gold" },
+  { AL: "grek, greke", DE: "griechisch" },
+  { AL: "supë gulashe", DE: "die Gulaschsuppe" },
+  { AL: "rrip", DE: "der Gürtel" },
+  { AL: "kujdes për flokët", DE: "die Haarpflege" },
+  { AL: "pjata kryesore", DE: "das Hauptgericht" },
+  { AL: "kujdes për lëkurën", DE: "die Hautpflege" },
+  { AL: "i/e bukur, simpatik/e", DE: "hübsch" },
+  { AL: "kamera", DE: "die Kamera" },
+  { AL: "me katrorë", DE: "kariert" },
+  { AL: "kompliment", DE: "das Kompliment / die Komplimente" },
+  { AL: "kufje", DE: "der Kopfhörer" },
+  { AL: "çantë kozmetike", DE: "die Kosmetiktasche" },
+  { AL: "kravatë", DE: "die Krawatte" },
+  { AL: "pajisje kuzhine", DE: "das Küchengerät / die Küchengeräte" },
+  { AL: "vrapoj, ec", DE: "laufen" },
+  { AL: "ngjyra e preferuar", DE: "die Lieblingsfarbe" },
+  { AL: "me kaçurrela", DE: "lockig" },
+  { AL: "makijazh", DE: "das Make-up" },
+  { AL: "miu / maus kompjuteri", DE: "die Maus" },
+  { AL: "ujë mineral", DE: "das Mineralwasser" },
+  { AL: "dyqan veshjesh", DE: "das Modegeschäft" },
+  { AL: "bizhuteri mode", DE: "der Modeschmuck" },
+  { AL: "më vonë", DE: "nachher" },
+  { AL: "kozmetikë natyrale", DE: "die Naturkosmetik" },
+  { AL: "pajisje navigimi (GPS)", DE: "das Navigationsgerät / das Navi" }
+        ],
+        2: [
+          { AL: "Ashensor", DE: "der Aufzug" },
+          { AL: "Kutia postare", DE: "der Briefkasten" },
+          { AL: "Administrator i pallatit", DE: "der Hausmeister" },
+          { AL: "Oborr", DE: "der Hof" },
+          { AL: "Bodrum", DE: "der Keller" },
+          { AL: "Banese me qera", DE: "das Mietshaus" },
+          { AL: "Mbeturina", DE: "der Müll" },
+          { AL: "Kosha mbeturinash", DE: "die Mülltonne" },
+
+          { AL: "Dysheme", DE: "der Boden" },
+          { AL: "Tavan", DE: "die Decke" },
+          { AL: "Raft librash", DE: "das Regal" },
+          { AL: "Tapet", DE: "der Teppich" },
+          { AL: "Tualet", DE: "die Toilette" },
+          { AL: "Muri", DE: "die Wand" },
+          { AL: "te mobilosh / te dekorosh", DE: "ein-richten" },
+
+          { AL: "jashte", DE: "raus" },
+          { AL: "brenda", DE: "rein" },
+          { AL: "larte", DE: "rauf" },
+          { AL: "poshte", DE: "runter" },
+          { AL: "matane", DE: "rüber" },
+          { AL: "te dalesh jashte", DE: "raus-kommen" },
+          { AL: "te hysh brenda", DE: "rein-kommen" },
+          { AL: "te shkosh larte", DE: "rauf-kommen" },
+          { AL: "te zbresesh poshte", DE: "runter-kommen" },
+          { AL: "te kalosh ne anen tjeter", DE: "rüber-kommen" },
+
+          { AL: "Zyre", DE: "das Amt" },
+          { AL: "Telefonate", DE: "der Anruf" },
+          { AL: "Te lajmerosh", DE: "der Bescheid sagen" },
+          { AL: "Mace", DE: "die Katze" },
+          { AL: "Karroca e bebit", DE: "der Kinderwagen" },
+          { AL: "Kuti", DE: "die Kiste" },
+          { AL: "Pusull", DE: "die Mitteilung" },
+          { AL: "Rregull", DE: "die Ordnung" },
+          { AL: "Ne rregull", DE: "in Ordnung" },
+          { AL: "Bime", DE: "die Pflanze" },
+          { AL: "Plastike", DE: "das Plastik" },
+          { AL: "Energjia elektrike", DE: "der Strom" },
+          { AL: "Leter e vogel", DE: "der Zettel" },
+          { AL: "te vendosesh / te parkosh", DE: "ab-stellen" },
+          { AL: "te marresh borxh", DE: "aus-leihen" },
+          { AL: "te presesh", DE: "erwarten" },
+          { AL: "te ujisesh", DE: "gießen" },
+          { AL: "te varesh", DE: "hängen" },
+          { AL: "te shpresosh", DE: "hoffen" },
+          { AL: "te vendosesh ne pozicion te shtrire", DE: "legen" },
+          { AL: "te shqetesohesh", DE: "sorgen" },
+          { AL: "te vendosesh ne pozicion ne kembe", DE: "stellen" },
+          { AL: "te grindesh", DE: "streiten" },
+          { AL: "te ndahesh", DE: "getrennt" },
+          { AL: "te permisosh", DE: "verbessern" },
+          { AL: "te shperdorosh", DE: "verbrauchen" },
+          { AL: "te zgjosh", DE: "wecken" },
+          { AL: "te hedhesh / te flakesh tutje", DE: "hat weggeworfen" },
+          { AL: "te hedhesh", DE: "hat geworfen" },
+          { AL: "i inatosur", DE: "ärgerlich" },
+          { AL: "e paster", DE: "sauber" },
+          { AL: "te pastrosh", DE: "sauber machen" },
+          { AL: "e piset", DE: "schmutzig" },
+          { AL: "meqe ra fjala", DE: "übrigens" },
+        ],
+        3: [
+          { AL: "sa shpesh ? / kur ?", DE: "wie oft ? / wann ?" },
+          { AL: "gjithmone", DE: "immer" },
+          { AL: "thuajse gjithmone", DE: "fast immer" },
+          { AL: "me se shumti", DE: "meistens" },
+          { AL: "shpesh", DE: "oft" },
+          { AL: "ndonjehere", DE: "manchmal" },
+          { AL: "rralle", DE: "selten" },
+          { AL: "thuajse kurre", DE: "fast nie" },
+          { AL: "kurre", DE: "nie" },
+          { AL: "mengjeseve", DE: "morgens" },
+          { AL: "drekave", DE: "mittags" },
+          { AL: "mbremjeve", DE: "abends" },
+          { AL: "diteve te punes", DE: "werktags" },
+          { AL: "diteve te javes", DE: "wochentags" },
+
+          { AL: "gote plastike", DE: "der Becher" },
+          { AL: "pirun", DE: "die Gabel" },
+          { AL: "gote qelqi", DE: "das Glas" },
+          { AL: "kanuja / cajnia", DE: "die Kanne" },
+          { AL: "luge", DE: "der Löffel" },
+          { AL: "thike", DE: "das Messer" },
+          { AL: "tigan", DE: "die Pfanne" },
+          { AL: "tas", DE: "die Schüssel" },
+          { AL: "filxhan", DE: "die Tasse" },
+          { AL: "pjate", DE: "der Teller" },
+          { AL: "tenxhere", DE: "der Topf" },
+
+          { AL: "oreksi", DE: "der Appetit" },
+          { AL: "gjelle", DE: "das Gericht" },
+          { AL: "vakti", DE: "die Mahlzeit" },
+          { AL: "embelsire", DE: "die Nachspeise" },
+          { AL: "porcioni", DE: "die Portion" },
+          { AL: "receta", DE: "das Rezept" },
+          { AL: "fasule", DE: "die Bohne" },
+          { AL: "mish i pjekur", DE: "der Braten" },
+          { AL: "mjalte", DE: "der Honig" },
+          { AL: "marmalate", DE: "die Marmelade" },
+          { AL: "makarona", DE: "die Marmelade" },
+          { AL: "fruta te thata", DE: "die Nuss" },
+          { AL: "sheqer", DE: "der Zucker" },
+          { AL: "limon", DE: "die Zitrone" },
+          { AL: "te pjekesh", DE: "braten" },
+          { AL: "te presesh", DE: "schneiden" },
+          { AL: "yndyre", DE: "fett" },
+          { AL: "peshk i fresket", DE: "frisch" },
+          { AL: "me kripe", DE: "salzig" },
+          { AL: "e tharte", DE: "sauer" },
+          { AL: "djegese", DE: "scharf" },
+          { AL: "e embel", DE: "süß" },
+
+          { AL: "lloji", DE: "die Art" },
+          { AL: "djeta", DE: "die Diät" },
+          { AL: "mysafir", DE: "der Gast" },
+          { AL: "kamarier", DE: "der Kellner" },
+          { AL: "kenga", DE: "das Lied" },
+          { AL: "sasi", DE: "die Menge" },
+          { AL: "dyqan mishi", DE: "die Metzgerei" },
+          { AL: "Mish vici ", DE: "das Rind" },
+          { AL: "transmetim televiziv", DE: "die Sendung" },
+          { AL: "lavastovilje", DE: "die Spülmaschine" },
+          { AL: "bakshish", DE: "das Trinkgeld" },
+          { AL: "te lahesh", DE: "duschen" },
+          { AL: "te fitosh", DE: "gewinnen" },
+          { AL: "te prodhosh", DE: "her-stellen" },
+          { AL: "te lesh", DE: "lassen" },
+          { AL: "te sjellesh me vete", DE: "mit-bringen" },
+          { AL: "te hapesh", DE: "öffnen" },
+          { AL: "te provosh", DE: "probieren" },
+          { AL: "tjeter", DE: "anders" },
+          { AL: "i zene", DE: "besetzt" },
+          { AL: "brenda", DE: "drinnen" },
+          { AL: "i vetmuar", DE: "eigen" },
+          { AL: "sekret", DE: "geheim" },
+          { AL: "e veshtire", DE: "hart" },
+          { AL: "komike", DE: "komisch" },
+          { AL: "e nevojshme", DE: "nötig" },
+          { AL: "i ngopur", DE: "satt" },
+          { AL: "e cuditshme", DE: "seltsam" },
+          { AL: "tipike", DE: "typisch" },
+          { AL: "zgjuar", DE: "wach" },
+          { AL: "i bute", DE: "weich" },
+          { AL: "faktikisht", DE: "eigenlich" },
+          { AL: "po ashtu", DE: "genauso" },
+          { AL: "askush", DE: "nirgends" },
+          { AL: "teper", DE: "übrig" },
+        ],
+        4: [
+          { AL: "Zyre", DE: "das Büro" },
+          { AL: "Recepsion", DE: "der Empfang" },
+          { AL: "Export", DE: "der Export" },
+          { AL: "Fabrik", DE: "die Fabrik" },
+          { AL: "Import", DE: "der Import" },
+          { AL: "Mense / Kantine", DE: "die Kantine" },
+          { AL: "Makineri", DE: "die Maschine" },
+          { AL: "Material", DE: "das Material" },
+          { AL: "TVSH", DE: "die Mehrwertsteuer" },
+          { AL: "Produkt", DE: "das Produkt" },
+          { AL: "Fature", DE: "die Quittung" },
+          { AL: "Ore shtese", DE: "die Überstunde" },
+          { AL: "Jashte nderteses", DE: "außer Haus" },
+          { AL: "Te lidhesh", DE: "verbinden" },
+
+          { AL: "Gjera te pjekura", DE: "das Gebäck" },
+          { AL: "Çekiç", DE: "der Hammer" },
+          { AL: "Zejtar", DE: "der Handwerker" },
+          { AL: "Mjeshter", DE: "der Meister" },
+          { AL: "Gozhde", DE: "die Nagel" },
+          { AL: "te pjekesh", DE: "backen" },
+
+          { AL: "Drruri", DE: "das Holz" },
+          { AL: "Zogu", DE: "der Vogel" },
+          { AL: "Pylli", DE: "der Wald" },
+
+          { AL: "Mjekim", DE: "die Medikament" },
+          { AL: "Mendim", DE: "die Meinung" },
+          { AL: "Keshille", DE: "der Rat" },
+          { AL: "Simbol", DE: "das Symbol" },
+          { AL: "Pjese", DE: "der Teil" },
+          { AL: "Test", DE: "der Test" },
+          { AL: "Tipi / Lloji", DE: "der Typ" },
+          { AL: "te ofrosh", DE: "am-bieten" },
+          { AL: "te kyçesh", DE: "ab-schließen" },
+          { AL: "te shpenzosh", DE: "aus-geben" },
+          { AL: "te fikesh", DE: "aus-schalten" },
+          { AL: "te besh kujdes", DE: "beachten" },
+          { AL: "te vendosesh", DE: "entscheiden" },
+          { AL: "te dalesh", DE: "erkennen" },
+          { AL: "te ndjekesh", DE: "folgen" },
+          { AL: "te vesh re", DE: "merken" },
+          { AL: "te flasesh", DE: "reden" },
+          { AL: "te kursesh", DE: "sparen" },
+          { AL: "te lash", DE: "spülen" },
+          { AL: "te besdisesh", DE: "stören" },
+          { AL: "te perkthesh", DE: "übersetzen" },
+          { AL: "te zgjedhesh", DE: "wählen" },
+          { AL: "i ngjashem", DE: "ähnlich" },
+          { AL: "i dehur", DE: "betrunken" },
+          { AL: "mesatarisht", DE: "durchschnittlich" },
+          { AL: "te komplikuar", DE: "kompliziert" },
+          { AL: "e lehte", DE: "leicht" },
+          { AL: "e veshtire", DE: "schwierig" },
+          { AL: "gjithashtu", DE: "gleichfalls" },
+          { AL: "gjithsej", DE: "insgesamt" },
+          { AL: "secila", DE: "jede /r" },
+          { AL: "mundesisht", DE: "möglichst" },
+          { AL: "pasditeve", DE: "nachmittags" },
+          { AL: "neteve", DE: "nachts" },
+          { AL: "askush", DE: "niemand" },
+          { AL: "perpara", DE: "vorn" },
+          { AL: "teper shume", DE: "zu viel" },
+          { AL: "aq shume sa", DE: "so viel" },
+          { AL: "nese", DE: "wenn" },
+        ],
+        5: [
+          { AL: "aerobi", DE: "das Aerobics" },
+          { AL: "hokey ne ankull", DE: "das Eishockey" },
+          { AL: "gold", DE: "das Golf" },
+          { AL: "handboll", DE: "das Handball" },
+          { AL: "ping pong", DE: "das Tischtennis" },
+          { AL: "alpinizem / ngjitje", DE: "klettern" },
+          { AL: "te ngasesh snowboard", DE: "Snowboard fahren" },
+          { AL: "te lundrosh", DE: "seglen" },
+          { AL: "te ecesh", DE: "wandern" },
+
+          { AL: "te henave", DE: "montags" },
+          { AL: "te martave", DE: "dienstags" },
+          { AL: "te merkurave", DE: "mittwochs" },
+          { AL: "te enjteve", DE: "donnerstags" },
+          { AL: "te premteve", DE: "freitags" },
+          { AL: "te shtunave", DE: "samstags" },
+          { AL: "te djelave", DE: "sonntags" },
+
+          { AL: "perditshmeria", DE: "der Alltag" },
+          { AL: "thenje", DE: "die Aussage" },
+          { AL: "levizje", DE: "die Bewegung" },
+          { AL: "udhetim me autobus", DE: "die Bus (fahrt)" },
+          { AL: "rrezultat", DE: "das Ergebnis" },
+          { AL: "zemra", DE: "das Herz" },
+          { AL: "zhurma", DE: "der Lärm" },
+          { AL: "deshire / kenaqesi", DE: "die Lust (auf)" },
+          { AL: "te budallallek", DE: "der Quatsch" },
+          { AL: "sezoni", DE: "die Saison" },
+          { AL: "te perdoresh", DE: "benutzen" },
+          { AL: "te mendosh per", DE: "denken an" },
+          { AL: "te rekomandosh", DE: "empfehlen" },
+          { AL: "te bie poshte", DE: "runter(fallen)" },
+          { AL: "te ecesh", DE: "laufen" },
+          { AL: "te zgjidhesh", DE: "lösen" },
+          { AL: "te bashkohesh", DE: "mit-machen" },
+          { AL: "te vish", DE: "mit-kommen" },
+          { AL: "te acarohesh", DE: "sich ärgern (über)" },
+          { AL: "te qetsohesh", DE: "sich aus-ruhen" },
+          { AL: "te shperngulesh", DE: "sich aus-ziehen" },
+          { AL: "te ankohesh", DE: "sich beschweren (über)" },
+          { AL: "te levizesh", DE: "sich bewegen" },
+
+          { AL: "te kujtohesh", DE: "sich erinnern" },
+          { AL: "ushqehem mbahem me", DE: "sich ernähren" },
+          { AL: "te gezosh", DE: "sich freuen (auf)" },
+          { AL: "te ndjesh", DE: "sich fühlen" },
+          { AL: "te interesohesh", DE: "sich interessieren" },
+          { AL: "te perqendrohesh ne", DE: "sich konzentrieren" },
+          { AL: "te shtrihesh", DE: "sich legen" },
+          { AL: "te ulesh", DE: "sich setzen" },
+          { AL: "te takohesh me dike", DE: "sich verabreden (mit)" },
+          { AL: "te ngjitesh", DE: "steigen" },
+          { AL: "te enderrosh", DE: "träumen (von)" },
+          { AL: "te presesh per", DE: "warten (auf)" },
+          { AL: "te dergosh", DE: "(zu senden)" },
+          { AL: "i dobet", DE: "dünn" },
+          { AL: "i sinqerte", DE: "ehrlich" },
+          { AL: "larg", DE: "entfernt" },
+          { AL: "ne forme", DE: "fit" },
+          { AL: "falas", DE: "kostenlos" },
+          { AL: "rregullisht", DE: "regelmäßig" },
+          { AL: "i dobet", DE: "schwach" },
+          { AL: "e vetkuptueshme", DE: "selbst-ver-ständlich" },
+          { AL: "sportiv", DE: "sportlich" },
+          { AL: "e vertet", DE: "wahr" },
+          { AL: "disa", DE: "ein paar" },
+          { AL: "saktesisht", DE: "genau" },
+          { AL: "mjaft", DE: "genug" },
+          { AL: "e perfshire", DE: "inklusive" },
+          { AL: "mezi / mezor", DE: "kaum" },
+          { AL: "pastaj", DE: "nachher" },
+          { AL: "normalisht", DE: "normalerweise" },
+          { AL: "per", DE: "pro" },
+          { AL: "shume pak", DE: "zu wenig" },
+          { AL: "jashte funksionit", DE: "außer Betrieb" },
+        ],
+        6: [
+          { AL: "i punesuar", DE: "der Angestellte" },
+          { AL: "avokat", DE: "der Anwalt" },
+          { AL: "avokate", DE: "die Anwältin" },
+          { AL: "punedhenesi", DE: "der Arbeit-geber" },
+          { AL: "punemarresi", DE: "der Arbeit-nehmer" },
+          { AL: "vendi punes", DE: "Arbeits-platz" },
+          { AL: "praktikanti", DE: "der Auzbild-ende" },
+          { AL: "praktikantja", DE: "die Auzbild-ender" },
+          { AL: "fermer", DE: "der Bauer" },
+          { AL: "fermere", DE: "die Bäuerin" },
+          { AL: "aplikim", DE: "die Bewerbung" },
+          { AL: "heqja nga puna / largimi", DE: "die Kündigung" },
+          { AL: "mesim", DE: "die Lehre" },
+          { AL: "paga / rroga", DE: "der Lohn" },
+          { AL: "mekanik", DE: "der Mechaniker" },
+          { AL: "mekanika", DE: "die Mechanikerin" },
+          { AL: "aktor", DE: "der Schauspieler" },
+          { AL: "aktore", DE: "der Schau-spieler-in" },
+        ],
+        7: [
+          { AL: "pasagjer", DE: "Fahrgäste" },
+          { AL: "per shkak te", DE: "aufgrund" },
+          { AL: "defekt", DE: "Schaden" },
+          { AL: "koha mberritjes", DE: "Ankunftszeit  " },
+          { AL: "vonuar", DE: "verzögert" },
+          { AL: "jashte planit", DE: "außerplanmäßsig" },
+          { AL: "ne dispozicion", DE: "zur Verfügung" },
+
+
+        ]
+      };
+
+      const flashcard = document.getElementById("flashcard");
+      const flashcardContent = document.getElementById("flashcard-content");
+      const markLearnedButton = document.getElementById("mark-learned");
+      const nextWordButton = document.getElementById("next-word");
+      const backWordButton = document.getElementById("back-word");
+      const lessonsDropdown = document.getElementById("lessons");
+
+      let currentLesson = 1;
+      let currentWords = [...lessons[currentLesson]];
+      let currentWordIndex = 0;
+      let showTranslation = false;
+
+      function updateFlashcard() {
+        if (currentWords.length === 0) {
+          flashcardContent.textContent = "Ska me fjale te reja!";
+          markLearnedButton.disabled = true;
+          return;
+        }
+
+        const word = currentWords[currentWordIndex];
+        flashcardContent.textContent = showTranslation ? word.DE : word.AL;
+      }
+
+      flashcard.addEventListener("click", () => {
+        showTranslation = !showTranslation;
+        updateFlashcard();
+      });
+
+      markLearnedButton.addEventListener("click", () => {
+        currentWords.splice(currentWordIndex, 1);
+        showTranslation = false;
+        currentWordIndex = 0;
+        updateFlashcard();
+      });
+
+      nextWordButton.addEventListener("click", () => {
+        if (currentWordIndex < currentWords.length - 1) {
+          currentWordIndex++;
+        } else {
+          currentWordIndex = 0; // Go back to the first word if at the end
+        }
+        showTranslation = false;
+        updateFlashcard();
+      });
+
+      backWordButton.addEventListener("click", () => {
+        if (currentWordIndex > 0) {
+          currentWordIndex--;
+        } else {
+          currentWordIndex = currentWords.length - 1; // Go to the last word if at the start
+        }
+        showTranslation = false;
+        updateFlashcard();
+      });
+
+      lessonsDropdown.addEventListener("change", (event) => {
+        currentLesson = event.target.value;
+        currentWords = [...lessons[currentLesson]];
+        currentWordIndex = 0;
+        showTranslation = false;
+        markLearnedButton.disabled = false;
+        updateFlashcard();
+      });
+
+      // Initialize the first flashcard
+      updateFlashcard();
+    </script>
+  </body>
+</html>
