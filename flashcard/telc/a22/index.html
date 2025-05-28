@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>Flashcards App</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -34,6 +35,40 @@
     <script>
       const lessons = {
         1: [
+  { AL: "aksesorë", DE: "die Accessoires (Pl.)" },
+  { AL: "kam veshur", DE: "anhaben" },
+  { AL: "lëng molle me ujë me gaz", DE: "die Apfelschorle" },
+  { AL: "patëllxhan", DE: "die Aubergine / die Auberginen" },
+  { AL: "pajisje, vegla", DE: "die Ausrüstung" },
+  { AL: "produkte për bebe", DE: "der Babyartikel / die Babyartikel" },
+  { AL: "rrobat e banjës", DE: "die Badesachen (Pl.)" },
+  { AL: "mjekër", DE: "der Bart / die Bärte" },
+  { AL: "veshje", DE: "die Bekleidung" },
+  { AL: "me siguri, patjetër", DE: "bestimmt" },
+  { AL: "biond/e", DE: "blond" },
+  { AL: "pjek në tigan/furë", DE: "braten" },
+  { AL: "shëtis", DE: "bummeln" },
+  { AL: "ngjyrë shumëngjyrëshe", DE: "bunt" },
+  { AL: "kamping", DE: "das Camping" },
+  { AL: "këpurdhë", DE: "der Champignon / die Champignons" },
+  { AL: "suxhuk me salcë curry", DE: "die Currywurst" },
+  { AL: "zonjë", DE: "die Dame / die Damen" },
+  { AL: "brenda aty", DE: "darin" },
+  { AL: "i trashë", DE: "dick" },
+  { AL: "hajdut/e", DE: "der Dieb / die Diebin" },
+  { AL: "send, gjë", DE: "das Ding / die Dinge" },
+  { AL: "aromë, parfum", DE: "der Duft" },
+  { AL: "i hollë", DE: "dünn" },
+  { AL: "xhel për dush", DE: "das Duschgel" },
+  { AL: "nuk ka rëndësi", DE: "egal" },
+  { AL: "çift i martuar", DE: "das Ehepaar" },
+  { AL: "njëngjyrësh", DE: "einfarbig" },
+  { AL: "elektronikë", DE: "die Elektronik" },
+  { AL: "kaskë biçiklete", DE: "der Fahrradhelm" },
+  { AL: "fantastik", DE: "fantastisch" },
+  { AL: "ushqim i shpejtë", DE: "das Fast Food" },
+  { AL: "sandale plazhi", DE: "die Flipflops (Pl.)" },
+
   { AL: "skuq (në vaj)", DE: "frittieren" },
   { AL: "lasanja me perime", DE: "die Gemüselasagne" },
   { AL: "me pika (dizajn)", DE: "gepunktet" },
@@ -66,7 +101,49 @@
   { AL: "bizhuteri mode", DE: "der Modeschmuck" },
   { AL: "më vonë", DE: "nachher" },
   { AL: "kozmetikë natyrale", DE: "die Naturkosmetik" },
-  { AL: "pajisje navigimi (GPS)", DE: "das Navigationsgerät / das Navi" }
+  { AL: "pajisje navigimi (GPS)", DE: "das Navigationsgerät / das Navi" },
+
+    { AL: "furra", DE: "der Ofen" },
+  { AL: "vath / vathë", DE: "der Ohrring / die Ohrringe" },
+  { AL: "parfumeri", DE: "die Parfümerie" },
+  { AL: "tigan", DE: "die Pfanne" },
+  { AL: "papritur", DE: "plötzlich" },
+  { AL: "polic / police", DE: "der Polizist / die Polizistin" },
+  { AL: "djathë deleje", DE: "der Schafskäse" },
+  { AL: "djegës, i/e fortë", DE: "scharf" },
+  { AL: "shikoj", DE: "schauen" },
+  { AL: "vitrinë dyqani", DE: "das Schaufenster" },
+  { AL: "stil, elegant", DE: "schick" },
+  { AL: "i hollë, elegant", DE: "schlank" },
+  { AL: "bizhuteri", DE: "der Schmuck" },
+  { AL: "ofertë e mirë, kapje", DE: "das Schnäppchen" },
+  { AL: "schnitzel (mish i skuqur)", DE: "das Schnitzel" },
+  { AL: "mustaqe", DE: "der Schnurrbart" },
+  { AL: "ulërimë, britmë", DE: "der Schrei" },
+  { AL: "masa e këpucëve", DE: "die Schuhgröße" },
+  { AL: "pantallona të shkurtra", DE: "die Shorts" },
+  { AL: "argjend", DE: "das Silber" },
+  { AL: "snack, ushqim i lehtë", DE: "der Snack / die Snacks" },
+  { AL: "lodra", DE: "die Spielwaren (Pl.)" },
+  { AL: "steik", DE: "das Steak" },
+  { AL: "vjedh", DE: "stehlen" },
+  { AL: "çizme", DE: "der Stiefel / die Stiefel" },
+  { AL: "ëmbëlsira, të ëmbla", DE: "die Süßigkeiten" },
+  { AL: "tatuazh", DE: "das Tattoo / die Tattoos" },
+  { AL: "toster", DE: "der Toaster" },
+  { AL: "hungarez/e", DE: "ungarisch" },
+  { AL: "të brendshme", DE: "die Unterwäsche" },
+  { AL: "akullore me vanilje", DE: "das Vanilleeis" },
+  { AL: "vegetarian / vegetariane", DE: "der Vegetarier / die Vegetarierin" },
+  { AL: "vegetarian", DE: "vegetarisch" },
+
+  { AL: "ecje në natyrë, shëtitje malore", DE: "wandern" },
+  { AL: "këpucë për ecje malore", DE: "der Wanderschuh / die Wanderschuhe" },
+  { AL: "zgjues", DE: "der Wecker" },
+  { AL: "me të vërtetë", DE: "wirklich" },
+  { AL: "i/e mrekullueshëm", DE: "wunderbar" },
+  { AL: "përgatis ushqim", DE: "zubereiten" },
+  { AL: "kungull i njomë", DE: "die Zucchini" }
         ],
         2: [
           { AL: "Ashensor", DE: "der Aufzug" },
