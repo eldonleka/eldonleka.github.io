@@ -7,17 +7,17 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h1>Flashcards App</h1>
+    <h1>TELC A2.2</h1>
     <div class="select-box" id="lesson-select">
       <label for="lessons">Zgjidh leksionin: </label>
       <select id="lessons">
-        <option value="1">Leksion 1</option>
-        <option value="2">Leksion 2</option>
-        <option value="3">Leksion 3</option>
-        <option value="4">Leksion 4</option>
-        <option value="5">Leksion 5</option>
-        <option value="6">Leksion 6</option>
-        <option value="7"> TELC</option>
+        <option value="1">Lektion 7</option>
+        <option value="2">Leksion 8</option>
+        <option value="3">Leksion 9</option>
+        <option value="4">Leksion 10</option>
+        <option value="5">Leksion 11</option>
+        <option value="6">Leksion 12</option>
+        <option value="7">lektion 13</option>
       </select>
     </div>
 
@@ -34,62 +34,39 @@
     <script>
       const lessons = {
         1: [
-          { AL: "cift", DE: "das Ehepar" },
-          { AL: "nip / mbesa", DE: "das Enkelkind" },
-          { AL: "daje / xhaxha", DE: "der Onkel" },
-          { AL: "halle / teze", DE: "die Tante" },
-          { AL: "pas pak", DE: "Bis bald" },
-          { AL: "nip", DE: "der Neffe" },
-          { AL: "mbesa", DE: "die Nichte" },
-          { AL: "kushuri", DE: "der Cousin" },
-          { AL: "kushurira", DE: "die Cousine" },
-          { AL: "kunati", DE: "der Schwager" },
-          { AL: "kunata", DE: "die Schwägerin" },
-          { AL: "vjerrerit", DE: "Schwiegereltern" },
-          { AL: "vjerri", DE: "der Schwiegervater" },
-          { AL: "vjerra", DE: "die Schwiegermutter" },
-          { AL: "te aferm", DE: "der/die Verwandte" },
-
-          { AL: "familje e madhe", DE: "die Großfamilie" },
-          { AL: "familje e vogel", DE: "die Kleinfamilie" },
-          { AL: "i pa martuar", DE: "der Single" },
-          { AL: "bashkejetoj", DE: "zusammen-leben" },
-          { AL: "prind qe rrit femijen i vetem", DE: "allein erziehend" },
-          { AL: "jetoj i ndare", DE: "getrennt" },
-          { AL: "shtatezene", DE: "schwanger" },
-
-          { AL: "i lumtur", DE: "fröhlich" },
-          { AL: "i inatosur", DE: "sauer" },
-          { AL: "i merzitur", DE: "traurig" },
-          { AL: "cfat i keq", DE: "So ein Pech!" },
-          { AL: "cfare rastesie", DE: "So ein Zufall!" },
-          { AL: "sa turp", DE: "Wie peinlich" },
-
-          { AL: "dado / babysitter", DE: "Au-Pair-Mädchen" },
-          { AL: "rrote", DE: "das Rad" },
-          { AL: "kushtoj vemendje", DE: "Acht geben" },
-          { AL: "çpaketoj", DE: "Auspacken" },
-          { AL: "diskutoj", DE: "diskutieren" },
-          { AL: "te ze gjumi", DE: "ein-schlafen" },
-          { AL: "hyj ne banese", DE: "ein-ziehen" },
-          { AL: "te perjetosh", DE: "erleben" },
-          { AL: "te edukosh", DE: "erziehen" },
-          { AL: "te humbasesh nje mjet transporti", DE: "verpassen" },
-          { AL: "te kthehesh mbrapsht", DE: "zurück-fahren" },
-          { AL: "e rehatshme", DE: "bequem" },
-          { AL: "e pa rehatshme", DE: "unbequem" },
-          { AL: "i vetem", DE: "einzig" },
-          { AL: "vrapoj", DE: "Rennen" },
-          { AL: "edhe njehere", DE: "auf einmal" },
-          { AL: "si fillim njehere", DE: "erst einmal" },
-          { AL: "tashme eshte bere nje here ", DE: "schon einmal" },
-          { AL: "me ne fund", DE: "endlich" },
-          { AL: "ende jo", DE: "noch nie" },
-          { AL: "me shpesh", DE: "öfter" },
-          { AL: "si perfundim", DE: "schließlich" },
-          { AL: "te pakten", DE: "wenigstens" },
-          { AL: "te", DE: "bei" },
-          { AL: "sepse", DE: "weil" },
+  { AL: "skuq (në vaj)", DE: "frittieren" },
+  { AL: "lasanja me perime", DE: "die Gemüselasagne" },
+  { AL: "me pika (dizajn)", DE: "gepunktet" },
+  { AL: "pjatë, gjellë", DE: "das Gericht" },
+  { AL: "me vija", DE: "gestreift" },
+  { AL: "i/e lëmuar", DE: "glatt" },
+  { AL: "kokë tullace", DE: "die Glatze" },
+  { AL: "ari", DE: "das Gold" },
+  { AL: "grek, greke", DE: "griechisch" },
+  { AL: "supë gulashe", DE: "die Gulaschsuppe" },
+  { AL: "rrip", DE: "der Gürtel" },
+  { AL: "kujdes për flokët", DE: "die Haarpflege" },
+  { AL: "pjata kryesore", DE: "das Hauptgericht" },
+  { AL: "kujdes për lëkurën", DE: "die Hautpflege" },
+  { AL: "i/e bukur, simpatik/e", DE: "hübsch" },
+  { AL: "kamera", DE: "die Kamera" },
+  { AL: "me katrorë", DE: "kariert" },
+  { AL: "kompliment", DE: "das Kompliment / die Komplimente" },
+  { AL: "kufje", DE: "der Kopfhörer" },
+  { AL: "çantë kozmetike", DE: "die Kosmetiktasche" },
+  { AL: "kravatë", DE: "die Krawatte" },
+  { AL: "pajisje kuzhine", DE: "das Küchengerät / die Küchengeräte" },
+  { AL: "vrapoj, ec", DE: "laufen" },
+  { AL: "ngjyra e preferuar", DE: "die Lieblingsfarbe" },
+  { AL: "me kaçurrela", DE: "lockig" },
+  { AL: "makijazh", DE: "das Make-up" },
+  { AL: "miu / maus kompjuteri", DE: "die Maus" },
+  { AL: "ujë mineral", DE: "das Mineralwasser" },
+  { AL: "dyqan veshjesh", DE: "das Modegeschäft" },
+  { AL: "bizhuteri mode", DE: "der Modeschmuck" },
+  { AL: "më vonë", DE: "nachher" },
+  { AL: "kozmetikë natyrale", DE: "die Naturkosmetik" },
+  { AL: "pajisje navigimi (GPS)", DE: "das Navigationsgerät / das Navi" }
         ],
         2: [
           { AL: "Ashensor", DE: "der Aufzug" },
