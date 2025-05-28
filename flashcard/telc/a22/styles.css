@@ -13,7 +13,7 @@ html {
  --color-body: #918ca4;
  --color-body-darker:#5c5577;
  --color-border: #ccc;
- --border-radius: 30px;
+ --border-radius: 20px;
  }
  
  body {
@@ -185,7 +185,7 @@ html {
  
  /* Button */
  .btn {
-     border-radius: 30px;
+     border-radius: 20px;
      border: 0;
      cursor: pointer;
      font-size: 1.8rem;
@@ -669,7 +669,7 @@ html {
    }
 
    #lessons {
-    border-radius: 40px;
+    border-radius: 20px;
     border: 0;
     cursor: pointer;
     font-size: 1.5rem;
