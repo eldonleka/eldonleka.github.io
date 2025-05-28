@@ -104,3 +104,10 @@ ul li {
     header, h1, h2, h3, h4, .sidebar, p {
         font-size: 10px;
     }}
+
+@media screen and (min-width: 430) {
+  body {
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
+}
