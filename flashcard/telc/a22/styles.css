@@ -185,7 +185,7 @@ html {
  
  /* Button */
  .btn {
-     border-radius: 40px;
+     border-radius: 30px;
      border: 0;
      cursor: pointer;
      font-size: 1.8rem;
@@ -655,7 +655,7 @@ html {
    }
 
    .select-box {
-    border-radius: 40px;
+    border-radius: 30px;
     border: 0;
     cursor: pointer;
     font-size: 1.5rem;
