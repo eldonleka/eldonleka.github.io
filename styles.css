@@ -94,6 +94,8 @@ p {
 ul {
     margin: 5px 0;
     padding-left: 20px;
+    color: #666;
+    text-align: center;
 }
 
 ul li {
@@ -101,13 +103,7 @@ ul li {
 }
 
 @media screen and (max-width: 720px) {
-    header, h1, h2, h3, h4, .sidebar, p {
+    header, h1, h2, h3, h4,.sidebar, p, .ul {
         font-size: 10px;
-    }}
-
-@media screen and (min-width: 430) {
-  body {
-    transform: scale(0.8);
-    transform-origin: top center;
-  }
+    }
 }
