@@ -195,6 +195,8 @@ html {
      text-transform: uppercase;
      white-space: nowrap;
      margin: 1rem 0;
+     touch-action: manipulation; /* disable double tap zoom bug */
+
  } 
  
  *, *::after, *::before {
