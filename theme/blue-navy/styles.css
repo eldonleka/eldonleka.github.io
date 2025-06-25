@@ -1,5 +1,6 @@
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
@@ -15,20 +16,31 @@ body {
 
 .sidebar {
     width: 30%;
-    background: #f1f1f1;
+    background: #001f3f;
     padding: 20px;
     text-align: center;
+    color: white;
 }
 
 .sidebar img {
     width: 80%;
-    border-radius: 0%;
+    border-radius: 10px;
+    border: 1px solid #ffffff;
+    background-color: white;
 }
 
 .sidebar h2 {
     font-size: 18px;
     margin-top: 20px;
-    color: #333;
+    border-bottom: 1px solid #7FDBFF;
+    padding-bottom: 5px;
+}
+
+.sidebar p, .sidebar a {
+    font-size: 14px;
+    line-height: 1.6;
+    color: white;
+    text-decoration: none;
 }
 
 .sidebar ul {
@@ -48,7 +60,7 @@ body {
 
 header {
     text-align: center;
-    border-bottom: 2px solid #ddd;
+   /*border-bottom: 2px solid #ddd; */
     padding-bottom: 10px;
 }
 
@@ -58,15 +70,14 @@ header h1 {
 }
 
 header h3 {
-    font-size: 18px;
-    color: gray;
+    font-size: 20px;
+    color: black;
 }
 
 h4 {
     font-size: 12px;
     color: gray;
     font-weight: normal;
-    
 }
 
 section {
@@ -75,8 +86,8 @@ section {
 
 h2 {
     font-size: 20px;
-    color: #333;
-    border-bottom: 2px solid #ddd;
+    color: #001f3f;
+    border-bottom: 2px solid #0074D9;
     padding-bottom: 5px;
 }
 
@@ -87,7 +98,7 @@ h3 {
 
 p {
     font-size: 14px;
-    color: #666;
+    color: #555;
     margin: 5px 0;
 }
 
@@ -103,7 +114,21 @@ ul li {
 }
 
 @media screen and (max-width: 720px) {
-    header, h1, h2, h3, h4,.sidebar, p, .ul {
+    header, h1, h2, h3, h4, .sidebar, p, .ul {
         font-size: 10px;
     }
+}
+
+
+.sidebar i {
+    color: white;
+    margin-right: 6px;
+}
+
+
+.sidebar h2,
+.sidebar p,
+.sidebar a,
+.sidebar i {
+    color: white !important;
 }
