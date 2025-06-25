@@ -15,7 +15,7 @@ body {
 }
 
 .sidebar {
-    width: 30%;
+    width: 35%;
     background: #001f3f;
     padding: 20px;
     text-align: center;
@@ -54,7 +54,7 @@ body {
 }
 
 .content {
-    width: 70%;
+    width: 65%;
     padding: 30px;
 }
 
