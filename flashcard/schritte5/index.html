@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Flashcards App</title>
+    <link rel="stylesheet" href="/flashcard/styles.css" />
+  </head>
+  <body>
+    <h1>Schritte4</h1>
+    <div class="select-box" id="lesson-select">
+      <label for="lessons">Zgjidh leksionin: </label>
+      <select id="lessons">
+        <option value="1">Lektion 8</option>
+        <option value="2">Leksion 9</option>
+        <option value="3">Leksion 10</option>
+        <option value="4">Leksion 11</option>
+        <option value="5">Leksion 12</option>
+        <option value="6">Leksion 13</option>
+        <option value="7">lektion 14</option>
+      </select>
+    </div>
+
+    <div class="flashcard_box" id="flashcard">
+      <p id="flashcard-content">Click to reveal translation</p>
+    </div>
+
+    <div class="button-container">
+      <button id="back-word" class="btn btn--outline">Back</button>
+      <button id="mark-learned" class="btn btn--outline">Learned</button>
+      <button id="next-word" class="btn btn--outline">Next</button>
+    </div>
+
+    <script>
+      const lessons = {
+        1: [
+
+  { "AL": "Zoti", "DE": "der Gott" },
+  { "AL": "Kristianizmi", "DE": "das Christentum" },
+  { "AL": "Judaizmi", "DE": "das Judentum" },
+  { "AL": "Hinduizmi", "DE": "der Hinduismus" },
+  { "AL": "Islami", "DE": "der Islam" },
+  { "AL": "Liria", "DE": "die Freiheit" },
+  { "AL": "Katastrofa", "DE": "die Katastrophe" },
+  { "AL": "Vështirësia", "DE": "die Schwierigkeit" },
+  { "AL": "Fatkeqësia", "DE": "das Unglück" },
+  { "AL": "Besimi", "DE": "das Vertrauen" },
+  { "AL": "Rrufeja", "DE": "der Blitz" },
+  { "AL": "Qielli", "DE": "der Himmel" },
+  { "AL": "Livadhi", "DE": "die Wiese" },
+  { "AL": "Ndihma e shpejtë", "DE": "die Notaufnahme" },
+  { "AL": "Thirrja e emergjencës", "DE": "der Notruf" },
+  { "AL": "Lëndimi", "DE": "die Verletzung" },
+  { "AL": "rrëzohet", "DE": "stürzen, ist gestürzt" },
+  { "AL": "thyen diçka", "DE": "sich etwas brechen, brach, hat gebrochen" },
+  { "AL": "Vjedhësi", "DE": "der Dieb" },
+  { "AL": "Arratisja", "DE": "die Flucht" },
+  { "AL": "Polici", "DE": "der Polizist" },
+  { "AL": "Autori (i veprës)", "DE": "der Täter" },
+  { "AL": "Krimineli", "DE": "der Verbrecher" },
+  { "AL": "Çasti", "DE": "der Augenblick" },
+  { "AL": "Poeti", "DE": "der Dichter" },
+  { "AL": "Lindja", "DE": "die Geburt" },
+  { "AL": "Shpresa", "DE": "die Hoffnung" },
+  { "AL": "Patkua", "DE": "das (Huf)Eisen" },
+  { "AL": "Knelli", "DE": "der Knödel" },
+  { "AL": "Bagazhi (i makinës)", "DE": "der Kofferraum" },
+  { "AL": "Pudingu", "DE": "der Pudding" },
+  { "AL": "Titulli kryesor", "DE": "die Schlagzeile" },
+  { "AL": "Mbrojtja", "DE": "der Schutz" },
+  { "AL": "Pasqyra", "DE": "der Spiegel" },
+  { "AL": "Zëri", "DE": "die Stimme" }
+],
+        2: [
+{ AL: "objekti", DE: "der Gegenstand" },
+{ AL: "çështja", DE: "die Sache" },
+{ AL: "forma", DE: "die Form" },
+{ AL: "cilësia", DE: "die Qualität" },
+
+{ AL: "takëmet", DE: "das Besteck" },
+{ AL: "ekrani", DE: "der Bildschirm" },
+{ AL: "divani", DE: "die Couch" },
+{ AL: "televizori", DE: "das Fernsehgerät" },
+{ AL: "figura", DE: "die Figur" },
+{ AL: "enët (për kuzhinë)", DE: "das Geschirr" },
+{ AL: "kamera", DE: "die Kamera" },
+{ AL: "sistemi muzikor", DE: "die Musikanlage" },
+{ AL: "sipërfaqja e tavolinës", DE: "die Tischplatte" },
+{ AL: "tryeza e punës", DE: "der Schreibtisch" },
+{ AL: "fotelja", DE: "der Sessel" },
+{ AL: "lodrat", DE: "das Spielzeug" },
+{ AL: "zgjimi / ora me zile", DE: "der Wecker" },
+
+{ AL: "çorapja", DE: "die Socke" },
+{ AL: "pëlhura / materiali", DE: "der Stoff" },
+{ AL: "çorap i gjatë", DE: "der Strumpf" },
+{ AL: "nëpërmjet / përmes", DE: "durch" },
+{ AL: "i hollë / i imët", DE: "fein" },
+{ AL: "plus", DE: "Plus" },
+{ AL: "i ulët", DE: "niedrig" },
+{ AL: "i thellë", DE: "tief" },
+
+{ AL: "hekurudha", DE: "die Eisenbahn" },
+{ AL: "elektrik-", DE: "Elektro-" },
+{ AL: "kujtesa", DE: "die Erinnerung" },
+{ AL: "garancia", DE: "die Garantie" },
+{ AL: "që", DE: "dass" },
+{ AL: "gazi", DE: "das Gas" },
+{ AL: "fati", DE: "das Glück" },
+{ AL: "sjell fat", DE: "Glück bringen" },
+{ AL: "ka sjellë", DE: "hat gebracht" },
+{ AL: "arsyeja", DE: "der Grund" },
+{ AL: "lëkura", DE: "die Haut" },
+{ AL: "intervista", DE: "das Interview" },
+
+{ AL: "marr kredi", DE: "der Kredit aufnehmen" },
+{ AL: "metali", DE: "das Metall" },
+{ AL: "ushqimet", DE: "das Nahrungsmittel" },
+{ AL: "titulli (kryesor)", DE: "die Überschrift" },
+{ AL: "shtyrja", DE: "die Verschiebung" },
+{ AL: "më fal", DE: "Verzeihung" },
+{ AL: "të kesh mendim për", DE: "halten von" },
+{ AL: "të veprosh / të tregtosh", DE: "handeln" },
+{ AL: "ka vepruar / ka tregtuar", DE: "hat gehandelt" },
+{ AL: "përputhet / është e saktë", DE: "stimmen" },
+{ AL: "ka përputhur / ka qenë e saktë", DE: "hat gestimmt" },
+{ AL: "elektrik", DE: "elektrisch" },
+{ AL: "disa", DE: "manche" },
+{ AL: "atëherë (në atë kohë)", DE: "damals" },
+{ AL: "përpara ka mundësi / ndoshta", DE: "wahrscheinlich" },
+{ AL: "fshehurazi", DE: "heimlich" },
+{ AL: "kujti?", DE: "wem" },
+{ AL: "kur (në të kaluarën)", DE: "als" },
+{ AL: "aq... sa", DE: "so... wie" }
+  ],
+        3: [
+{ AL: "dërgues", DE: "der Absender" },
+{ AL: "marrës", DE: "der Empfänger" },
+{ AL: "komunikim", DE: "die Kommunikation" },
+{ AL: "mesazh (SMS)", DE: "die SMS" },
+{ AL: "paketë e vogël", DE: "das Päckchen" },
+{ AL: "zgjat (koha)", DE: "verlängern, hat verlängert" },
+{ AL: "emërtim", DE: "die Bezeichnung" },
+{ AL: "DVD player", DE: "der DVD-Player" },
+{ AL: "grip", DE: "die Grippe" },
+{ AL: "çantë dore", DE: "die Handtasche" },
+{ AL: "katalog", DE: "der Katalog" },
+{ AL: "konferencë", DE: "die Konferenz" },
+{ AL: "kontinent", DE: "der Kontinent" },
+{ AL: "shënim", DE: "die Notiz" },
+{ AL: "i preferuari", DE: "der Liebling" },
+{ AL: "keqkuptim", DE: "das Missverständnis" },
+{ AL: "portofol", DE: "das Portemonnaie" },
+{ AL: "pastrim", DE: "die Reinigung" },
+{ AL: "rrufë", DE: "der Schnupfen" },
+{ AL: "sekondë", DE: "die Sekunde" },
+{ AL: "kompani", DE: "die Firma" },
+{ AL: "dallim", DE: "der Unterschied" },
+{ AL: "ekzaminim, kontroll mjekësor", DE: "die Untersuchung" },
+{ AL: "kontratë", DE: "der Vertrag" },
+{ AL: "paragjykim", DE: "das Vorurteil" },
+{ AL: "klikoj", DE: "anklicken" },
+{ AL: "i kërkoj dikujt diçka", DE: "auffordern" },
+{ AL: "kërkoj falje", DE: "sich entschuldigen" },
+{ AL: "siguroj, blej për vete", DE: "sich besorgen, hat sich besorgt" },
+{ AL: "e thyer", DE: "gebrochen" },
+{ AL: "ka sjellë", DE: "hat gebracht" },
+{ AL: "tingëllon (zile)", DE: "klingeln, hat geklingelt" },
+{ AL: "marr, fitoj", DE: "kriegen, hat gekriegt" },
+{ AL: "dërgoj (mallra)", DE: "liefern, hat geliefert" },
+{ AL: "përdor, shfrytëzoj", DE: "nützen, hat genützt" },
+{ AL: "testoj", DE: "testen, hat getestet" },
+{ AL: "transportoj", DE: "transportieren, hat transportiert" },
+
+{ AL: "premtoj", DE: "versprechen, du versprichst, er verspricht, hat versprochen" },
+{ AL: "peshoj", DE: "wiegen, hat gewogen" },
+{ AL: "aktual, i përditësuar", DE: "aktuell" },
+{ AL: "i qepur", DE: "angenäht" },
+{ AL: "qartë", DE: "deutlich" },
+{ AL: "drejtpërdrejt", DE: "direkt" },
+{ AL: "s’ka rëndësi", DE: "egal" },
+{ AL: "tmerrshëm", DE: "furchtbar" },
+{ AL: "pozitiv", DE: "positiv" },
+{ AL: "i tmerrshëm", DE: "schrecklich" },
+{ AL: "tolerant", DE: "tolerant" },
+{ AL: "i çmendur", DE: "verrückt" },
+{ AL: "shpesh", DE: "häufig" },
+{ AL: "ngjitur, në krah", DE: "nebenan" },
+{ AL: "papritur", DE: "plötzlich" },
+{ AL: "mjaft (shumë, goxha)", DE: "ziemlich" },
+        ],
+        4: [
+{ AL: "bateri", DE: "die Batterie" },
+{ AL: "benzinë", DE: "das Benzin" },
+{ AL: "naftë", DE: "der Diesel" },
+{ AL: "rrugë njëkahëshe", DE: "die Einbahnstraße" },
+{ AL: "stacioni i fundit", DE: "die Endstation" },
+{ AL: "këmbësor", DE: "der Fußgänger" },
+{ AL: "zonë për këmbësorë", DE: "die Fußgängerzone" },
+{ AL: "garazh", DE: "die Garage" },
+{ AL: "targë", DE: "das Kennzeichen" },
+{ AL: "automjet", DE: "das KFZ (Kraftfahrzeug)" },
+{ AL: "zile", DE: "die Klingel" },
+{ AL: "motor", DE: "der Motor" },
+{ AL: "defekt", DE: "die Panne" },
+{ AL: "automjet privat", DE: "der PKW (Personenkraftwagen)" },
+{ AL: "gomë", DE: "der Reifen" },
+{ AL: "nisje", DE: "der Start" },
+{ AL: "trafik i dendur / bllokim", DE: "der Stau" },
+{ AL: "pikë karburanti", DE: "die Tankstelle" },
+{ AL: "pjesëmarrës në trafik", DE: "der Verkehrsteilnehmer" },
+{ AL: "trafik", DE: "der Verkehr" },
+{ AL: "makinë", DE: "der Wagen" },
+{ AL: "servis", DE: "die Werkstatt" },
+{ AL: "vegla pune", DE: "das Werkzeug" },
+{ AL: "kthehem (me makinë)", DE: "abbiegen, ist abgebogen" },
+{ AL: "frenoj", DE: "bremsen, hat gebremst" },
+{ AL: "ulem (me avion)", DE: "landen, ist gelandet" },
+{ AL: "nisem (me avion, makinë)", DE: "starten, ist gestartet" },
+{ AL: "hedh karburant", DE: "tanken, hat getankt" },
+{ AL: "parakaloj", DE: "überholen, hat überholt" },
+{ AL: "akull", DE: "das Eis" },
+{ AL: "stuhi me vetëtima", DE: "das Gewitter" },
+{ AL: "mjegull", DE: "der Nebel" },
+{ AL: "borë", DE: "der Schnee" },
+{ AL: "re stuhie", DE: "die Sturmwolke" },
+{ AL: "i akullt", DE: "eisig" },
+{ AL: "i pafavorshëm", DE: "widrig" },
+{ AL: "me mjegull", DE: "neblig" },
+{ AL: "me shi", DE: "regnerisch" },
+{ AL: "me diell", DE: "sonnig" },
+{ AL: "me stuhi", DE: "stürmisch" },
+{ AL: "me erë", DE: "windig" },
+{ AL: "me re", DE: "wolkig" },
+{ AL: "i rrëshqitshëm (rrugë e akullt)", DE: "glatt" },
+{ AL: "i freskët", DE: "kühl" },
+{ AL: "i lagësht", DE: "nass" },
+
+{ AL: "urë", DE: "die Brücke" },
+{ AL: "kryetar bashkie", DE: "der Bürgermeister" },
+{ AL: "një javë", DE: "eine Woche" },
+{ AL: "lumë", DE: "der Fluss" },
+{ AL: "rreth (administrativ)", DE: "der Kreis" },
+{ AL: "siguri", DE: "die Sicherheit" },
+{ AL: "situatë", DE: "die Situation" },
+{ AL: "gjuhë (pl)", DE: "die Sprachen pl" },
+{ AL: "shkollë", DE: "die Schule" },
+{ AL: "brigje, breg lumit", DE: "das Ufer" },
+
+{ AL: "përshkruaj", DE: "beschreiben, hat beschrieben" },
+{ AL: "konstatoj", DE: "feststellen, hat festgestellt" },
+{ AL: "kontrolloj", DE: "prüfen, hat geprüft" },
+{ AL: "parandaloj", DE: "verhindern, hat verhindert" },
+{ AL: "ndryshoj, ndërroj", DE: "wechseln, hat gewechselt" },
+{ AL: "ia dal mbanë", DE: "zurechtkommen, ist zurechtgekommen" },
+
+{ AL: "i fuqishëm", DE: "kräftig" },
+{ AL: "i pamëshirshëm", DE: "rücksichtslos" },
+
+{ AL: "nëpër", DE: "durch" },
+{ AL: "gjatë", DE: "entlang" },
+{ AL: "prandaj", DE: "deshalb" },
+{ AL: "për shkak të", DE: "wegen" },
+{ AL: "kundër tij/saj", DE: "dagegen" },
+{ AL: "pro, në favor të", DE: "dafür" },
+{ AL: "të jesh", DE: "sein" },
+{ AL: "më parë", DE: "vorher" },
+{ AL: "patjetër", DE: "auf jeden Fall" }
+        
+      ],
+      };
+
+      const flashcard = document.getElementById("flashcard");
+      const flashcardContent = document.getElementById("flashcard-content");
+      const markLearnedButton = document.getElementById("mark-learned");
+      const nextWordButton = document.getElementById("next-word");
+      const backWordButton = document.getElementById("back-word");
+      const lessonsDropdown = document.getElementById("lessons");
+
+      let currentLesson = 1;
+      let currentWords = [...lessons[currentLesson]];
+      let currentWordIndex = 0;
+      let showTranslation = false;
+
+      function updateFlashcard() {
+        if (currentWords.length === 0) {
+          flashcardContent.textContent = "Ska me fjale te reja!";
+          markLearnedButton.disabled = true;
+          return;
+        }
+
+        const word = currentWords[currentWordIndex];
+        flashcardContent.textContent = showTranslation ? word.DE : word.AL;
+      }
+
+      flashcard.addEventListener("click", () => {
+        showTranslation = !showTranslation;
+        updateFlashcard();
+      });
+
+      markLearnedButton.addEventListener("click", () => {
+        currentWords.splice(currentWordIndex, 1);
+        showTranslation = false;
+        currentWordIndex = 0;
+        updateFlashcard();
+      });
+
+      nextWordButton.addEventListener("click", () => {
+        if (currentWordIndex < currentWords.length - 1) {
+          currentWordIndex++;
+        } else {
+          currentWordIndex = 0; // Go back to the first word if at the end
+        }
+        showTranslation = false;
+        updateFlashcard();
+      });
+
+      backWordButton.addEventListener("click", () => {
+        if (currentWordIndex > 0) {
+          currentWordIndex--;
+        } else {
+          currentWordIndex = currentWords.length - 1; // Go to the last word if at the start
+        }
+        showTranslation = false;
+        updateFlashcard();
+      });
+
+      lessonsDropdown.addEventListener("change", (event) => {
+        currentLesson = event.target.value;
+        currentWords = [...lessons[currentLesson]];
+        currentWordIndex = 0;
+        showTranslation = false;
+        markLearnedButton.disabled = false;
+        updateFlashcard();
+      });
+
+      // Initialize the first flashcard
+      updateFlashcard();
+    </script>
+  </body>
+</html>
