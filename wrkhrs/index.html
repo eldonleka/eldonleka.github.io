@@ -112,12 +112,17 @@
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
 
+    function normalizeDate(dateStr){
+      const d = new Date(dateStr);
+      return isNaN(d) ? null : d.toISOString().slice(0,10);
+    }
+
     function calculateHours() {
       if (!startInput.value || !endInput.value) return;
       const [sh, sm] = startInput.value.split(':').map(Number);
       const [eh, em] = endInput.value.split(':').map(Number);
       let diff = (eh * 60 + em) - (sh * 60 + sm);
-      if (diff < 0) diff += 24 * 60; // handles overnight shifts
+      if (diff < 0) diff += 24 * 60;
       const hours = (diff / 60).toFixed(2);
       calcHours.value = hours;
       return parseFloat(hours);
@@ -143,11 +148,13 @@
 
     form.onsubmit = e => {
       e.preventDefault();
-      const date = dateInput.value;
+      const date = normalizeDate(dateInput.value);
+      if (!date) return alert("Invalid date");
       const start = startInput.value;
       const end = endInput.value;
       const hours = calculateHours();
-      if (!date || !start || !end || isNaN(hours)) return;
+      if (!start || !end || isNaN(hours)) return;
+
       if (editingId) {
         entries = entries.map(x => x.id === editingId ? {id:editingId, date, start, end, hours} : x);
         editingId = null;
@@ -200,7 +207,10 @@
         const lines=reader.result.split(/\r?\n/).slice(1);
         for(const l of lines){
           const [id,date,start,end,hours]=l.split(',');
-          if(date && hours) entries.push({id:id||Date.now().toString(),date,start,end,hours:parseFloat(hours)});
+          const normalizedDate = normalizeDate(date);
+          if(normalizedDate && hours){
+            entries.push({id:id||Date.now().toString(),date:normalizedDate,start,end,hours:parseFloat(hours)});
+          }
         }
         save(); render();
       };
@@ -214,12 +224,14 @@
     function updateSummaries(){
       const rate=parseFloat(rateInput.value);
       const today=new Date();
-      const currentMonthStr=today.toISOString().slice(0,7);
-      const lastMonthDate=new Date(today.getFullYear(),today.getMonth()-1,1);
-      const lastMonthStr=lastMonthDate.toISOString().slice(0,7);
+
+      const currentMonthStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}`;
+      const lastMonthDate = new Date(today.getFullYear(), today.getMonth()-1, 1);
+      const lastMonthStr = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth()+1).padStart(2,'0')}`;
 
       const currentHours=totalHoursInMonth(currentMonthStr);
       const lastHours=totalHoursInMonth(lastMonthStr);
+
       document.getElementById('currentMonthHours').textContent=`${currentHours.toFixed(2)} hrs`;
       document.getElementById('currentMonthAmount').textContent=`${(currentHours*rate).toFixed(2)} €`;
       document.getElementById('lastMonthHours').textContent=`${lastHours.toFixed(2)} hrs`;
