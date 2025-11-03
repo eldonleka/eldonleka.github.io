@@ -1,32 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work Hours Tracker</title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; margin: 0; padding: 10px; }
-    .container { max-width: 700px; margin: auto; background: linear-gradient(135deg, #ffffff, #e0f2fe); padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h1 { text-align: center; color: #1e3a8a; }
-    form { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 15px; }
-    label { font-weight: bold; font-size: 0.9em; color: #1e3a8a; }
-    input, button { padding: 8px; border-radius: 8px; border: 1px solid #bbb; font-size: 1em; }
-    button { background-color: #1e3a8a; color: white; cursor: pointer; transition: 0.2s; }
-    button:hover { background-color: #3b82f6; }
-    .btn-red { background-color: #dc2626; }
-    .btn-red:hover { background-color: #ef4444; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
-    th, td { padding: 8px; border-top: 1px solid #ccc; text-align: left; }
-    th { background-color: #93c5fd; color: #1e3a8a; }
-    .summary-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 15px; }
-    .summary-box { background: #e0f2fe; padding: 10px; border-radius: 10px; text-align: center; }
-    .summary-box strong { display: block; margin-bottom: 5px; color: #1e3a8a; }
-    @media (max-width: 430px) {
-      form { grid-template-columns: 1fr; }
-      .summary-grid { grid-template-columns: 1fr; }
-      table { font-size: 0.8em; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Hours Tracker</title>
+
+<!-- Make it installable on iPhone -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Work Hours">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAACXBIWXMAAAsSAAALEgHS3X78AAAAg0lEQVRoge3YwQnAIAxDUXf/p7szEoMiJkBOb7kZgkHB2hzj42kAABAgQIECBAgAABAgT8E9uOtTbuqY4Dn1dX3VqVt6E+DBAgQIAAAQIECBAgAABAgT8z8UexuNwAEqvW3xAv7VC3+s0AwQIECBAgAABAgQIECBAgMDfDgHjVZ7vP0kAAAAASUVORK5CYII=">
+
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; margin: 0; padding: 10px; }
+  .container { max-width: 700px; margin: auto; background: linear-gradient(135deg, #ffffff, #e0f2fe); padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+  h1 { text-align: center; color: #1e3a8a; }
+  form { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 15px; }
+  label { font-weight: bold; font-size: 0.9em; color: #1e3a8a; }
+  input, button { padding: 8px; border-radius: 8px; border: 1px solid #bbb; font-size: 1em; width: 100%; box-sizing: border-box; }
+  button { background-color: #1e3a8a; color: white; cursor: pointer; transition: 0.2s; }
+  button:hover { background-color: #3b82f6; }
+  .btn-red { background-color: #dc2626; }
+  .btn-red:hover { background-color: #ef4444; }
+  table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+  th, td { padding: 8px; border-top: 1px solid #ccc; text-align: left; }
+  th { background-color: #93c5fd; color: #1e3a8a; }
+  .summary-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 15px; }
+  .summary-box { background: #e0f2fe; padding: 10px; border-radius: 10px; text-align: center; }
+  .summary-box strong { display: block; margin-bottom: 5px; color: #1e3a8a; }
+  @media (max-width: 430px) {
+    form { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr; }
+    table { font-size: 0.8em; }
+  }
+</style>
 </head>
 <body>
   <div class="container">
@@ -34,29 +41,12 @@
     <p>Rate: <span id="rateDisplay">16.7</span> € / hour</p>
 
     <form id="entryForm">
-      <div>
-        <label>Date</label><br>
-        <input type="date" id="dateInput" required>
-      </div>
-      <div>
-        <label>Start Time</label><br>
-        <input type="time" id="startInput" required>
-      </div>
-      <div>
-        <label>End Time</label><br>
-        <input type="time" id="endInput" required>
-      </div>
-      <div>
-        <label>Rate (€)</label><br>
-        <input type="number" step="0.01" min="0" id="rateInput" value="16.7">
-      </div>
-      <div>
-        <label>Calculated Hours</label><br>
-        <input type="text" id="calcHours" readonly style="background:#f3f4f6;">
-      </div>
-      <div style="align-self:end;">
-        <button type="submit" id="submitBtn">Add Entry</button>
-      </div>
+      <div><label>Date</label><input type="date" id="dateInput" required></div>
+      <div><label>Start Time</label><input type="time" id="startInput" required></div>
+      <div><label>End Time</label><input type="time" id="endInput" required></div>
+      <div><label>Rate (€)</label><input type="number" step="0.01" min="0" id="rateInput" value="16.7"></div>
+      <div><label>Hours</label><input type="text" id="calcHours" readonly style="background:#f3f4f6;"></div>
+      <div style="align-self:end;"><button type="submit" id="submitBtn">Add Entry</button></div>
     </form>
 
     <div style="margin-bottom:10px; display:flex; flex-wrap:wrap; gap:10px;">
@@ -87,172 +77,29 @@
     </div>
 
     <h2>Entries</h2>
-    <table id="entriesTable">
-      <thead>
-        <tr><th>Date</th><th>Start</th><th>End</th><th>Hours</th><th>Amount (€)</th><th>Actions</th></tr>
-      </thead>
+    <table>
+      <thead><tr><th>Date</th><th>Start</th><th>End</th><th>Hours</th><th>Amount (€)</th><th>Actions</th></tr></thead>
       <tbody id="entriesBody"></tbody>
     </table>
   </div>
 
-  <script>
-    const STORAGE_KEY = 'work-hours-html';
-    let entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    let editingId = null;
-
-    const form = document.getElementById('entryForm');
-    const dateInput = document.getElementById('dateInput');
-    const startInput = document.getElementById('startInput');
-    const endInput = document.getElementById('endInput');
-    const rateInput = document.getElementById('rateInput');
-    const rateDisplay = document.getElementById('rateDisplay');
-    const calcHours = document.getElementById('calcHours');
-    const tbody = document.getElementById('entriesBody');
-    const filterMonth = document.getElementById('filterMonth');
-
-    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
-
-    function normalizeDate(dateStr){
-      const d = new Date(dateStr);
-      return isNaN(d) ? null : d.toISOString().slice(0,10);
-    }
-
-    function calculateHours() {
-      if (!startInput.value || !endInput.value) return;
-      const [sh, sm] = startInput.value.split(':').map(Number);
-      const [eh, em] = endInput.value.split(':').map(Number);
-      let diff = (eh * 60 + em) - (sh * 60 + sm);
-      if (diff < 0) diff += 24 * 60;
-      const hours = (diff / 60).toFixed(2);
-      calcHours.value = hours;
-      return parseFloat(hours);
-    }
-
-    startInput.oninput = calculateHours;
-    endInput.oninput = calculateHours;
-
-    function render() {
-      tbody.innerHTML = '';
-      const rate = parseFloat(rateInput.value);
-      entries.sort((a,b)=>a.date.localeCompare(b.date));
-      for (const e of entries) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${e.date}</td><td>${e.start}</td><td>${e.end}</td><td>${e.hours}</td><td>${(e.hours*rate).toFixed(2)}</td>
-          <td><button onclick="editEntry('${e.id}')">Edit</button>
-          <button onclick="deleteEntry('${e.id}')" class='btn-red'>Delete</button></td>`;
-        tbody.appendChild(tr);
-      }
-      updateSummaries();
-      rateDisplay.textContent = rate.toFixed(2);
-    }
-
-    form.onsubmit = e => {
-      e.preventDefault();
-      const date = normalizeDate(dateInput.value);
-      if (!date) return alert("Invalid date");
-      const start = startInput.value;
-      const end = endInput.value;
-      const hours = calculateHours();
-      if (!start || !end || isNaN(hours)) return;
-
-      if (editingId) {
-        entries = entries.map(x => x.id === editingId ? {id:editingId, date, start, end, hours} : x);
-        editingId = null;
-        document.getElementById('submitBtn').textContent = 'Add Entry';
-      } else {
-        entries.push({ id: Date.now().toString(), date, start, end, hours });
-      }
-      save();
-      render();
-      form.reset();
-      calcHours.value = '';
-    };
-
-    function editEntry(id) {
-      const e = entries.find(x=>x.id===id);
-      if (!e) return;
-      dateInput.value = e.date;
-      startInput.value = e.start;
-      endInput.value = e.end;
-      calcHours.value = e.hours;
-      editingId = id;
-      document.getElementById('submitBtn').textContent = 'Update';
-    }
-
-    function deleteEntry(id) {
-      if (!confirm('Delete this entry?')) return;
-      entries = entries.filter(x=>x.id!==id);
-      save();
-      render();
-    }
-
-    document.getElementById('clearAllBtn').onclick = ()=>{
-      if (!confirm('Clear all entries?')) return;
-      entries=[]; save(); render();
-    };
-
-    document.getElementById('exportBtn').onclick = ()=>{
-      const header='id,date,start,end,hours\n';
-      const rows=entries.map(e=>`${e.id},${e.date},${e.start},${e.end},${e.hours}`).join('\n');
-      const blob=new Blob([header+rows],{type:'text/csv'});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url; a.download='work-hours.csv'; a.click(); URL.revokeObjectURL(url);
-    };
-
-    document.getElementById('importFile').onchange = e=>{
-      const file=e.target.files[0]; if(!file) return;
-      const reader=new FileReader();
-      reader.onload=()=>{
-        const lines=reader.result.split(/\r?\n/).slice(1);
-        for(const l of lines){
-          const [id,date,start,end,hours]=l.split(',');
-          const normalizedDate = normalizeDate(date);
-          if(normalizedDate && hours){
-            entries.push({id:id||Date.now().toString(),date:normalizedDate,start,end,hours:parseFloat(hours)});
-          }
-        }
-        save(); render();
-      };
-      reader.readAsText(file);
-    };
-
-    function totalHoursInMonth(yyyyMm){
-      return entries.filter(e=>e.date.slice(0,7)===yyyyMm).reduce((s,x)=>s+parseFloat(x.hours),0);
-    }
-
-    function updateSummaries(){
-      const rate=parseFloat(rateInput.value);
-      const today=new Date();
-
-      const currentMonthStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}`;
-      const lastMonthDate = new Date(today.getFullYear(), today.getMonth()-1, 1);
-      const lastMonthStr = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth()+1).padStart(2,'0')}`;
-
-      const currentHours=totalHoursInMonth(currentMonthStr);
-      const lastHours=totalHoursInMonth(lastMonthStr);
-
-      document.getElementById('currentMonthHours').textContent=`${currentHours.toFixed(2)} hrs`;
-      document.getElementById('currentMonthAmount').textContent=`${(currentHours*rate).toFixed(2)} €`;
-      document.getElementById('lastMonthHours').textContent=`${lastHours.toFixed(2)} hrs`;
-      document.getElementById('lastMonthAmount').textContent=`${(lastHours*rate).toFixed(2)} €`;
-
-      const payday=new Date(today.getFullYear(),today.getMonth(),15);
-      if(today>payday) payday.setMonth(payday.getMonth()+1);
-      document.getElementById('upcomingPayday').textContent=`Payday: ${payday.toISOString().slice(0,10)}`;
-
-      const fMonth=filterMonth.value;
-      if(fMonth){
-        const fh=totalHoursInMonth(fMonth);
-        document.getElementById('filterHours').textContent=`${fh.toFixed(2)} hrs`;
-        document.getElementById('filterAmount').textContent=`${(fh*rate).toFixed(2)} €`;
-      }
-    }
-
-    filterMonth.onchange=updateSummaries;
-    rateInput.oninput=updateSummaries;
-
-    render();
-  </script>
+<script>
+const STORAGE_KEY='work-hours-html';let entries=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');let editingId=null;
+const form=document.getElementById('entryForm'),dateInput=document.getElementById('dateInput'),startInput=document.getElementById('startInput'),endInput=document.getElementById('endInput'),rateInput=document.getElementById('rateInput'),rateDisplay=document.getElementById('rateDisplay'),calcHours=document.getElementById('calcHours'),tbody=document.getElementById('entriesBody'),filterMonth=document.getElementById('filterMonth');
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));}
+function normalizeDate(d){const n=new Date(d);return isNaN(n)?null:n.toISOString().slice(0,10);}
+function calculateHours(){if(!startInput.value||!endInput.value)return;const[sh,sm]=startInput.value.split(':').map(Number);const[eh,em]=endInput.value.split(':').map(Number);let diff=(eh*60+em)-(sh*60+sm);if(diff<0)diff+=24*60;const h=(diff/60).toFixed(2);calcHours.value=h;return parseFloat(h);}
+startInput.oninput=endInput.oninput=calculateHours;
+function render(){tbody.innerHTML='';const rate=parseFloat(rateInput.value);entries.sort((a,b)=>a.date.localeCompare(b.date));for(const e of entries){const tr=document.createElement('tr');tr.innerHTML=`<td>${e.date}</td><td>${e.start}</td><td>${e.end}</td><td>${e.hours}</td><td>${(e.hours*rate).toFixed(2)}</td><td><button onclick="editEntry('${e.id}')">Edit</button> <button onclick="deleteEntry('${e.id}')" class='btn-red'>Delete</button></td>`;tbody.appendChild(tr);}updateSummaries();rateDisplay.textContent=rate.toFixed(2);}
+form.onsubmit=e=>{e.preventDefault();const d=normalizeDate(dateInput.value);if(!d)return alert('Invalid date');const s=startInput.value,en=endInput.value,h=calculateHours();if(!s||!en||isNaN(h))return;if(editingId){entries=entries.map(x=>x.id===editingId?{id:editingId,date:d,start:s,end:en,hours:h}:x);editingId=null;document.getElementById('submitBtn').textContent='Add Entry';}else{entries.push({id:Date.now().toString(),date:d,start:s,end:en,hours:h});}save();render();form.reset();calcHours.value='';};
+function editEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;dateInput.value=e.date;startInput.value=e.start;endInput.value=e.end;calcHours.value=e.hours;editingId=id;document.getElementById('submitBtn').textContent='Update';}
+function deleteEntry(id){if(!confirm('Delete this entry?'))return;entries=entries.filter(x=>x.id!==id);save();render();}
+document.getElementById('clearAllBtn').onclick=()=>{if(!confirm('Clear all entries?'))return;entries=[];save();render();};
+document.getElementById('exportBtn').onclick=()=>{const header='id,date,start,end,hours\n';const rows=entries.map(e=>`${e.id},${e.date},${e.start},${e.end},${e.hours}`).join('\n');const blob=new Blob([header+rows],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='work-hours.csv';a.click();URL.revokeObjectURL(url);};
+document.getElementById('importFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const lines=r.result.split(/\r?\n/).slice(1);for(const l of lines){const[id,d,s,en,h]=l.split(',');const nd=normalizeDate(d);if(nd&&h){entries.push({id:id||Date.now().toString(),date:nd,start:s,end:en,hours:parseFloat(h)});}}save();render();};r.readAsText(f);};
+function totalHoursInMonth(m){return entries.filter(e=>e.date.slice(0,7)===m).reduce((s,x)=>s+parseFloat(x.hours),0);}
+function updateSummaries(){const rate=parseFloat(rateInput.value);const t=new Date();const cm=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;const lmD=new Date(t.getFullYear(),t.getMonth()-1,1);const lm=`${lmD.getFullYear()}-${String(lmD.getMonth()+1).padStart(2,'0')}`;const ch=totalHoursInMonth(cm);const lh=totalHoursInMonth(lm);document.getElementById('currentMonthHours').textContent=`${ch.toFixed(2)} hrs`;document.getElementById('currentMonthAmount').textContent=`${(ch*rate).toFixed(2)} €`;document.getElementById('lastMonthHours').textContent=`${lh.toFixed(2)} hrs`;document.getElementById('lastMonthAmount').textContent=`${(lh*rate).toFixed(2)} €`;const payday=new Date(t.getFullYear(),t.getMonth(),15);if(t>payday)payday.setMonth(payday.getMonth()+1);document.getElementById('upcomingPayday').textContent=`Payday: ${payday.toISOString().slice(0,10)}`;const fm=filterMonth.value;if(fm){const fh=totalHoursInMonth(fm);document.getElementById('filterHours').textContent=`${fh.toFixed(2)} hrs`;document.getElementById('filterAmount').textContent=`${(fh*rate).toFixed(2)} €`;}}
+filterMonth.onchange=rateInput.oninput=updateSummaries;render();
+</script>
 </body>
 </html>
