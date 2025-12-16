@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scores</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(to right, #667eea, #764ba2);
+      color: #fff;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    input, button, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4ade80;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .team {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+    .log {
+      background-color: rgba(255, 255, 255, 0.1);
+      margin-top: 10px;
+      border-radius: 10px;
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .winner {
+      background: #10b981;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Scores</h1>
+    <div id="setup">
+      <input type="number" id="numTeams" placeholder="Sa ekipe do luajnë?" min="2" max="10" />
+      <button onclick="setupTeams()">Vazhdo</button>
+    </div>
+    <div id="teamForm" style="display: none;"></div>
+    <div id="gameArea" style="display: none;">
+      <h2>Shto Pikë</h2>
+      <input type="number" id="pointLimit" placeholder="Limiti i pikëve për të fituar" />
+      <div id="scoreInputs"></div>
+      <button onclick="addScores()">Shto Pikë</button>
+      <div id="scoreboard"></div>
+      <div class="log" id="log"></div>
+      <div id="winnerBox"></div>
+    </div>
+  </div>
+
+  <script>
+    let teams = [];
+    let scores = {};
+    let pointLimit = 0;
+
+    function setupTeams() {
+      const num = parseInt(document.getElementById('numTeams').value);
+      if (isNaN(num) || num < 2) return alert('Vendosni të paktën 2 ekipe.');
+      const teamForm = document.getElementById('teamForm');
+      teamForm.innerHTML = '';
+      for (let i = 0; i < num; i++) {
+        teamForm.innerHTML += `<input type="text" id="team${i}" placeholder="Emri i ekipit ${i + 1}" />`;
+      }
+      teamForm.innerHTML += '<button onclick="startGame()">Fillo Lojën</button>';
+      teamForm.style.display = 'block';
+      document.getElementById('setup').style.display = 'none';
+    }
+
+    function startGame() {
+      const num = parseInt(document.getElementById('numTeams').value);
+      teams = [];
+      scores = {};
+      document.getElementById('scoreInputs').innerHTML = '';
+      for (let i = 0; i < num; i++) {
+        const name = document.getElementById(`team${i}`).value || `Ekipi ${i + 1}`;
+        teams.push(name);
+        scores[name] = 0;
+        document.getElementById('scoreInputs').innerHTML += `
+          <div class="team">
+            <span>${name}</span>
+            <input type="number" id="scoreInput${i}" placeholder="Shto pikë" />
+          </div>
+        `;
+      }
+      document.getElementById('gameArea').style.display = 'block';
+      document.getElementById('teamForm').style.display = 'none';
+      updateScoreboard();
+    }
+
+    function addScores() {
+      pointLimit = parseInt(document.getElementById('pointLimit').value);
+      if (isNaN(pointLimit) || pointLimit <= 0) return alert('Vendosni një limit pikësh.');
+      let log = document.getElementById('log');
+      let now = new Date().toLocaleString();
+      teams.forEach((team, i) => {
+        const input = document.getElementById(`scoreInput${i}`);
+        const val = parseInt(input.value);
+        if (!isNaN(val) && val > 0) {
+          scores[team] += val;
+          const entry = document.createElement('div');
+          entry.textContent = `${now} - ${team} mori ${val} pikë.`;
+          log.prepend(entry);
+        }
+        input.value = '';
+      });
+      updateScoreboard();
+      checkWinner();
+    }
+
+    function updateScoreboard() {
+      const board = document.getElementById('scoreboard');
+      board.innerHTML = '<h2>Rezultatet</h2>';
+      teams.forEach(team => {
+        board.innerHTML += `<div class="team"><span>${team}</span><strong>${scores[team]}</strong></div>`;
+      });
+    }
+
+    function checkWinner() {
+      teams.forEach(team => {
+        if (scores[team] >= pointLimit && pointLimit > 0) {
+          document.getElementById('winnerBox').innerHTML = `<div class='winner'>🏆 ${team} fitoi lojën!</div>`;
+          document.querySelectorAll('input[type="number"]').forEach(input => input.disabled = true);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
