@@ -86,6 +86,27 @@
 <script>
 const STORAGE_KEY='work-hours-html';let entries=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');let editingId=null;
 const form=document.getElementById('entryForm'),dateInput=document.getElementById('dateInput'),startInput=document.getElementById('startInput'),endInput=document.getElementById('endInput'),rateInput=document.getElementById('rateInput'),rateDisplay=document.getElementById('rateDisplay'),calcHours=document.getElementById('calcHours'),tbody=document.getElementById('entriesBody'),filterMonth=document.getElementById('filterMonth');
+
+// Set default date and times on page load
+function setDefaultDateTime() {
+  const now = new Date();
+  
+  // Default date = today
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  dateInput.value = `${yyyy}-${mm}-${dd}`;
+  
+  // Default start and end times
+  startInput.value = '09:30';
+  endInput.value = '16:30';
+  
+  calculateHours(); // Update hours field
+}
+
+// Call it on page load
+setDefaultDateTime();
+
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));}
 function normalizeDate(d){const n=new Date(d);return isNaN(n)?null:n.toISOString().slice(0,10);}
 function calculateHours(){if(!startInput.value||!endInput.value)return;const[sh,sm]=startInput.value.split(':').map(Number);const[eh,em]=endInput.value.split(':').map(Number);let diff=(eh*60+em)-(sh*60+sm);if(diff<0)diff+=24*60;const h=(diff/60).toFixed(2);calcHours.value=h;return parseFloat(h);}
