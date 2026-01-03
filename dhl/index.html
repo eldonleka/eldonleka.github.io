@@ -1,111 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DHL Barcode Creator</title>
+<script>
+  function generateBarcode(value) {
+    const raw = value || document.getElementById('trackingInput').value;
+    const number = raw.replace(/[^0-9]/g, '');
 
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    if (!number) return;
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 16px;
-      background: #f5f5f5;
-    }
-    h1 {
-      font-size: 1.4rem;
-      text-align: center;
-    }
-    input, button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 12px;
-      font-size: 1rem;
-    }
-    button {
-      background: #ffcc00;
-      border: none;
-      font-weight: bold;
-    }
-    #barcode {
-      margin-top: 24px;
-      background: #fff;
-      padding: 16px;
-    }
-    video {
-      width: 100%;
-      margin-top: 12px;
-      border-radius: 8px;
-    }
-  </style>
-</head>
+    JsBarcode('#barcode', number, {
+      format: 'CODE128',
+      width: 2,
+      height: 80,
+      displayValue: true
+    });
+  }
 
-<body>
-  <h1>DHL Paket Barcode Creator</h1>
+  async function startScan() {
+    const video = document.getElementById('video');
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+    video.srcObject = stream;
 
-  <input id="trackingInput" placeholder="DHL Sendungsnummer" />
-  <button onclick="generateBarcode()">Generate Barcode</button>
+    const startTime = Date.now();
+    const MAX_TIME = 7000; // total scan time (ms)
 
-  <button onclick="startScan()">Scan Sendungsnummer (OCR)</button>
-  <video id="video" autoplay playsinline></video>
-
-  <svg id="barcode"></svg>
-
-  <script>
-    // Always generate barcode – no blocking validation
-    function generateBarcode(value) {
-      const raw = value ?? document.getElementById('trackingInput').value;
-      const number = raw.replace(/[^A-Za-z0-9]/g, '');
-
-      if (!number.length) {
-        alert('Please enter a Sendungsnummer');
+    async function tryScan() {
+      // give camera time to focus
+      if (video.videoWidth === 0) {
+        setTimeout(tryScan, 500);
         return;
       }
 
-      JsBarcode('#barcode', number, {
-        format: 'CODE128',
-        width: 2,
-        height: 80,
-        displayValue: true
-      });
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+
+      const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
+      const cleaned = text.replace(/\s+/g, '');
+
+      // DHL logic: prefer exact 20 digits
+      let match =
+        cleaned.match(/\b\d{20}\b/) ||
+        cleaned.match(/\b\d{14,20}\b/);
+
+      if (match) {
+        stream.getTracks().forEach(t => t.stop());
+        trackingInput.value = match[0];
+        generateBarcode(match[0]);
+        return;
+      }
+
+      // retry until time runs out
+      if (Date.now() - startTime < MAX_TIME) {
+        setTimeout(tryScan, 800);
+      } else {
+        stream.getTracks().forEach(t => t.stop());
+        alert('Could not detect Sendungsnummer. Hold steady and try again.');
+      }
     }
 
-    // OCR scan with DHL-specific logic
-    async function startScan() {
-      const video = document.getElementById('video');
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-      video.srcObject = stream;
-
-      // short delay so camera can focus
-      setTimeout(async () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-
-        stream.getTracks().forEach(track => track.stop());
-
-        const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
-        const cleaned = text.replace(/\s+/g, '');
-
-        // DHL logic:
-        // 1) Prefer EXACT 20 digits
-        // 2) Fallback 14–20 digits
-        let match = cleaned.match(/\b\d{20}\b/) ||
-                    cleaned.match(/\b\d{14,20}\b/);
-
-        if (match) {
-          trackingInput.value = match[0];
-          generateBarcode(match[0]);
-        } else {
-          alert('No DHL Sendungsnummer detected');
-        }
-      }, 1500);
-    }
-  </script>
-</body>
-</html>
+    // initial autofocus delay
+    setTimeout(tryScan, 1500);
+  }
+</script>
