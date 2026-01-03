@@ -1,3 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DHL Barcode Creator</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      background: #f5f5f5;
+    }
+    h1 {
+      font-size: 1.4rem;
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 1rem;
+    }
+    button {
+      background: #ffcc00;
+      border: none;
+      font-weight: bold;
+    }
+    #barcode {
+      margin-top: 24px;
+      background: #fff;
+      padding: 16px;
+    }
+    video {
+      width: 100%;
+      margin-top: 12px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>DHL Paket Barcode Creator</h1>
+
+  <input id="trackingInput" placeholder="DHL Sendungsnummer" />
+  <button onclick="generateBarcode()">Generate Barcode</button>
+
+  <button onclick="startScan()">Scan Sendungsnummer (OCR)</button>
+  <video id="video" autoplay playsinline></video>
+
+  <svg id="barcode"></svg>
+
 <script>
   function generateBarcode(value) {
     const raw = value || document.getElementById('trackingInput').value;
@@ -63,3 +118,5 @@
     setTimeout(tryScan, 1500);
   }
 </script>
+</body>
+</html>
