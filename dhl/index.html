@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DHL Barcode Creator</title>
+
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,13 +37,15 @@
     video {
       width: 100%;
       margin-top: 12px;
+      border-radius: 8px;
     }
   </style>
 </head>
+
 <body>
   <h1>DHL Paket Barcode Creator</h1>
 
-  <input id="trackingInput" placeholder="Enter DHL Sendungsnummer" />
+  <input id="trackingInput" placeholder="DHL Sendungsnummer" />
   <button onclick="generateBarcode()">Generate Barcode</button>
 
   <button onclick="startScan()">Scan Sendungsnummer (OCR)</button>
@@ -50,44 +54,57 @@
   <svg id="barcode"></svg>
 
   <script>
+    // Always generate barcode – no blocking validation
     function generateBarcode(value) {
-      const number = value || document.getElementById('trackingInput').value.trim();
-      if (!/^\\d{10,20}$/.test(number)) {
-        alert('Invalid DHL Sendungsnummer');
+      const raw = value ?? document.getElementById('trackingInput').value;
+      const number = raw.replace(/[^A-Za-z0-9]/g, '');
+
+      if (!number.length) {
+        alert('Please enter a Sendungsnummer');
         return;
       }
+
       JsBarcode('#barcode', number, {
         format: 'CODE128',
-        lineColor: '#000',
         width: 2,
         height: 80,
         displayValue: true
       });
     }
 
+    // OCR scan with DHL-specific logic
     async function startScan() {
       const video = document.getElementById('video');
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
       video.srcObject = stream;
 
+      // short delay so camera can focus
       setTimeout(async () => {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
+        canvas.getContext('2d').drawImage(video, 0, 0);
 
         stream.getTracks().forEach(track => track.stop());
 
         const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
-        const match = text.replace(/\s/g, '').match(/\d{10,20}/);
+        const cleaned = text.replace(/\s+/g, '');
+
+        // DHL logic:
+        // 1) Prefer EXACT 20 digits
+        // 2) Fallback 14–20 digits
+        let match = cleaned.match(/\b\d{20}\b/) ||
+                    cleaned.match(/\b\d{14,20}\b/);
+
         if (match) {
-          document.getElementById('trackingInput').value = match[0];
+          trackingInput.value = match[0];
           generateBarcode(match[0]);
         } else {
-          alert('No Sendungsnummer detected');
+          alert('No DHL Sendungsnummer detected');
         }
-      }, 2000);
+      }, 1500);
     }
   </script>
 </body>
