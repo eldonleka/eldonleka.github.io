@@ -1,96 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sq">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Inventory & Sales App</title>
-<link rel="stylesheet" href="style.css">
+
+<!-- CSS -->
+<style>
+body{font-family:Arial;margin:0;background:#f4f6fb}
+header{background:#1976d2;color:#fff;padding:15px;text-align:center}
+nav{display:flex;gap:5px;padding:10px;background:#e3e9f4}
+nav button{flex:1;padding:10px;border:none;border-radius:5px;background:#1976d2;color:#fff}
+section{display:none;padding:15px}
+input,select,button{width:100%;padding:10px;margin:5px 0}
+table{width:100%;border-collapse:collapse}
+td,th{border:1px solid #ccc;padding:6px}
+#qr-reader{width:100%}
+</style>
+
+<!-- LIBRARIES (CDN – punojnë në GitHub Pages) -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 <body>
 
 <header>
-<h1>Inventory & Sales App</h1>
+<h2>Inventory & Sales App</h2>
 </header>
 
-<div id="passwordScreen" class="container">
-<h2>Enter Master Password</h2>
-<input id="masterPass" type="password" placeholder="Create or Enter Password">
-<button onclick="checkPassword()">Submit</button>
-</div>
-
-<div id="appScreen" class="container">
-
 <nav>
-<button onclick="showSection('import')">Hyrje Malli</button>
-<button onclick="showSection('sales')">Dalje / Shitje</button>
-<button onclick="showSection('clients')">Klientët</button>
-<button onclick="showSection('inventory')">Inventory</button>
-<button onclick="showSection('backup')">Backup / Import</button>
+<button onclick="show('import')">Hyrje</button>
+<button onclick="show('sale')">Shitje</button>
+<button onclick="show('clients')">Klientë</button>
+<button onclick="show('inventory')">Stok</button>
 </nav>
 
-<!-- Hyrje Malli -->
-<div id="import" class="section">
-<h2>Hyrje Malli</h2>
-QR / Kod: <input id="qr"><button onclick="startScan('import')">Scan QR</button><br>
-Emri Produkti: <input id="prodName"><br>
-Sasia: <input id="prodQty" type="number"><br>
-<button onclick="addProduct()">Shto Produkt</button>
-</div>
+<section id="import">
+<h3>Hyrje Malli</h3>
+<input id="iQR" placeholder="QR / Kod">
+<input id="iName" placeholder="Emri produktit">
+<input id="iQty" type="number" placeholder="Sasia">
+<button onclick="addProduct()">Ruaj</button>
+<div id="qr-reader"></div>
+</section>
 
-<!-- Dalje / Shitje -->
-<div id="sales" class="section">
-<h2>Dalje / Shitje</h2>
-Zgjidh Klientin: <input id="clientSearch" placeholder="Search..."><br>
-<select id="saleClient"></select><br>
-QR / Kod Produkti: <input id="saleQR"><button onclick="startScan('sale')">Scan QR</button><br>
-Sasia: <input id="saleQty" type="number"><br>
-Çmimi per copë: <input id="salePrice" type="number"><br>
-<button onclick="addSaleItem()">Shto Artikull</button>
+<section id="sale">
+<h3>Shitje</h3>
+<select id="saleClient"></select>
+<input id="sQR" placeholder="QR Produkti">
+<input id="sQty" type="number" placeholder="Sasia">
+<input id="sPrice" type="number" placeholder="Çmimi">
+<button onclick="addSale()">Shto</button>
+<button onclick="finishSale()">PDF Faturë</button>
+</section>
 
-<h3>Artikujt për këtë shitje</h3>
-<table id="saleTable">
-<tr><th>QR</th><th>Emri</th><th>Sasi</th><th>Çmimi</th></tr>
-</table>
-<button onclick="completeSale()">Gjenero Faturë PDF</button>
-</div>
+<section id="clients">
+<h3>Klient i Ri</h3>
+<input id="cName" placeholder="Emri">
+<input id="cNIPT" placeholder="NIPT">
+<button onclick="addClient()">Ruaj</button>
+</section>
 
-<!-- Klientët -->
-<div id="clients" class="section">
-<h2>Regjistro Klient</h2>
-Emri: <input id="clientName"><br>
-Adresa: <input id="clientAddress"><br>
-NIPT / ID: <input id="clientNIPT"><br>
-Telefon: <input id="clientPhone"><br>
-<button onclick="addClient()">Shto Klient</button>
+<section id="inventory">
+<h3>Inventory</h3>
+<table id="inv"></table>
+</section>
 
-<h3>Lista e Klientëve</h3>
-<input id="clientFilter" placeholder="Filter klientët..."><br>
-<table id="clientTable">
-<tr><th>Emri</th><th>Adresa</th><th>NIPT</th><th>Telefon</th></tr>
-</table>
-</div>
+<script>
+let data = JSON.parse(localStorage.getItem("data")) || {products:[],clients:[]}
+let saleItems=[]
 
-<!-- Inventory -->
-<div id="inventory" class="section">
-<h2>Inventory / Stoku</h2>
-<input id="productFilter" placeholder="Filter produktet..."><br>
-<table id="inventoryTable">
-<tr><th>QR</th><th>Emri</th><th>Stock</th></tr>
-</table>
-</div>
+function save(){localStorage.setItem("data",JSON.stringify(data))}
 
-<!-- Backup / Import -->
-<div id="backup" class="section">
-<h2>Export / Import</h2>
-<button onclick="exportData()">Export JSON (Encrypted)</button><br>
-<input type="file" id="fileInput" onchange="importData(event)">
-</div>
+function show(id){
+document.querySelectorAll("section").forEach(s=>s.style.display="none")
+document.getElementById(id).style.display="block"
+if(id==="sale")loadClients()
+if(id==="inventory")loadInventory()
+}
 
-<script src="crypto-js.min.js"></script>
-<script src="jspdf.umd.min.js"></script>
-<script src="html5-qrcode.min.js"></script>
-<script src="app.js"></script>
-<script src="qrscan.js"></script>
+function addProduct(){
+let p=data.products.find(x=>x.qr===iQR.value)
+if(p)p.qty+=+iQty.value
+else data.products.push({qr:iQR.value,name:iName.value,qty:+iQty.value})
+save();alert("OK")
+}
+
+function addClient(){
+if(data.clients.find(c=>c.nipt===cNIPT.value))return alert("Ekziston")
+data.clients.push({name:cName.value,nipt:cNIPT.value})
+save();alert("OK")
+}
+
+function loadClients(){
+saleClient.innerHTML=""
+data.clients.forEach(c=>{
+let o=document.createElement("option")
+o.value=c.nipt;o.text=c.name
+saleClient.appendChild(o)
+})
+}
+
+function addSale(){
+let p=data.products.find(x=>x.qr===sQR.value)
+if(!p||p.qty<sQty.value)return alert("Gabim stok")
+p.qty-=+sQty.value
+saleItems.push({name:p.name,qty:+sQty.value,price:+sPrice.value})
+save();alert("Shtuar")
+}
+
+function finishSale(){
+const {jsPDF}=window.jspdf
+let d=new jsPDF();let y=20,total=0
+saleItems.forEach(i=>{
+d.text(`${i.name} ${i.qty} x ${i.price}`,10,y)
+total+=i.qty*i.price;y+=7
+})
+d.text("TOTAL: "+total+"€",10,y+10)
+d.save("fature.pdf")
+saleItems=[]
+}
+
+function loadInventory(){
+inv.innerHTML="<tr><th>Produkt</th><th>Sasi</th></tr>"
+data.products.forEach(p=>{
+inv.innerHTML+=`<tr><td>${p.name}</td><td>${p.qty}</td></tr>`
+})
+}
+
+/* QR */
+const qr=new Html5Qrcode("qr-reader")
+qr.start({facingMode:"environment"},{fps:10,qrbox:250},
+txt=>{iQR.value=txt;sQR.value=txt})
+
+show("import")
+</script>
 
 </body>
 </html>
