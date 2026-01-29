@@ -123,9 +123,9 @@ saleItems=[]
 }
 
 function loadInventory(){
-inv.innerHTML="<tr><th>Produkt</th><th>Sasi</th></tr>"
+inv.innerHTML="<tr><th>Code</th><th>Produkt</th><th>Sasi</th></tr>"
 data.products.forEach(p=>{
-inv.innerHTML+=`<tr><td>${p.name}</td><td>${p.qty}</td></tr>`
+inv.innerHTML+=`<tr><td>${p.qr}</td><td>${p.name}</td><td>${p.qty}</td></tr>`
 })
 }
 
