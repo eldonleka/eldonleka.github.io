@@ -132,7 +132,27 @@ inv.innerHTML+=`<tr><td>${p.qr}</td><td>${p.name}</td><td>${p.qty}</td></tr>`
 /* QR */
 const qr=new Html5Qrcode("qr-reader")
 qr.start({facingMode:"environment"},{fps:10,qrbox:250},
-txt=>{iQR.value=txt;sQR.value=txt})
+txt => {
+
+  // nëse je te hyrja e mallit
+  if(document.getElementById("import").style.display === "block"){
+    iQR.value = txt;
+  }
+
+  // nëse je te shitja
+  if(document.getElementById("sale").style.display === "block"){
+    sQR.value = txt;
+
+    // 🔍 gjej produktin automatikisht
+    let p = data.products.find(x => x.qr === txt);
+    if(p){
+      sQty.placeholder = "Max: " + p.qty;
+    } else {
+      alert("Produkti nuk ekziston në stok");
+    }
+  }
+
+})
 
 show("import")
 </script>
