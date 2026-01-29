@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventory v1.1</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+
+<body>
+
+<header>Inventory v1.1</header>
+
+<div id="passwordScreen">
+<input id="masterPass" placeholder="Master Password">
+<button onclick="checkPassword()">Hyr</button>
+</div>
+
+<div id="appScreen">
+
+<nav>
+<button onclick="showSection('import')">Hyrje</button>
+<button onclick="showSection('sales')">Shitje</button>
+<button onclick="showSection('clients')">Klientë</button>
+<button onclick="showSection('inventory')">Stok</button>
+</nav>
+
+<section id="import">
+<h3>Hyrje Malli</h3>
+<input id="qr">
+<input id="prodName">
+<input id="prodQty" type="number">
+<button onclick="addProduct()">Ruaj</button>
+<div id="qr-reader"></div>
+</section>
+
+<section id="sales">
+<h3>Shitje</h3>
+<select id="saleClient"></select>
+<input id="saleQR">
+<input id="saleQty" type="number">
+<input id="salePrice" type="number">
+<button onclick="addSaleItem()">Shto</button>
+<table id="saleTable"></table>
+<button onclick="completeSale()">Faturë PDF</button>
+</section>
+
+<section id="clients">
+<input id="clientName">
+<input id="clientAddress">
+<input id="clientNIPT">
+<input id="clientPhone">
+<button onclick="addClient()">Ruaj</button>
+<table id="clientTable"></table>
+</section>
+
+<section id="inventory">
+<table id="inventoryTable"></table>
+</section>
+
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/security.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/clients.js"></script>
+<script src="js/sales.js"></script>
+<script src="js/qr.js"></script>
+
+</body>
+</html>
