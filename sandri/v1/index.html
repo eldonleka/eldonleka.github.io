@@ -1,76 +1,78 @@
 <!DOCTYPE html>
-<html lang="sq">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inventory v1.1</title>
-
-<link rel="stylesheet" href="css/style.css">
-
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Toy Retail Store</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+    <div id="login-screen">
+        <h2>Login / Master Password</h2>
+        <input type="password" id="master-password" placeholder="Enter master password">
+        <button id="login-btn">Login</button>
+    </div>
 
-<header>Inventory v1.1</header>
+    <div id="app-screen" style="display:none;">
+        <h1>Toy Retail Store Dashboard</h1>
 
-<div id="passwordScreen">
-<input id="masterPass" placeholder="Master Password">
-<button onclick="checkPassword()">Hyr</button>
-</div>
+        <section id="stock-section">
+            <h2>Stock Management</h2>
+            <input type="text" id="product-id" placeholder="Product ID or scan QR">
+            <input type="text" id="product-name" placeholder="Product Name">
+            <input type="number" id="qty" placeholder="Quantity">
+            <button id="add-stock-btn">Add/Update Stock</button>
+            <button id="scan-qr-btn">Scan QR Code</button>
 
-<div id="appScreen">
+            <table id="stock-table">
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Name</th>
+                        <th>Qty</th>
+                        <th>Date Added</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
 
-<nav>
-<button onclick="showSection('import')">Hyrje</button>
-<button onclick="showSection('sales')">Shitje</button>
-<button onclick="showSection('clients')">Klientë</button>
-<button onclick="showSection('inventory')">Stok</button>
-</nav>
+        <section id="clients-section">
+            <h2>Clients & Sales</h2>
+            <input type="text" id="client-name" placeholder="Client Name">
+            <button id="add-client-btn">Add Client</button>
 
-<section id="import">
-<h3>Hyrje Malli</h3>
-<input id="qr">
-<input id="prodName">
-<input id="prodQty" type="number">
-<button onclick="addProduct()">Ruaj</button>
-<div id="qr-reader"></div>
-</section>
+            <h3>Make Sale</h3>
+            <select id="client-select"></select>
+            <input type="text" id="sale-product-id" placeholder="Product ID or QR">
+            <input type="number" id="sale-qty" placeholder="Quantity">
+            <input type="number" id="sale-price" placeholder="Price per unit">
+            <select id="sale-status">
+                <option value="paid">Paid</option>
+                <option value="unpaid">Unpaid</option>
+            </select>
+            <button id="make-sale-btn">Make Sale</button>
 
-<section id="sales">
-<h3>Shitje</h3>
-<select id="saleClient"></select>
-<input id="saleQR">
-<input id="saleQty" type="number">
-<input id="salePrice" type="number">
-<button onclick="addSaleItem()">Shto</button>
-<table id="saleTable"></table>
-<button onclick="completeSale()">Faturë PDF</button>
-</section>
+            <h3>Clients Overview</h3>
+            <table id="clients-table">
+                <thead>
+                    <tr>
+                        <th>Client Name</th>
+                        <th>Total Due</th>
+                        <th>Paid</th>
+                        <th>Unpaid</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
 
-<section id="clients">
-<input id="clientName">
-<input id="clientAddress">
-<input id="clientNIPT">
-<input id="clientPhone">
-<button onclick="addClient()">Ruaj</button>
-<table id="clientTable"></table>
-</section>
+        <section id="db-section">
+            <h2>Database</h2>
+            <input type="file" id="import-db">
+            <button id="export-db-btn">Export Database</button>
+        </section>
+    </div>
 
-<section id="inventory">
-<table id="inventoryTable"></table>
-</section>
-
-</div>
-
-<script src="js/app.js"></script>
-<script src="js/security.js"></script>
-<script src="js/inventory.js"></script>
-<script src="js/clients.js"></script>
-<script src="js/sales.js"></script>
-<script src="js/qr.js"></script>
-
+    <script src="app.js"></script>
 </body>
 </html>
