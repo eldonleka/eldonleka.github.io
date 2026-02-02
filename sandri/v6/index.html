@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Toy Shop Manager</title>
+
+<!-- CSS -->
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2>Toy Shop Manager</h2>
+
+<!-- FIRST TIME SETUP -->
+<div id="setupBox" class="card" style="display:none">
+  <h3>First Time Setup</h3>
+  <input type="password" id="newpw" placeholder="Create master password">
+  <button onclick="createMaster()">Create Password</button>
+  <hr>
+  <input type="file" onchange="restore(event)">
+</div>
+
+<!-- LOGIN -->
+<div id="loginBox" class="card" style="display:none">
+  <h3>Login</h3>
+  <input type="password" id="pw" placeholder="Master password">
+  <button onclick="login()">Enter</button>
+  <hr>
+  <input type="file" onchange="restore(event)">
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+  <!-- NAV -->
+  <div class="nav">
+    <button onclick="show('products')">Inventory</button>
+    <button onclick="show('sales')">Sales</button>
+    <button onclick="show('clients')">Clients</button>
+    <button onclick="backup()">Export Backup</button>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div id="products" class="card view">
+    <h3>Add Product</h3>
+    <input id="pstock" placeholder="Stock ID / QR">
+    <button onclick="startScan('pstock')">Scan</button><br>
+    <input id="pname" placeholder="Name">
+    <input id="pprice" placeholder="Price">
+    <input id="pvat" placeholder="VAT %">
+    <input id="pqty" placeholder="Qty">
+    <button onclick="addProduct()">Add</button>
+    <table id="ptable"></table>
+  </div>
+
+  <!-- SALES -->
+  <div id="sales" class="card view" style="display:none">
+    <h3>New Sale</h3>
+    <input id="saleQR" placeholder="Scan product QR">
+    <button onclick="startScan('saleQR')">Scan</button><br>
+    <select id="saleProduct"></select>
+    <input id="saleQty" placeholder="Qty">
+    <select id="saleClient"></select>
+    <label><input type="checkbox" id="saleDebt"> Debt</label>
+    <button onclick="makeSale()">Sell</button>
+    <table id="stable"></table>
+  </div>
+
+  <!-- CLIENTS -->
+  <div id="clients" class="card view" style="display:none">
+    <h3>Add Client</h3>
+    <input id="cname" placeholder="Name">
+    <input id="cphone" placeholder="Phone">
+    <button onclick="addClient()">Add</button>
+    <table id="ctable"></table>
+  </div>
+
+</div>
+
+<!-- SCANNER MODAL -->
+<div id="scanner" class="scanner">
+  <div class="scanner-box">
+    <video id="video" autoplay></video><br>
+    <button onclick="stopScan()">Cancel</button>
+  </div>
+</div>
+
+<!-- JS -->
+<script src="app.js"></script>
+</body>
+</html>

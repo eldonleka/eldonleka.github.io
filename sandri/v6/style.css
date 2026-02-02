@@ -1,0 +1,58 @@
+body {
+  font-family: Arial;
+  margin: 20px;
+  background: #f4f4f4;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 8px;
+}
+
+button {
+  padding: 8px 12px;
+  margin: 4px;
+  cursor: pointer;
+}
+
+input, select {
+  padding: 6px;
+  margin: 4px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #ccc;
+  padding: 6px;
+}
+
+.nav button {
+  background: #333;
+  color: white;
+}
+
+.scanner {
+  position: fixed;
+  inset: 0;
+  background: #000c;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.scanner-box {
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+video {
+  width: 300px;
+}
