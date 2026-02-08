@@ -1,117 +1,77 @@
-let db = {
-    stock: [],
-    clients: [],
-    sales: []
-};
+let data={products:[],clients:[],sales:[]};
+let saleItems=[];
+let masterPassword=localStorage.getItem('masterPassword');
 
-let masterPassword = null;
+// Master Password
+function checkPassword(){ 
+    let input=document.getElementById('masterPass').value;
+    if(!masterPassword){ localStorage.setItem('masterPassword',input); masterPassword=input; alert("Master password created!"); showApp(); }
+    else{ if(input===masterPassword) showApp(); else alert("Password gabim!"); }
+}
+function showApp(){ document.getElementById('passwordScreen').style.display='none'; document.getElementById('appScreen').style.display='block'; showSection('import'); }
+function showSection(id){ ['import','sales','clients','inventory','backup'].forEach(s=>document.getElementById(s).style.display='none'); document.getElementById(id).style.display='block'; if(id==='sales') updateClientSelect(); }
 
-// --- Login ---
-document.getElementById("login-btn").addEventListener("click", () => {
-    const pass = document.getElementById("master-password").value;
-    if (!masterPassword) {
-        masterPassword = pass;
-        alert("Master password created!");
-    } else if (pass === masterPassword) {
-        document.getElementById("login-screen").style.display = "none";
-        document.getElementById("app-screen").style.display = "block";
-        renderStock();
-        renderClients();
-    } else {
-        alert("Wrong password!");
-    }
-});
-
-// --- Stock Management ---
-document.getElementById("add-stock-btn").addEventListener("click", () => {
-    const id = document.getElementById("product-id").value;
-    const name = document.getElementById("product-name").value;
-    const qty = parseInt(document.getElementById("qty").value);
-
-    if (!id || !name || !qty) { alert("Fill all fields!"); return; }
-
-    const existing = db.stock.find(p => p.id === id);
-    if (existing) {
-        existing.qty += qty;
-    } else {
-        db.stock.push({id, name, qty, dateAdded: new Date().toLocaleDateString()});
-    }
-
-    renderStock();
-});
-
-// --- Render Stock ---
-function renderStock() {
-    const tbody = document.querySelector("#stock-table tbody");
-    tbody.innerHTML = "";
-    db.stock.forEach(p => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${p.id}</td><td>${p.name}</td><td>${p.qty}</td><td>${p.dateAdded}</td>`;
-        tbody.appendChild(tr);
-    });
+// Inventory
+function addProduct(){
+    let qr=document.getElementById('qr').value, name=document.getElementById('prodName').value, qty=parseInt(document.getElementById('prodQty').value);
+    if(!qr||!name||!qty){alert("Ploteso te gjitha!"); return;}
+    let prod=data.products.find(p=>p.qr===qr);
+    if(prod) prod.stock+=qty; else data.products.push({qr,name,stock:qty});
+    updateInventory(); alert("Produkt shtuar!");
+}
+function updateInventory(){
+    let t=document.getElementById('inventoryTable'); t.innerHTML='<tr><th>QR</th><th>Emri</th><th>Stock</th></tr>';
+    data.products.forEach(p=>{ let r=t.insertRow(); r.insertCell(0).innerText=p.qr; r.insertCell(1).innerText=p.name; r.insertCell(2).innerText=p.stock; });
 }
 
-// --- Clients ---
-document.getElementById("add-client-btn").addEventListener("click", () => {
-    const name = document.getElementById("client-name").value;
-    if (!name) return;
-    db.clients.push({name, sales: []});
-    document.getElementById("client-name").value = "";
-    renderClients();
-});
-
-function renderClients() {
-    const tbody = document.querySelector("#clients-table tbody");
-    const select = document.getElementById("client-select");
-    tbody.innerHTML = "";
-    select.innerHTML = "";
-
-    db.clients.forEach(c => {
-        const total = c.sales.reduce((a,b)=>a+b.price*b.qty,0);
-        const paid = c.sales.filter(s=>s.status==="paid").reduce((a,b)=>a+b.price*b.qty,0);
-        const unpaid = total - paid;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${c.name}</td><td>${total}</td><td>${paid}</td><td>${unpaid}</td>`;
-        tbody.appendChild(tr);
-
-        const opt = document.createElement("option");
-        opt.value = c.name;
-        opt.textContent = c.name;
-        select.appendChild(opt);
-    });
+// Clients
+function addClient(){
+    let n=document.getElementById('clientName').value, a=document.getElementById('clientAddress').value, nipt=document.getElementById('clientNIPT').value, phone=document.getElementById('clientPhone').value;
+    if(!n||!a||!nipt||!phone){alert("Ploteso te gjitha!"); return;}
+    if(data.clients.find(c=>c.nipt===nipt)){alert("Klient ekziston!"); return;}
+    data.clients.push({name:n,address:a,nipt:nipt,phone:phone});
+    updateClientTable(); alert("Klient shtuar!");
+}
+function updateClientTable(){
+    let t=document.getElementById('clientTable'); t.innerHTML='<tr><th>Emri</th><th>Adresa</th><th>NIPT</th><th>Telefon</th></tr>';
+    data.clients.forEach(c=>{ let r=t.insertRow(); r.insertCell(0).innerText=c.name; r.insertCell(1).innerText=c.address; r.insertCell(2).innerText=c.nipt; r.insertCell(3).innerText=c.phone; });
+}
+function updateClientSelect(){
+    let sel=document.getElementById('saleClient'); sel.innerHTML=''; data.clients.forEach(c=>{ let o=document.createElement('option'); o.value=c.nipt; o.innerText=c.name; sel.appendChild(o); });
 }
 
-// --- Sales ---
-document.getElementById("make-sale-btn").addEventListener("click", () => {
-    const clientName = document.getElementById("client-select").value;
-    const productId = document.getElementById("sale-product-id").value;
-    const qty = parseInt(document.getElementById("sale-qty").value);
-    const price = parseFloat(document.getElementById("sale-price").value);
-    const status = document.getElementById("sale-status").value;
+// Sales
+function addSaleItem(){
+    let clientNIPT=document.getElementById('saleClient').value, qr=document.getElementById('saleQR').value, qty=parseInt(document.getElementById('saleQty').value), price=parseFloat(document.getElementById('salePrice').value);
+    if(!qr||!qty||!price||!clientNIPT){alert("Ploteso te gjitha!"); return;}
+    let prod=data.products.find(p=>p.qr===qr);
+    if(!prod){alert("Produkt nuk ekziston!"); return;}
+    if(qty>prod.stock){alert("Sasia tejkalon stokun!"); return;}
+    saleItems.push({clientNIPT,qr,name:prod.name,qty,price});
+    updateSaleTable();
+}
+function updateSaleTable(){
+    let t=document.getElementById('saleTable'); t.innerHTML='<tr><th>QR</th><th>Emri</th><th>Sasi</th><th>Çmimi</th></tr>';
+    saleItems.forEach(i=>{ let r=t.insertRow(); r.insertCell(0).innerText=i.qr; r.insertCell(1).innerText=i.name; r.insertCell(2).innerText=i.qty; r.insertCell(3).innerText=i.price; });
+}
+function completeSale(){
+    if(saleItems.length===0){alert("Nuk ka artikuj!"); return;}
+    let client=data.clients.find(c=>c.nipt===saleItems[0].clientNIPT);
+    saleItems.forEach(i=>{ let prod=data.products.find(p=>p.qr===i.qr); prod.stock-=i.qty; data.sales.push({clientNIPT:i.clientNIPT,qr:i.qr,qty:i.qty,price:i.price,date:new Date().toISOString()}); });
+    generatePDF(client); saleItems=[]; updateSaleTable(); updateInventory(); alert("Shitje kryer!");
+}
 
-    if (!clientName || !productId || !qty || !price) { alert("Fill all fields!"); return; }
+// PDF
+function generatePDF(client){
+    const { jsPDF } = window.jspdf;
+    let doc=new jsPDF();
+    doc.setFontSize(16); doc.text("Faturë Shitjeje",20,20);
+    doc.setFontSize(12); doc.text(`Klienti: ${client.name}`,20,30); doc.text(`Adresa: ${client.address}`,20,36); doc.text(`NIPT: ${client.nipt}`,20,42);
+    let y=50; let total=0;
+    saleItems.forEach(i=>{ doc.text(`${i.name} - ${i.qty} x ${i.price}€ = ${i.qty*i.price}€`,20,y); total+=i.qty*i.price; y+=6; });
+    doc.text(`Total: ${total}€`,20,y+6); doc.save(`fature_${client.nipt}.pdf`);
+}
 
-    const client = db.clients.find(c=>c.name===clientName);
-    client.sales.push({productId, qty, price, status});
-    renderClients();
-});
-
-// --- Import/Export DB ---
-document.getElementById("export-db-btn").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify(db,null,2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "database.json"; a.click();
-});
-
-document.getElementById("import-db").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function(event){
-        db = JSON.parse(event.target.result);
-        renderStock();
-        renderClients();
-    }
-    reader.readAsText(file);
-});
+// Export / Import
+function exportData(){ let encrypted=CryptoJS.AES.encrypt(JSON.stringify(data),masterPassword).toString(); let blob=new Blob([encrypted],{type:"text/plain"}); let link=document.createElement("a"); link.download="inventory_backup.txt"; link.href=URL.createObjectURL(blob); link.click(); }
+function importData(event){ let file=event.target.files[0]; if(!file)return; let reader=new FileReader(); reader.onload=function(e){ try{ let decrypted=CryptoJS.AES.decrypt(e.target.result,masterPassword).toString(CryptoJS.enc.Utf8); data=JSON.parse(decrypted); updateInventory(); updateClientTable(); alert("Import i kryer!"); }catch(err){alert("Password gabim ose file i korruptuar!");} }; reader.readAsText(file); }

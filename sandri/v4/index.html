@@ -1,281 +1,322 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Toy Shop Manager</title>
+<title>Toy Shop Manager Pro</title>
+
+<!-- GOOGLE FONTS -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+<!-- CHART.JS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { font-family: Arial; margin:20px; background:#f4f4f4 }
-.card { background:white; padding:15px; margin:10px 0; border-radius:8px }
-button { padding:8px 12px; margin:4px; cursor:pointer }
-input, select { padding:6px; margin:4px }
-table { border-collapse: collapse; width:100% }
-td,th { border:1px solid #ccc; padding:6px }
-.nav button { background:#333; color:white }
+:root {
+  --primary: #4CAF50;
+  --secondary: #2196F3;
+  --bg: #f4f4f4;
+  --card-bg: #fff;
+  --text-color: #333;
+  --danger: #e53935;
+}
+
+[data-theme="dark"] {
+  --bg: #1e1e1e;
+  --card-bg: #2c2c2c;
+  --text-color: #eee;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-color);
+}
+
+header {
+  background: var(--primary);
+  color: #fff;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h1 { margin: 0; font-size: 24px; }
+
+button { cursor: pointer; transition: 0.2s; border: none; border-radius: 6px; }
+button:hover { opacity: 0.9; }
+
+.nav { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+.nav button { background: var(--secondary); color: #fff; padding: 8px 12px; }
+
+.card {
+  background: var(--card-bg);
+  padding: 15px;
+  margin: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+input, select { padding: 6px; margin: 4px; border-radius: 4px; border: 1px solid #ccc; }
+
+table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+td, th { border: 1px solid #ccc; padding: 6px; text-align: left; }
+tr:hover { background: rgba(0,0,0,0.05); }
+
+.view { display: none; }
+
+.stats { display: flex; gap: 15px; flex-wrap: wrap; }
+.stats .card { flex: 1 1 200px; }
+
+.alert { color: var(--danger); font-weight: bold; }
+
+.toast {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  background: var(--secondary); color: #fff;
+  padding: 10px 15px; border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.toast.show { opacity: 1; }
 </style>
 </head>
+<body data-theme="light">
 
-<body>
+<header>
+  <h1>Toy Shop Manager Pro</h1>
+  <button onclick="toggleTheme()">🌙 Dark Mode</button>
+</header>
 
-<h2>Toy Shop Manager</h2>
-
-<!-- FIRST RUN -->
+<!-- LOGIN / SETUP -->
 <div id="setupBox" class="card" style="display:none">
-<h3>First Time Setup</h3>
-<input type="password" id="newpw" placeholder="Create master password">
-<button onclick="createMaster()">Create Password</button>
-<hr>
-<input type="file" onchange="restore(event)">
+  <h3>First Time Setup</h3>
+  <input type="password" id="newpw" placeholder="Create master password">
+  <button onclick="createMaster()">Create Password</button>
+  <hr>
+  <input type="file" onchange="restore(event)">
 </div>
 
-<!-- LOGIN -->
 <div id="loginBox" class="card" style="display:none">
-<h3>Login</h3>
-<input type="password" id="pw" placeholder="Master password">
-<button onclick="login()">Enter</button>
-<hr>
-<input type="file" onchange="restore(event)">
+  <h3>Login</h3>
+  <input type="password" id="pw" placeholder="Master password">
+  <button onclick="login()">Enter</button>
+  <hr>
+  <input type="file" onchange="restore(event)">
 </div>
 
 <!-- APP -->
 <div id="app" style="display:none">
+  <div class="nav">
+    <button onclick="show('dashboard')">Dashboard</button>
+    <button onclick="show('products')">Inventory</button>
+    <button onclick="show('sales')">Sales</button>
+    <button onclick="show('clients')">Clients</button>
+    <button onclick="backup()">Export Backup</button>
+  </div>
 
-<div class="nav">
-<button onclick="show('products')">Inventory</button>
-<button onclick="show('sales')">Sales</button>
-<button onclick="show('clients')">Clients</button>
-<button onclick="backup()">Export Backup</button>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="view card">
+    <h3>Dashboard</h3>
+    <div class="stats">
+      <div class="card"><h4>Total Sales</h4><p id="statSales">0 €</p></div>
+      <div class="card"><h4>Top Product</h4><p id="statTop">-</p></div>
+      <div class="card"><h4>Clients Debt</h4><p id="statDebt">0 €</p></div>
+    </div>
+    <canvas id="salesChart" height="150"></canvas>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div id="products" class="view card">
+    <h3>Add Product</h3>
+    <input id="pstock" placeholder="Stock ID / QR">
+    <button onclick="startScan('pstock')">Scan</button><br>
+    <input id="pname" placeholder="Name">
+    <input id="pprice" placeholder="Price">
+    <input id="pvat" placeholder="VAT %">
+    <input id="pqty" placeholder="Qty">
+    <input id="pcategory" placeholder="Category">
+    <button onclick="addProduct()">Add</button>
+    <input id="psearch" placeholder="Search..." oninput="loadProducts()">
+    <table id="ptable"></table>
+  </div>
+
+  <!-- SALES -->
+  <div id="sales" class="view card">
+    <h3>New Sale</h3>
+    <input id="saleQR" placeholder="Scan product QR">
+    <button onclick="startScan('saleQR')">Scan</button><br>
+    <select id="saleProduct"></select>
+    <input id="saleQty" placeholder="Qty">
+    <input id="saleDiscount" placeholder="Discount %" value="0">
+    <select id="saleClient"></select>
+    <label><input type="checkbox" id="saleDebt"> Debt</label>
+    <button onclick="makeSale()">Sell</button>
+    <table id="stable"></table>
+  </div>
+
+  <!-- CLIENTS -->
+  <div id="clients" class="view card">
+    <h3>Add Client</h3>
+    <input id="cname" placeholder="Name">
+    <input id="cphone" placeholder="Phone">
+    <input id="cemail" placeholder="Email">
+    <button onclick="addClient()">Add</button>
+    <input id="csearch" placeholder="Search..." oninput="loadClients()">
+    <table id="ctable"></table>
+  </div>
 </div>
 
-<!-- PRODUCTS -->
-<div id="products" class="card view">
-<h3>Add Product</h3>
-<input id="pstock" placeholder="Stock ID / QR">
-<button onclick="startScan('pstock')">Scan</button><br>
-<input id="pname" placeholder="Name">
-<input id="pprice" placeholder="Price">
-<input id="pvat" placeholder="VAT %">
-<input id="pqty" placeholder="Qty">
-<button onclick="addProduct()">Add</button>
-<table id="ptable"></table>
+<!-- SCANNER -->
+<div id="scanner" style="position:fixed; inset:0; background:#000c; display:none; align-items:center; justify-content:center; z-index:999">
+  <div style="background:#fff; padding:10px; border-radius:8px">
+    <video id="video" autoplay style="width:300px"></video><br>
+    <button onclick="stopScan()">Cancel</button>
+  </div>
 </div>
 
-<!-- SALES -->
-<div id="sales" class="card view" style="display:none">
-<h3>New Sale</h3>
-<input id="saleQR" placeholder="Scan product QR">
-<button onclick="startScan('saleQR')">Scan</button><br>
-<select id="saleProduct"></select>
-<input id="saleQty" placeholder="Qty">
-<select id="saleClient"></select>
-<label><input type="checkbox" id="saleDebt"> Debt</label>
-<button onclick="makeSale()">Sell</button>
-<table id="stable"></table>
-</div>
-
-<!-- CLIENTS -->
-<div id="clients" class="card view" style="display:none">
-<h3>Add Client</h3>
-<input id="cname" placeholder="Name">
-<input id="cphone" placeholder="Phone">
-<button onclick="addClient()">Add</button>
-<table id="ctable"></table>
-</div>
-
-</div>
-
-<!-- SCANNER MODAL -->
-<div id="scanner" style="position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:999">
- <div style="background:#fff;padding:10px;border-radius:8px">
-  <video id="video" autoplay style="width:300px"></video><br>
-  <button onclick="stopScan()">Cancel</button>
- </div>
-</div>
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
 
 <script>
 let db, scanTarget=null, stream=null;
-const req = indexedDB.open("toyshop",2);
 
-req.onupgradeneeded = e=>{
- db=e.target.result;
- db.createObjectStore("meta",{keyPath:"key"});
- db.createObjectStore("products",{keyPath:"id",autoIncrement:true});
- db.createObjectStore("sales",{keyPath:"id",autoIncrement:true});
- db.createObjectStore("clients",{keyPath:"id",autoIncrement:true});
+// ----------------- DATABASE INIT -----------------
+const req = indexedDB.open("toyshopPro", 4);
+req.onupgradeneeded = e => {
+  db = e.target.result;
+  if(!db.objectStoreNames.contains("meta")) db.createObjectStore("meta",{keyPath:"key"});
+  if(!db.objectStoreNames.contains("products")) db.createObjectStore("products",{keyPath:"id",autoIncrement:true});
+  if(!db.objectStoreNames.contains("clients")) db.createObjectStore("clients",{keyPath:"id",autoIncrement:true});
+  if(!db.objectStoreNames.contains("sales")) db.createObjectStore("sales",{keyPath:"id",autoIncrement:true});
 };
+req.onsuccess = e => { db = e.target.result; checkInit(); };
+function tx(store,mode="readonly"){ return db.transaction(store,mode).objectStore(store);}
+function hash(s){ return btoa(s);}
 
-req.onsuccess=e=>{ db=e.target.result; checkInit(); };
-function tx(s,m="readonly"){ return db.transaction(s,m).objectStore(s); }
-function hash(s){ return btoa(s); }
-
-/* INIT */
+// ----------------- AUTH -----------------
 function checkInit(){
- tx("meta").get("pw").onsuccess=e=>{
-  e.target.result ? loginBox.style.display="block" : setupBox.style.display="block";
- };
+  tx("meta").get("pw").onsuccess=e=>{
+    e.target.result ? loginBox.style.display="block" : setupBox.style.display="block";
+  }
 }
-function createMaster(){
- if(!newpw.value) return alert("Password required");
- tx("meta","readwrite").put({key:"pw",val:hash(newpw.value)});
- setupBox.style.display="none"; loginBox.style.display="block";
+function createMaster(){ if(!newpw.value) return alert("Password required");
+  tx("meta","readwrite").put({key:"pw",val:hash(newpw.value)});
+  setupBox.style.display="none"; loginBox.style.display="block";
 }
-function login(){
- tx("meta").get("pw").onsuccess=e=>{
+function login(){ tx("meta").get("pw").onsuccess=e=>{
   if(hash(pw.value)===e.target.result.val){ loginBox.style.display="none"; app.style.display="block"; loadAll(); }
-  else alert("Wrong password");
- };
-}
+  else showToast("Wrong password"); }}
 
-/* NAV */
-function show(id){
- document.querySelectorAll(".view").forEach(v=>v.style.display="none");
- document.getElementById(id).style.display="block";
-}
+// ----------------- NAVIGATION -----------------
+function show(id){ document.querySelectorAll(".view").forEach(v=>v.style.display="none"); document.getElementById(id).style.display="block"; }
 
-/* PRODUCTS */
-function stockExists(stock,cb){
- tx("products").getAll().onsuccess=e=>cb(e.target.result.some(p=>p.stockId===stock));
-}
+// ----------------- TOAST -----------------
+function showToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),3000); }
 
+// ----------------- PRODUCTS -----------------
+function stockExists(stock, cb){ tx("products").getAll().onsuccess=e=>{ cb(e.target.result.some(p=>p.stockId===stock)); } }
 function addProduct(){
- let stock=pstock.value.trim();
- if(!stock) return alert("Stock ID required");
- stockExists(stock,exists=>{
-  if(exists) return alert("Stock ID already exists");
-  tx("products","readwrite").add({
-   stockId:stock,name:pname.value,price:+pprice.value,vat:+pvat.value,qty:+pqty.value
+  let stock=pstock.value.trim(); if(!stock) return showToast("Stock ID required");
+  stockExists(stock,exists=>{
+    if(exists) return showToast("Stock ID exists");
+    tx("products","readwrite").add({stockId:stock,name:pname.value,price:+pprice.value,vat:+pvat.value,qty:+pqty.value,category:pcategory.value||'-',createdAt:new Date(),updatedAt:new Date()});
+    showToast("Product added"); loadProducts();
   });
-  loadProducts();
- });
 }
-
 function loadProducts(){
- let t="<tr><th>Stock</th><th>Name</th><th>Price</th><th>VAT</th><th>Qty</th></tr>";
- saleProduct.innerHTML="";
- tx("products").getAll().onsuccess=e=>{
-  e.target.result.forEach(p=>{
-   t+=`<tr><td>${p.stockId}</td><td>${p.name}</td><td>${p.price}</td><td>${p.vat}%</td><td>${p.qty}</td></tr>`;
-   saleProduct.innerHTML+=`<option value="${p.id}">${p.name}</option>`;
-  });
-  ptable.innerHTML=t;
- };
+  let t="<tr><th>Stock</th><th>Name</th><th>Price</th><th>VAT</th><th>Qty</th><th>Category</th></tr>";
+  saleProduct.innerHTML=""; let search = psearch.value.toLowerCase();
+  tx("products").getAll().onsuccess=e=>{
+    e.target.result.filter(p=>p.name.toLowerCase().includes(search)||p.stockId.includes(search)).forEach(p=>{
+      t+=`<tr><td>${p.stockId}</td><td>${p.name}</td><td>${p.price}</td><td>${p.vat}%</td><td>${p.qty}</td><td>${p.category}</td></tr>`;
+      saleProduct.innerHTML+=`<option value="${p.id}">${p.name}</option>`;
+    });
+    ptable.innerHTML=t;
+  };
 }
 
-/* CLIENTS */
-function addClient(){
- tx("clients","readwrite").add({name:cname.value,phone:cphone.value,debt:0});
- loadClients();
+// ----------------- CLIENTS -----------------
+function addClient(){ 
+  if(!cname.value) return showToast("Client name required");
+  tx("clients","readwrite").add({name:cname.value,phone:cphone.value,email:cemail.value||'',debt:0,createdAt:new Date(),updatedAt:new Date()});
+  showToast("Client added"); loadClients(); 
 }
 function loadClients(){
- let t="<tr><th>Name</th><th>Phone</th><th>Debt</th></tr>";
- saleClient.innerHTML="<option value=''>Cash Sale</option>";
- tx("clients").getAll().onsuccess=e=>{
-  e.target.result.forEach(c=>{
-   t+=`<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.debt.toFixed(2)}</td></tr>`;
-   saleClient.innerHTML+=`<option value="${c.id}">${c.name}</option>`;
-  });
-  ctable.innerHTML=t;
- };
+  let t="<tr><th>Name</th><th>Phone</th><th>Email</th><th>Debt</th></tr>"; saleClient.innerHTML="<option value=''>Cash Sale</option>";
+  let search = csearch.value.toLowerCase();
+  tx("clients").getAll().onsuccess=e=>{
+    e.target.result.filter(c=>c.name.toLowerCase().includes(search)).forEach(c=>{
+      t+=`<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.email}</td><td>${c.debt.toFixed(2)}</td></tr>`;
+      saleClient.innerHTML+=`<option value="${c.id}">${c.name}</option>`;
+    });
+    ctable.innerHTML=t;
+  };
 }
 
-/* SALES */
-function autoSelect(stock){
- tx("products").getAll().onsuccess=e=>{
-  let p=e.target.result.find(x=>x.stockId===stock);
-  if(p){ saleProduct.value=p.id; saleQty.value=saleQty.value||1; }
-  else alert("Product not found");
- };
-}
-
+// ----------------- SALES -----------------
+function autoSelect(stock){ tx("products").getAll().onsuccess=e=>{ let p=e.target.result.find(x=>x.stockId===stock); if(p){ saleProduct.value=p.id; saleQty.value=saleQty.value||1; } else showToast("Product not found"); } }
 function makeSale(){
- let qty=+saleQty.value;
- let qr=saleQR.value.trim();
- if(qr){
-  tx("products").getAll().onsuccess=e=>{
-   let p=e.target.result.find(x=>x.stockId===qr);
-   if(!p) return alert("Product not found");
-   processSale(p,qty);
+  let qty=+saleQty.value; let qr=saleQR.value.trim(); let discount=+saleDiscount.value||0;
+  if(qr){ tx("products").getAll().onsuccess=e=>{ let p=e.target.result.find(x=>x.stockId===qr); if(!p) return showToast("Product not found"); processSale(p,qty,discount); }; }
+  else tx("products","readwrite").get(+saleProduct.value).onsuccess=e=>processSale(e.target.result,qty,discount);
+}
+function processSale(p,qty,discount){
+  if(p.qty<qty) return showToast("Not enough stock");
+  p.qty-=qty; p.updatedAt=new Date(); tx("products","readwrite").put(p);
+  let vat=p.price*qty*(p.vat/100);
+  let total=(p.price*qty + vat)*(1-discount/100); if(total<0) total=0;
+  tx("sales","readwrite").add({date:new Date(),productId:p.id,productName:p.name,clientId:+saleClient.value||null,qty,pricePerUnit:p.price,vatAmount:vat,discount,total});
+  if(saleDebt.checked && saleClient.value){ tx("clients","readwrite").get(+saleClient.value).onsuccess=c=>{ let cl=c.target.result; cl.debt+=total; cl.updatedAt=new Date(); tx("clients","readwrite").put(cl); }; }
+  if(p.qty<5){ showToast(`Stock for ${p.name} is low!`);}
+  loadAll();
+}
+function loadSales(){ let t="<tr><th>Date</th><th>Product</th><th>Qty</th><th>Total</th></tr>";
+  tx("sales").getAll().onsuccess=e=>{ e.target.result.forEach(s=>{ t+=`<tr><td>${new Date(s.date).toLocaleString()}</td><td>${s.productName}</td><td>${s.qty}</td><td>${s.total.toFixed(2)}</td></tr>`; }); stable.innerHTML=t; };
+}
+
+// ----------------- DASHBOARD -----------------
+let salesChart=null;
+function updateDashboard(){
+  tx("sales").getAll().onsuccess=e=>{
+    let total=e.target.result.reduce((sum,s)=>sum+s.total,0); statSales.textContent=total.toFixed(2)+" €";
+    let prodMap={}; e.target.result.forEach(s=>prodMap[s.productName]=(prodMap[s.productName]||0)+s.qty);
+    let topProd=Object.keys(prodMap).sort((a,b)=>prodMap[b]-prodMap[a])[0]||"-"; statTop.textContent=topProd;
+    tx("clients").getAll().onsuccess=c=>{
+      let totalDebt=c.target.result.reduce((sum,x)=>sum+x.debt,0); statDebt.textContent=totalDebt.toFixed(2)+" €";
+    };
+    // Chart
+    let ctx=document.getElementById("salesChart").getContext("2d");
+    let months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    let salesPerMonth=Array(12).fill(0);
+    e.target.result.forEach(s=>{ let m=new Date(s.date).getMonth(); salesPerMonth[m]+=s.total; });
+    if(salesChart) salesChart.destroy();
+    salesChart=new Chart(ctx,{type:"bar",data:{labels:months,datasets:[{label:"Sales €",data:salesPerMonth,backgroundColor:"rgba(33,150,243,0.7)"}]}});    
   };
- } else {
-  tx("products","readwrite").get(+saleProduct.value).onsuccess=e=>processSale(e.target.result,qty);
- }
 }
 
-function processSale(p,qty){
- if(p.qty<qty) return alert("No stock");
- p.qty-=qty; tx("products","readwrite").put(p);
- let vat=p.price*qty*(p.vat/100), total=p.price*qty+vat;
- tx("sales","readwrite").add({date:new Date().toISOString(),product:p.name,stockId:p.stockId,qty,total,vat});
- if(saleDebt.checked&&saleClient.value){
-  tx("clients","readwrite").get(+saleClient.value).onsuccess=c=>{
-   let cl=c.target.result; cl.debt+=total; tx("clients","readwrite").put(cl);
-  };
- }
- loadAll();
-}
+// ----------------- LOAD ALL -----------------
+function loadAll(){ loadProducts(); loadClients(); loadSales(); updateDashboard(); }
 
-function loadSales(){
- let t="<tr><th>Date</th><th>Product</th><th>Stock</th><th>Qty</th><th>Total</th></tr>";
- tx("sales").getAll().onsuccess=e=>{
-  e.target.result.forEach(s=>{
-   t+=`<tr><td>${s.date}</td><td>${s.product}</td><td>${s.stockId}</td><td>${s.qty}</td><td>${s.total.toFixed(2)}</td></tr>`;
-  });
-  stable.innerHTML=t;
- };
+// ----------------- BACKUP & RESTORE -----------------
+function backup(){ let dump={}; let stores=["meta","products","sales","clients"]; let left=stores.length;
+  stores.forEach(s=>tx(s).getAll().onsuccess=e=>{ dump[s]=e.target.result; if(--left===0){ let a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(dump)],{type:"application/json"})); a.download="toyshopPro-backup.json"; a.click(); }});
 }
+function restore(ev){ let r=new FileReader(); r.onload=()=>{ let d=JSON.parse(r.result); Object.keys(d).forEach(s=>d[s].forEach(x=>tx(s,"readwrite").put(x))); showToast("Restore complete. Reload page."); }; r.readAsText(ev.target.files[0]); }
 
-/* LOAD */
-function loadAll(){ loadProducts(); loadClients(); loadSales(); }
-
-/* BACKUP / RESTORE */
-function backup(){
- let dump={},stores=["meta","products","sales","clients"],left=stores.length;
- stores.forEach(s=>tx(s).getAll().onsuccess=e=>{
-  dump[s]=e.target.result;
-  if(--left===0){
-   let a=document.createElement("a");
-   a.href=URL.createObjectURL(new Blob([JSON.stringify(dump)],{type:"application/json"}));
-   a.download="toyshop-backup.json"; a.click();
-  }
- });
+// ----------------- QR SCANNER -----------------
+function beep(){ new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=").play(); }
+async function startScan(target){ if(!("BarcodeDetector" in window)) return showToast("Scanner not supported");
+  scanTarget=target; const detector=new BarcodeDetector({formats:["qr_code","ean_13","code_128","upc_a"]});
+  scanner.style.display="flex"; stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); video.srcObject=stream;
+  const loop=async()=>{ if(!stream) return; let codes=await detector.detect(video); if(codes.length){ let val=codes[0].rawValue; document.getElementById(scanTarget).value=val; beep(); if(scanTarget==="saleQR") autoSelect(val); stopScan(); } else requestAnimationFrame(loop); }; loop();
 }
+function stopScan(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } scanner.style.display="none"; }
 
-function restore(ev){
- let r=new FileReader();
- r.onload=()=>{ let d=JSON.parse(r.result); Object.keys(d).forEach(s=>d[s].forEach(x=>tx(s,"readwrite").put(x))); alert("Reload page"); };
- r.readAsText(ev.target.files[0]);
-}
-
-/* SCANNER */
-function beep(){
- new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=").play();
-}
-
-async function startScan(target){
- if(!("BarcodeDetector"in window)) return alert("Scanner not supported");
- scanTarget=target;
- const detector=new BarcodeDetector({formats:["qr_code","ean_13","code_128","upc_a"]});
- document.getElementById("scanner").style.display="flex";
- stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
- video.srcObject=stream;
- const loop=async()=>{
-  if(!stream) return;
-  let codes=await detector.detect(video);
-  if(codes.length){
-   let val=codes[0].rawValue;
-   document.getElementById(scanTarget).value=val;
-   beep();
-   if(scanTarget==="saleQR") autoSelect(val);
-   stopScan();
-  } else requestAnimationFrame(loop);
- };
- loop();
-}
-
-function stopScan(){
- if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
- document.getElementById("scanner").style.display="none";
-}
+// ----------------- THEME -----------------
+function toggleTheme(){ let t=document.body.getAttribute("data-theme"); document.body.setAttribute("data-theme", t==="light"?"dark":"light"); }
 </script>
 
 </body>
