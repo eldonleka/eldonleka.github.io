@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Vault Native" />
+<title>Vault Native — Mobile Encrypted Vault</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root{--bg:#071022;--card:#0b1624;--muted:#94a3b8}
+  html,body{height:100%;background:var(--bg);color:#fff;-webkit-text-size-adjust:100%;}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;display:flex;flex-direction:column;min-height:100vh}
+  .container{max-width:720px;margin:0 auto;padding:14px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:12px}
+  input,button,textarea{font-family:inherit}
+  input{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:10px;color:#fff;outline:none}
+  button{border-radius:10px;padding:10px 12px;font-weight:600}
+  .btn-primary{background:#10b981;color:#031018}
+  .btn-accent{background:#60a5fa;color:#0b1220}
+  .btn-ghost{background:rgba(255,255,255,0.03);color:#fff}
+  .muted{color:var(--muted);font-size:13px}
+  .list-scroll{max-height:52vh;overflow:auto;-webkit-overflow-scrolling:touch;padding-right:6px}
+  .entry-card{background:rgba(255,255,255,0.01);padding:10px;border-radius:10px}
+  .small{font-size:13px}
+  @media (min-width:640px){ .container{padding:20px} .list-scroll{max-height:60vh} }
+</style>
+</head>
+<body>
+
+<header class="sticky top-0 z-30">
+  <div class="container flex items-center justify-between py-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-md bg-emerald-500 flex items-center justify-center font-bold text-black">V</div>
+      <div>
+        <div class="font-semibold">Vault Native</div>
+        <div class="muted small">Local encrypted vault — client-side only</div>
+      </div>
+    </div>
+    <div id="statusDot" class="text-sm muted">No vault</div>
+  </div>
+</header>
+
+<main class="flex-1 overflow-auto">
+  <div class="container space-y-4 pb-6">
+
+    <!-- top actions -->
+    <div class="flex gap-2">
+      <button id="createBtn" class="btn-primary flex-1">Create</button>
+      <button id="importBtn" class="btn-accent flex-1">Import</button>
+      <button id="exportBtn" class="btn-ghost flex-1">Export</button>
+    </div>
+
+    <input id="fileInput" type="file" accept=".json" class="hidden" />
+
+    <!-- Unlock / Create card -->
+    <div id="unlockCard" class="card">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <div class="font-semibold">Unlock or Create</div>
+          <div class="muted small">Unlock an existing vault or create a new one</div>
+        </div>
+        <div class="muted small">v1</div>
+      </div>
+
+      <div class="space-y-2">
+        <input id="masterInput" type="password" placeholder="Master password" autocomplete="current-password" />
+        <div class="flex gap-2">
+          <button id="unlockBtn" class="btn-primary flex-1">Unlock</button>
+          <button id="newBtn" class="btn-accent flex-1">Create New</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vault UI -->
+    <div id="vaultUI" class="hidden space-y-3">
+
+      <div class="card">
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-semibold">Add / Edit Entry</div>
+          <div class="muted small">Tap an entry to edit</div>
+        </div>
+
+        <div class="space-y-2">
+          <input id="siteInput" placeholder="Website / Service" />
+          <input id="userInput" placeholder="Username / Email" />
+          <div class="relative">
+            <input id="pwdInput" placeholder="Password" />
+            <button id="genBtn" class="absolute right-2 top-2 btn-ghost">Gen</button>
+          </div>
+
+          <div class="flex gap-2">
+            <button id="saveEntryBtn" class="btn-primary flex-1">Save</button>
+            <button id="resetBtn" class="btn-ghost flex-1">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-semibold">Entries <span id="count" class="muted small">0</span></div>
+          <div class="flex gap-2">
+            <input id="searchInput" placeholder="Search..." class="muted small" style="min-width:160px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:#fff" />
+            <button id="lockBtn" class="btn-ghost">Lock</button>
+          </div>
+        </div>
+
+        <div id="entriesList" class="list-scroll space-y-2"></div>
+      </div>
+    </div>
+
+    <div class="muted small text-center">Tip: Add to Home Screen for a native app feel.</div>
+  </div>
+</main>
+
+<footer class="mt-auto">
+  <div class="container small muted text-center py-3">Encryption: PBKDF2 (200k) + AES-GCM • Data stays on this device</div>
+</footer>
+
+<!-- Modal -->
+<div id="modal" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+  <div class="w-full max-w-md bg-[#071426] rounded-xl p-4">
+    <div id="modalBody"></div>
+    <div class="mt-3 text-right">
+      <button id="modalClose" class="btn-ghost">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Vault Native — Mobile-first single-file app
+   - Keep this file local on device, open with Safari.
+   - Save/export/import encrypted JSON files.
+*/
+
+const fileInput = document.getElementById('fileInput');
+const createBtn = document.getElementById('newBtn');
+const importBtn = document.getElementById('importBtn');
+const exportBtn = document.getElementById('exportBtn');
+const unlockBtn = document.getElementById('unlockBtn');
+const lockBtn = document.getElementById('lockBtn');
+const statusDot = document.getElementById('statusDot');
+
+const unlockCard = document.getElementById('unlockCard');
+const vaultUI = document.getElementById('vaultUI');
+
+const masterInput = document.getElementById('masterInput');
+const siteInput = document.getElementById('siteInput');
+const userInput = document.getElementById('userInput');
+const pwdInput = document.getElementById('pwdInput');
+const genBtn = document.getElementById('genBtn');
+
+const saveEntryBtn = document.getElementById('saveEntryBtn');
+const resetBtn = document.getElementById('resetBtn');
+const searchInput = document.getElementById('searchInput');
+const entriesList = document.getElementById('entriesList');
+const countEl = document.getElementById('count');
+
+const modal = document.getElementById('modal');
+const modalBody = document.getElementById('modalBody');
+const modalClose = document.getElementById('modalClose');
+
+let vaultObj = null;   // {version:1, salt, iv, ct}
+let entries = [];      // decrypted plaintext entries
+let master = null;
+let editingIndex = null;
+const STORAGE_KEY = 'vault_native_v1';
+
+/* helpers: base64/strings */
+function abToBase64(buffer){ let binary=''; const bytes=new Uint8Array(buffer); for(let i=0;i<bytes.byteLength;i++) binary += String.fromCharCode(bytes[i]); return btoa(binary); }
+function base64ToAb(b64){ const bin = atob(b64); const len = bin.length; const bytes = new Uint8Array(len); for(let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i); return bytes.buffer; }
+function strToAb(s){ return new TextEncoder().encode(s); }
+function abToStr(ab){ return new TextDecoder().decode(ab); }
+
+/* crypto */
+async function deriveKey(password, saltB64, iterations=200000){
+  const salt = base64ToAb(saltB64);
+  const pwKey = await crypto.subtle.importKey('raw', strToAb(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations, hash:'SHA-256'}, pwKey, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+}
+async function encryptText(key, text){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, strToAb(text));
+  return {iv: abToBase64(iv), ct: abToBase64(ct)};
+}
+async function decryptText(key, ivB64, ctB64){
+  const iv = new Uint8Array(base64ToAb(ivB64));
+  const ct = base64ToAb(ctB64);
+  const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, ct);
+  return abToStr(plain);
+}
+
+/* storage */
+function saveToLocal(obj){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); }catch(e){ console.error('save failed', e); alert('Failed to save locally'); } }
+function loadFromLocal(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
+
+/* UI helpers */
+function showModal(html){ modalBody.innerHTML = html; modal.classList.remove('hidden'); modal.classList.add('flex'); }
+function hideModal(){ modal.classList.add('hidden'); modal.classList.remove('flex'); modalBody.innerHTML = ''; }
+modalClose.onclick = hideModal;
+modal.addEventListener('click', e => { if(e.target === modal) hideModal(); });
+
+function updateStatus(text, unlocked=false){
+  statusDot.textContent = text;
+  statusDot.classList.toggle('muted', !unlocked);
+}
+
+/* render */
+function renderEntries(filter=''){
+  const q = (filter||'').trim().toLowerCase();
+  const visible = entries.map((e,i)=>({e,i})).filter(({e})=>{
+    if(!q) return true;
+    return (`${e.service||''} ${e.username||''} ${e.note||''}`).toLowerCase().includes(q);
+  });
+
+  if(visible.length === 0){
+    entriesList.innerHTML = `<div class="muted small p-2">No entries</div>`;
+    countEl.textContent = '0';
+    return;
+  }
+
+  entriesList.innerHTML = visible.map(({e,i})=>{
+    const svc = escapeHtml(e.service);
+    const usr = escapeHtml(e.username);
+    const note = escapeHtml(e.note || '');
+    return `
+      <div class="entry-card">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="font-medium">${svc}</div>
+            <div class="muted small">${usr}</div>
+            <div class="muted small break-words">${note}</div>
+          </div>
+          <div class="flex flex-col gap-2 items-end">
+            <div class="flex gap-2">
+              <button data-copy="${i}" class="btn-ghost">Copy</button>
+              <button data-show="${i}" class="btn-ghost">Show</button>
+              <button data-edit="${i}" class="btn-primary">Edit</button>
+              <button data-del="${i}" class="btn-accent">Del</button>
+            </div>
+          </div>
+        </div>
+        <div id="pw-${i}" class="muted small mt-2" style="display:none"></div>
+      </div>
+    `;
+  }).join('');
+
+  // actions
+  entriesList.querySelectorAll('button[data-copy]').forEach(b => b.onclick = async ()=>{
+    const idx = +b.dataset.copy;
+    const txt = entries[idx]?.password || '';
+    try{ await navigator.clipboard.writeText(txt); showBrief('Password copied'); }catch{ fallbackCopy(txt); }
+  });
+  entriesList.querySelectorAll('button[data-show]').forEach(b => b.onclick = ()=>{
+    const idx = +b.dataset.show;
+    const el = document.getElementById('pw-' + idx);
+    if(!el) return;
+    if(el.style.display === 'none' || el.textContent === ''){ el.textContent = entries[idx]?.password || ''; el.style.display = 'block'; }
+    else { el.style.display = 'none'; }
+  });
+  entriesList.querySelectorAll('button[data-edit]').forEach(b => b.onclick = ()=> loadForEdit(+b.dataset.edit));
+  entriesList.querySelectorAll('button[data-del]').forEach(b => b.onclick = async ()=>{
+    const i = +b.dataset.del;
+    if(!confirm('Delete this entry?')) return;
+    entries.splice(i,1);
+    renderEntries(searchInput.value);
+    await reencryptAndSave();
+    showBrief('Deleted');
+  });
+
+  countEl.textContent = String(visible.length);
+}
+
+/* small feedback modal */
+let briefTimer = null;
+function showBrief(msg){
+  showModal(`<div class="font-semibold">${escapeHtml(msg)}</div>`);
+  clearTimeout(briefTimer);
+  briefTimer = setTimeout(hideModal, 900);
+}
+
+/* escape */
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* fallback copy */
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); showBrief('Copied'); }catch{ alert('Copy failed'); }
+  ta.remove();
+}
+
+/* re-encrypt and save vaultObj (called after any change) */
+async function reencryptAndSave(){
+  if(!master || !vaultObj || !vaultObj.salt) return;
+  try{
+    const key = await deriveKey(master, vaultObj.salt);
+    const cipher = await encryptText(key, JSON.stringify(entries));
+    vaultObj.iv = cipher.iv; vaultObj.ct = cipher.ct;
+    saveToLocal(vaultObj);
+    updateStatus('Unlocked', true);
+  }catch(e){ console.error('reencrypt failed', e); }
+}
+
+/* load edit form */
+function loadForEdit(i){
+  editingIndex = i;
+  siteInput.value = entries[i].service || '';
+  userInput.value = entries[i].username || '';
+  pwdInput.value = entries[i].password || '';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* password generator */
+function generatePassword(len = 16){
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]';
+  let out = '';
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  for(let i=0;i<len;i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+
+/* create new vault */
+createBtn.onclick = async () => {
+  const pw = prompt('Create a master password (remember this exact password!).');
+  if(!pw) return;
+  const saltArr = crypto.getRandomValues(new Uint8Array(16));
+  const saltB64 = abToBase64(saltArr);
+  const key = await deriveKey(pw, saltB64);
+  const cipher = await encryptText(key, JSON.stringify([]));
+  vaultObj = {version:1, salt: saltB64, iv: cipher.iv, ct: cipher.ct};
+  entries = [];
+  master = pw;
+  saveToLocal(vaultObj);
+  unlockCard.classList.add('hidden'); vaultUI.classList.remove('hidden');
+  updateStatus('Unlocked', true);
+  renderEntries();
+  showBrief('Vault created');
+};
+
+/* import file */
+importBtn.onclick = () => fileInput.click();
+fileInput.onchange = async (e) => {
+  const f = fileInput.files && fileInput.files[0];
+  if(!f) return;
+  try{
+    const txt = await f.text();
+    const obj = JSON.parse(txt);
+    if(!obj || !obj.salt || !obj.iv || !obj.ct) return alert('Invalid vault file');
+    vaultObj = obj;
+    saveToLocal(vaultObj);
+    updateStatus('Imported — unlock');
+    alert('Imported vault file. Now enter your master password and tap Unlock.');
+  }catch(err){ console.error(err); alert('Failed to import file'); }
+};
+
+/* export file */
+exportBtn.onclick = async () => {
+  if(!vaultObj || !master) return alert('Unlock or create first');
+  await reencryptAndSave();
+  const blob = new Blob([JSON.stringify(vaultObj, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'vault.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 800);
+  showBrief('Export started');
+};
+
+/* unlock existing vault */
+unlockBtn.onclick = async () => {
+  const pw = masterInput.value.trim();
+  if(!pw) return alert('Enter master password');
+  // prefer local saved vault if present
+  const local = loadFromLocal();
+  if(local) vaultObj = local;
+  if(!vaultObj || !vaultObj.salt) return alert('No vault found. Create or import one first.');
+  try{
+    const key = await deriveKey(pw, vaultObj.salt);
+    const plain = await decryptText(key, vaultObj.iv, vaultObj.ct);
+    entries = JSON.parse(plain);
+    master = pw;
+    unlockCard.classList.add('hidden'); vaultUI.classList.remove('hidden');
+    masterInput.value = '';
+    renderEntries();
+    updateStatus('Unlocked', true);
+    showBrief('Unlocked');
+  }catch(e){
+    console.error(e);
+    alert('Wrong password or corrupt vault file');
+  }
+};
+
+/* add/save entry */
+saveEntryBtn.onclick = async () => {
+  const s = siteInput.value.trim(), u = userInput.value.trim(), p = pwdInput.value;
+  if(!s || !u || !p) return alert('Service, username and password are required');
+  const obj = {service:s, username:u, password:p, note:''};
+  if(typeof editingIndex === 'number'){
+    entries[editingIndex] = obj;
+    editingIndex = null;
+  } else {
+    entries.unshift(obj); // newest first
+  }
+  siteInput.value = userInput.value = pwdInput.value = '';
+  renderEntries(searchInput.value);
+  await reencryptAndSave();
+  showBrief('Saved');
+};
+
+/* reset form */
+resetBtn.onclick = ()=> { editingIndex = null; siteInput.value = userInput.value = pwdInput.value = ''; };
+
+/* generate password */
+genBtn.onclick = ()=> { pwdInput.value = generatePassword(16); };
+
+/* search */
+searchInput.oninput = ()=> renderEntries(searchInput.value);
+
+/* reveal/lock */
+lockBtn.onclick = () => {
+  if(!confirm('Lock vault now? This will clear the unlocked state.')) return;
+  master = null; entries = []; vaultUI.classList.add('hidden'); unlockCard.classList.remove('hidden');
+  updateStatus('Locked', false);
+};
+
+/* on load detect saved vault */
+(function init(){
+  const local = loadFromLocal();
+  if(local && local.salt){
+    vaultObj = local;
+    updateStatus('Vault available — unlock');
+  } else {
+    updateStatus('No vault');
+  }
+})();
+
+/* helpers: enter key saves */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && (document.activeElement === siteInput || document.activeElement === userInput || document.activeElement === pwdInput)){
+    e.preventDefault(); saveEntryBtn.click();
+  }
+});
+
+/* useful focus behavior on mobile */
+window.addEventListener('focusin', (e)=> { if(e.target.tagName === 'INPUT') e.target.scrollIntoView({behavior:'smooth',block:'center'}); });
+
+</script>
+</body>
+</html>

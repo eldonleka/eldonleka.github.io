@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maison Leka</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+body{background:#0f172a;color:#f1f5f9;line-height:1.6}
+section{padding:100px 8%}
+h1,h2,h3{font-weight:600}
+
+/* Header */
+header{position:fixed;width:100%;top:0;left:0;background:rgba(15,23,42,0.9);backdrop-filter:blur(10px);display:flex;justify-content:space-between;align-items:center;padding:20px 8%;z-index:1000}
+header h1{color:#38bdf8;font-size:1.5rem}
+header nav a{margin-left:30px;color:#f1f5f9;font-weight:500;transition:.3s}
+header nav a:hover{color:#38bdf8}
+
+/* Hero */
+.hero{height:100vh;background:linear-gradient(rgba(15,23,42,.7),rgba(15,23,42,.7)),url('https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1950&q=80')center/cover no-repeat;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 20px}
+.hero-content{max-width:800px}
+.hero h2{font-size:3rem;margin-bottom:20px}
+.hero p{font-size:1.2rem;margin-bottom:30px;color:#cbd5e1}
+.btn{display:inline-block;padding:15px 35px;background:#38bdf8;color:#0f172a;border-radius:50px;font-weight:600;transition:.3s}
+.btn:hover{background:#0ea5e9;transform:translateY(-3px)}
+
+/* Services */
+.services{background:#1e293b;text-align:center}
+.services h2{margin-bottom:60px;font-size:2.5rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px}
+.card{background:#0f172a;padding:30px;border-radius:20px;transition:.4s;border:1px solid #1e293b}
+.card:hover{transform:translateY(-10px);border-color:#38bdf8;box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.card h3{margin-bottom:15px;color:#38bdf8}
+.card p{color:#cbd5e1}
+
+/* Gallery */
+.gallery{text-align:center}
+.gallery h2{margin-bottom:60px;font-size:2.5rem}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.gallery-grid img{border-radius:20px;transition:.4s}
+.gallery-grid img:hover{transform:scale(1.05)}
+
+/* Contact */
+.contact{background:#1e293b}
+.contact h2{text-align:center;margin-bottom:40px;font-size:2.5rem}
+form{max-width:600px;margin:auto;display:grid;gap:20px}
+input,select,textarea{padding:15px;border-radius:10px;border:none;background:#0f172a;color:#f1f5f9}
+input:focus,select:focus,textarea:focus{outline:2px solid #38bdf8}
+button{padding:15px;border:none;border-radius:50px;background:#38bdf8;color:#0f172a;font-weight:600;cursor:pointer;transition:.3s}
+button:hover{background:#0ea5e9}
+
+/* Footer */
+footer{text-align:center;padding:30px;background:#0f172a;color:#94a3b8}
+
+@media(max-width:768px){
+.hero h2{font-size:2rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Maison Leka</h1>
+<nav>
+<a href="#services">Services</a>
+<a href="#gallery">Réalisations</a>
+<a href="#contact">Contact</a>
+<a href="#contact">Contact</a>
+</nav>
+</header>
+
+<section class="hero">
+<div class="hero-content">
+<h2>Pose de Carrelage Haut de Gamme</h2>
+<p>Piscines, terrasses et solutions innovantes avec finitions professionnelles et durables.</p>
+<a href="#contact" class="btn">Demander un devis</a>
+</div>
+</section>
+
+<section class="services" id="services">
+<h2>Nos Services</h2>
+<div class="cards">
+<div class="card">
+<h3>Piscines</h3>
+<p>Installation précise et résistante pour piscines modernes et élégantes.</p>
+</div>
+<div class="card">
+<h3>Terrasses</h3>
+<p>Terrasses extérieures durables avec finitions parfaites.</p>
+</div>
+<div class="card">
+<h3>Méthode Traditionnelle</h3>
+<p>Pose classique avec ciment pour solidité maximale.</p>
+</div>
+<div class="card">
+<h3>Système Innovant</h3>
+<p>Nouveau système type "croix/lego" pour installation rapide et moderne.</p>
+</div>
+</div>
+</section>
+
+<section class="gallery" id="gallery">
+<h2>Nos Réalisations</h2>
+<div class="gallery-grid">
+<img src="https://images.unsplash.com/photo-1616483080436-d6d9cce2f108?auto=format&fit=crop&w=800&q=80">
+<img src="https://images.unsplash.com/photo-1581090700227-fc8d2e52b9bb?auto=format&fit=crop&w=800&q=80">
+<img src="https://images.unsplash.com/photo-1602524815818-0d206aa1c3b5?auto=format&fit=crop&w=800&q=80">
+<img src="https://images.unsplash.com/photo-1613630256743-29a7f19e2b4b?auto=format&fit=crop&w=800&q=80">
+</div>
+</section>
+
+<section class="contact" id="contact">
+<h2>Contactez-nous</h2>
+<form onsubmit="return sendForm()">
+<input type="text" placeholder="Nom" required>
+<input type="tel" placeholder="Téléphone" required>
+<input type="email" placeholder="Email" required>
+<select required>
+<option value="">Type de projet</option>
+<option>Piscine</option>
+<option>Terrasse</option>
+<option>Traditionnel</option>
+<option>Système innovant</option>
+</select>
+<textarea rows="4" placeholder="Décrivez votre projet"></textarea>
+<button type="submit">Envoyer la demande</button>
+</form>
+</section>
+
+<footer>
+<p>© 2026 Carrelage Prestige | Téléphone: +49 XXX XXX | Email: contact@email.com</p>
+</footer>
+
+<script>
+function sendForm(){
+alert("Merci pour votre demande. Nous vous contacterons rapidement.");
+return false;
+}
+</script>
+
+</body>
+</html>

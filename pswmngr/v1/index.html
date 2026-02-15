@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Local Encrypted Vault</title>
+<style>
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;max-width:980px;margin:18px auto;color:#111}
+  header{display:flex;align-items:center;gap:12px}
+  h1{margin:6px 0}
+  .box{border:1px solid #ddd;padding:14px;border-radius:8px;margin-top:12px}
+  input,button,textarea,select{font:inherit;padding:8px;border-radius:6px;border:1px solid #ccc;width:100%;box-sizing:border-box}
+  .row{display:flex;gap:10px}
+  .row>input{flex:1}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .small{width:auto;padding:8px 12px}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+  .muted{color:#666;font-size:0.9rem}
+  .danger{background:#ffecec;border-color:#ffb6b6}
+  .success{background:#ecffef;border-color:#b6e6b6}
+  .notice{background:#fff8e6;border-color:#ffeeb6}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Local Encrypted Vault</h1>
+    <div class="muted">Client-side encryption. Save encrypted file to your private GitHub repo.</div>
+  </div>
+</header>
+
+<div class="box" id="step1">
+  <strong>Vault file</strong>
+  <div class="muted">Open an existing encrypted vault file or create a new vault.</div>
+  <div style="margin-top:8px">
+    <input type="file" id="fileInput" accept=".json" />
+  </div>
+  <div style="margin-top:10px">
+    <button id="newVaultBtn" class="small">Create new vault</button>
+    <button id="openVaultBtn" class="small">Open selected vault</button>
+    <button id="downloadEmptyBtn" class="small">Download example encrypted file</button>
+  </div>
+</div>
+
+<div id="authBox" class="box hidden">
+  <strong id="authTitle">Unlock Vault</strong>
+  <div class="muted" id="authHint"></div>
+  <div style="margin-top:8px">
+    <input id="masterPwd" type="password" placeholder="Master password" />
+  </div>
+  <div class="actions">
+    <button id="unlockBtn" class="small">Unlock</button>
+    <button id="cancelUnlockBtn" class="small">Cancel</button>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <div class="box">
+    <strong>Add / Update Entry</strong>
+    <div style="margin-top:8px" class="row">
+      <input id="site" placeholder="Website / Service (e.g. example.com)">
+      <input id="user" placeholder="Email / Username">
+    </div>
+    <div style="margin-top:8px" class="row">
+      <input id="pwd" placeholder="Password">
+      <input id="note" placeholder="Comment (optional)">
+    </div>
+    <div class="actions">
+      <button id="addBtn" class="small">Add / Save</button>
+      <button id="clearBtn" class="small">Clear fields</button>
+    </div>
+  </div>
+
+  <div class="box">
+    <strong>Vault Actions</strong>
+    <div class="actions" style="margin-top:8px">
+      <button id="downloadBtn" class="small">Download Encrypted Vault (save to disk)</button>
+      <button id="importBtn" class="small">Load Encrypted Vault (choose file)</button>
+      <button id="syncHintBtn" class="small">Show GitHub sync steps</button>
+      <button id="lockBtn" class="small">Lock vault</button>
+    </div>
+  </div>
+
+  <div class="box">
+    <strong>Entries</strong>
+    <div class="muted">Click [Reveal] to copy password to clipboard.</div>
+    <table id="entriesTable" style="margin-top:8px">
+      <thead><tr><th>Service</th><th>Username</th><th>Notes</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="modal" class="box hidden"></div>
+
+<script>
+/*
+  Simple client-side encrypted vault
+  - PBKDF2 (SHA-256) -> AES-GCM-256
+  - Vault file JSON: { version:1, salt: base64, iv: base64, ct: base64 }
+  - Entries plaintext: JSON array of objects {service, username, password, note}
+*/
+const fileInput = document.getElementById('fileInput');
+const newVaultBtn = document.getElementById('newVaultBtn');
+const openVaultBtn = document.getElementById('openVaultBtn');
+const downloadEmptyBtn = document.getElementById('downloadEmptyBtn');
+
+const authBox = document.getElementById('authBox');
+const authTitle = document.getElementById('authTitle');
+const authHint = document.getElementById('authHint');
+const masterPwd = document.getElementById('masterPwd');
+const unlockBtn = document.getElementById('unlockBtn');
+const cancelUnlockBtn = document.getElementById('cancelUnlockBtn');
+
+const app = document.getElementById('app');
+const siteEl = document.getElementById('site');
+const userEl = document.getElementById('user');
+const pwdEl = document.getElementById('pwd');
+const noteEl = document.getElementById('note');
+const addBtn = document.getElementById('addBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+const downloadBtn = document.getElementById('downloadBtn');
+const importBtn = document.getElementById('importBtn');
+const syncHintBtn = document.getElementById('syncHintBtn');
+const lockBtn = document.getElementById('lockBtn');
+
+const entriesTable = document.querySelector('#entriesTable tbody');
+const modal = document.getElementById('modal');
+
+let vaultObj = null;   // {version, salt, iv, ct}
+let entries = [];      // decrypted entries
+let master = null;     // plain master password in memory while unlocked
+
+// helpers for base64 <-> ArrayBuffer
+function abToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+function base64ToAb(base64) {
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+function strToAb(str){ return new TextEncoder().encode(str); }
+function abToStr(ab){ return new TextDecoder().decode(ab); }
+
+// derive AES-GCM key from password & salt
+async function deriveKey(password, saltB64, iterations=200000) {
+  const salt = base64ToAb(saltB64);
+  const pwKey = await crypto.subtle.importKey('raw', strToAb(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt, iterations, hash:'SHA-256'},
+    pwKey,
+    {name:'AES-GCM', length:256},
+    false,
+    ['encrypt','decrypt']
+  );
+  return key;
+}
+
+async function encryptText(key, text) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, strToAb(text));
+  return { iv: abToBase64(iv), ct: abToBase64(ct) };
+}
+async function decryptText(key, ivB64, ctB64) {
+  const iv = new Uint8Array(base64ToAb(ivB64));
+  const ct = base64ToAb(ctB64);
+  const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, ct);
+  return abToStr(plain);
+}
+
+// UI flows
+newVaultBtn.onclick = () => {
+  // ask user for master password twice
+  const pw = prompt("Create master password (long passphrase recommended):");
+  if (!pw) return alert('Cancelled.');
+  const pw2 = prompt("Confirm master password:");
+  if (pw !== pw2) return alert('Passwords do not match.');
+  createEmptyVault(pw);
+};
+
+openVaultBtn.onclick = () => {
+  if (!fileInput.files.length) return alert('Choose a vault file first.');
+  showAuth('Enter master password to open the selected vault', 'unlock');
+};
+
+downloadEmptyBtn.onclick = () => {
+  // create dummy empty encrypted vault with placeholder salt (for demo)
+  const pw = prompt("Create master password for demo vault:");
+  if(!pw) return;
+  createEmptyVault(pw, true);
+};
+
+function showAuth(hint, mode) {
+  authBox.classList.remove('hidden');
+  authTitle.textContent = 'Unlock Vault';
+  authHint.textContent = hint || '';
+  masterPwd.value = '';
+  masterPwd.focus();
+  unlockBtn.onclick = () => {
+    const pw = masterPwd.value || '';
+    if (!pw) return alert('Enter password.');
+    // mode: 'unlock' means open selected file, 'reveal' could be others
+    tryOpenVault(pw);
+  };
+  cancelUnlockBtn.onclick = hideAuth;
+}
+function hideAuth(){
+  authBox.classList.add('hidden');
+  masterPwd.value = '';
+}
+
+async function createEmptyVault(password, autoDownload=false) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const saltB64 = abToBase64(salt);
+  // derive key then encrypt empty array
+  const key = await deriveKey(password, saltB64);
+  const cipher = await encryptText(key, JSON.stringify([]));
+  const fileObj = { version:1, salt: saltB64, iv: cipher.iv, ct: cipher.ct };
+  const blob = new Blob([JSON.stringify(fileObj, null, 2)], {type:'application/json'});
+  if (autoDownload) {
+    downloadBlob(blob, 'vault.json');
+    alert('Downloaded encrypted vault (demo). Upload this file to your private GitHub repo if you like.');
+    return;
+  }
+  // set as current vault loaded into app
+  vaultObj = fileObj;
+  entries = [];
+  master = password;
+  hideAuth();
+  showApp();
+}
+
+async function tryOpenVault(password){
+  const file = fileInput.files[0];
+  if(!file) return alert('Please select a vault file.');
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const obj = JSON.parse(e.target.result);
+      if(!obj.salt || !obj.ct || !obj.iv) return alert('Invalid vault file.');
+      // attempt derive + decrypt
+      const key = await deriveKey(password, obj.salt);
+      const plain = await decryptText(key, obj.iv, obj.ct);
+      entries = JSON.parse(plain);
+      vaultObj = obj; master = password;
+      hideAuth();
+      showApp();
+    } catch(err) {
+      console.error(err);
+      alert('Failed to open vault. Wrong password or corrupted file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showApp(){
+  document.getElementById('step1').classList.add('hidden');
+  authBox.classList.add('hidden');
+  app.classList.remove('hidden');
+  renderEntries();
+}
+
+function renderEntries(){
+  entriesTable.innerHTML = '';
+  entries.forEach((it, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(it.service)}</td>
+      <td>${escapeHtml(it.username)}</td>
+      <td>${escapeHtml(it.note || '')}</td>
+      <td>
+        <button data-idx="${idx}" class="small">Reveal / Copy</button>
+        <button data-edit="${idx}" class="small">Edit</button>
+        <button data-del="${idx}" class="small">Delete</button>
+      </td>
+    `;
+    entriesTable.appendChild(tr);
+  });
+  // bind actions
+  entriesTable.querySelectorAll('button[data-idx]').forEach(b=>{
+    b.onclick = () => { const i=+b.dataset.idx; revealCopy(i); };
+  });
+  entriesTable.querySelectorAll('button[data-edit]').forEach(b=>{
+    b.onclick = () => {
+      const i = +b.dataset.edit; const it = entries[i];
+      siteEl.value = it.service; userEl.value = it.username; pwdEl.value = it.password; noteEl.value = it.note || '';
+    };
+  });
+  entriesTable.querySelectorAll('button[data-del]').forEach(b=>{
+    b.onclick = () => {
+      const i = +b.dataset.del;
+      if(!confirm('Delete this entry?')) return;
+      entries.splice(i,1); renderEntries();
+    };
+  });
+}
+
+function revealCopy(i) {
+  const item = entries[i];
+  // copy to clipboard (try secure API then fallback)
+  const text = item.password;
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(()=> alert('Password copied to clipboard.'));
+  } else {
+    // fallback
+    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    alert('Password copied to clipboard (fallback).');
+  }
+}
+
+addBtn.onclick = () => {
+  const s = siteEl.value.trim(); const u = userEl.value.trim(); const p = pwdEl.value; const n = noteEl.value.trim();
+  if(!s || !u || !p) return alert('Service, username and password required.');
+  // update if service exists
+  const existing = entries.findIndex(e=>e.service === s);
+  const obj = {service:s, username:u, password:p, note:n};
+  if(existing >= 0) entries[existing] = obj; else entries.push(obj);
+  siteEl.value=''; userEl.value=''; pwdEl.value=''; noteEl.value='';
+  renderEntries();
+};
+
+clearBtn.onclick = ()=>{ siteEl.value=''; userEl.value=''; pwdEl.value=''; noteEl.value=''; };
+
+downloadBtn.onclick = async () => {
+  if(!vaultObj || master===null) return alert('No vault loaded.');
+  // create new encrypted file with current entries and same salt
+  const salt = vaultObj.salt;
+  const key = await deriveKey(master, salt);
+  const cipher = await encryptText(key, JSON.stringify(entries));
+  const fileObj = {version:1, salt, iv:cipher.iv, ct:cipher.ct};
+  const blob = new Blob([JSON.stringify(fileObj, null, 2)], {type:'application/json'});
+  downloadBlob(blob, 'vault.json');
+  alert('Encrypted vault downloaded. Upload/commit this file to your private repo to sync.');
+};
+
+importBtn.onclick = ()=> fileInput.click();
+
+syncHintBtn.onclick = ()=> {
+  showModal(`<h3>GitHub sync quick steps</h3>
+  <ol>
+    <li>Create a <strong>private</strong> GitHub repo.</li>
+    <li>Upload the downloaded <code>vault.json</code> into that repo (Add file → Upload files).</li>
+    <li>On other computers: clone the repo or download the file and open it with this page.</li>
+    <li>When you update the vault here, click "Download Encrypted Vault" and replace the file in the repo (upload/commit).</li>
+  </ol>
+  <p class="muted">Keep the repo private and never share your master password.</p>`);
+};
+
+lockBtn.onclick = () => {
+  if(!confirm('Lock the vault now?')) return;
+  vaultObj = null; entries = []; master = null;
+  app.classList.add('hidden'); document.getElementById('step1').classList.remove('hidden');
+  fileInput.value = '';
+};
+
+function showModal(html){ modal.classList.remove('hidden'); modal.innerHTML = html + '<p style="margin-top:8px"><button id="closeModal" class="small">Close</button></p>'; document.getElementById('closeModal').onclick = ()=>modal.classList.add('hidden'); }
+
+function downloadBlob(blob, name){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 600);
+}
+
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* allow load via double-click file open into file input */
+fileInput.onchange = ()=>{ /* user will click Open selected vault */ };
+
+// Drag & drop optional
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  if(e.dataTransfer.files && e.dataTransfer.files.length) {
+    fileInput.files = e.dataTransfer.files;
+    alert('File loaded. Click "Open selected vault".');
+  }
+});
+</script>
+</body>
+</html>
