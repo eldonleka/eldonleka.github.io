@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Devis Carrelage Pro</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    background:#f3f6fb;
+    color:#1f2937;
+}
+
+.container{
+    width:95%;
+    max-width:1400px;
+    margin:30px auto;
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:25px;
+}
+
+.panel{
+    background:white;
+    border-radius:22px;
+    padding:25px;
+    box-shadow:0 10px 35px rgba(0,0,0,0.08);
+}
+
+h1{
+    font-size:28px;
+    margin-bottom:20px;
+    color:#0f172a;
+}
+
+h2{
+    margin-bottom:15px;
+    color:#111827;
+}
+
+label{
+    display:block;
+    margin-top:14px;
+    margin-bottom:6px;
+    font-size:14px;
+    font-weight:600;
+}
+
+input, select, textarea{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #d1d5db;
+    font-size:14px;
+}
+
+.row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+button{
+    border:none;
+    padding:14px;
+    border-radius:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn-primary{
+    background:#2563eb;
+    color:white;
+}
+
+.btn-primary:hover{
+    background:#1d4ed8;
+}
+
+.btn-green{
+    background:#059669;
+    color:white;
+}
+
+.btn-dark{
+    background:#111827;
+    color:white;
+}
+
+.btn-red{
+    background:#dc2626;
+    color:white;
+}
+
+.actions{
+    display:grid;
+    gap:10px;
+    margin-top:20px;
+}
+
+.preview{
+    background:white;
+    border-radius:25px;
+    padding:40px;
+    min-height:900px;
+    box-shadow:0 10px 35px rgba(0,0,0,0.08);
+}
+
+.invoice-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:40px;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:800;
+    color:#2563eb;
+}
+
+.company{
+    margin-top:10px;
+    color:#6b7280;
+    line-height:1.7;
+}
+
+.invoice-title{
+    text-align:right;
+}
+
+.invoice-title h1{
+    margin:0;
+    font-size:40px;
+}
+
+.invoice-title p{
+    color:#6b7280;
+}
+
+.client-box{
+    background:#f8fafc;
+    padding:20px;
+    border-radius:18px;
+    margin-bottom:30px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+thead{
+    background:#111827;
+    color:white;
+}
+
+th, td{
+    padding:15px;
+    text-align:left;
+}
+
+tbody tr{
+    border-bottom:1px solid #e5e7eb;
+}
+
+.total-box{
+    margin-top:30px;
+    display:flex;
+    justify-content:flex-end;
+}
+
+.total{
+    width:320px;
+    background:#f8fafc;
+    border-radius:20px;
+    padding:25px;
+}
+
+.total-row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:12px;
+}
+
+.grand{
+    font-size:24px;
+    font-weight:700;
+    color:#2563eb;
+}
+
+.footer{
+    margin-top:50px;
+    padding-top:25px;
+    border-top:1px solid #e5e7eb;
+    color:#6b7280;
+    text-align:center;
+}
+
+.badge{
+    display:inline-block;
+    padding:7px 14px;
+    background:#dbeafe;
+    color:#1d4ed8;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:10px;
+}
+
+@media(max-width:1000px){
+    .container{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="panel">
+
+<h1>🧱 Générateur Devis</h1>
+
+<h2>Entreprise</h2>
+
+<label>Nom entreprise</label>
+<input id="companyName" value="CARRELAGE PRO">
+
+<label>Adresse</label>
+<input id="companyAddress" value="Paris, France">
+
+<label>Téléphone</label>
+<input id="companyPhone" value="+33 6 00 00 00 00">
+
+<hr style="margin:20px 0">
+
+<h2>Client</h2>
+
+<label>Nom client</label>
+<input id="clientName" placeholder="Nom du client">
+
+<label>Adresse client</label>
+<input id="clientAddress" placeholder="Adresse">
+
+<hr style="margin:20px 0">
+
+<h2>Ajouter Article</h2>
+
+<label>Désignation</label>
+<select id="designation">
+<option>Pose carrelage sol</option>
+<option>Faïence murale</option>
+<option>Salle de bain complète</option>
+<option>Plinthes</option>
+<option>Étanchéité</option>
+<option>Terrasse</option>
+<option>Escaliers</option>
+<option>Autre</option>
+</select>
+
+<label>Description</label>
+<textarea id="description">Fourniture colle + joints Weber</textarea>
+
+<div class="row">
+<div>
+<label>Quantité / Surface</label>
+<input type="number" id="qty" value="1">
+</div>
+
+<div>
+<label>Prix €</label>
+<input type="number" id="price" value="50">
+</div>
+</div>
+
+<label>Type</label>
+<select id="unit">
+<option>m²</option>
+<option>forfait</option>
+<option>pièce</option>
+<option>ml</option>
+</select>
+
+<div class="actions">
+<button class="btn-primary" onclick="addItem()">➕ Ajouter</button>
+<button class="btn-green" onclick="downloadPDF()">📄 Export PDF</button>
+<button class="btn-dark" onclick="downloadExcel()">📊 Export Excel</button>
+<button class="btn-red" onclick="clearItems()">🗑️ Vider</button>
+</div>
+
+</div>
+
+<div class="preview" id="invoice">
+
+<div class="invoice-header">
+
+<div>
+<div class="logo" id="previewCompany">
+CARRELAGE PRO
+</div>
+
+<div class="company">
+<div id="previewAddress">Paris, France</div>
+<div id="previewPhone">+33 6 00 00 00 00</div>
+</div>
+</div>
+
+<div class="invoice-title">
+<div class="badge">DEVIS PROFESSIONNEL</div>
+<h1>DEVIS</h1>
+<p id="date"></p>
+</div>
+
+</div>
+
+<div class="client-box">
+<h3>Client</h3>
+<p id="previewClient">Nom du client</p>
+<p id="previewClientAddress">Adresse du client</p>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Désignation</th>
+<th>Description</th>
+<th>Qté</th>
+<th>Prix</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody id="itemsTable">
+
+</tbody>
+</table>
+
+<div class="total-box">
+<div class="total">
+
+<div class="total-row">
+<span>Sous-total</span>
+<span id="subtotal">0 €</span>
+</div>
+
+<div class="total-row">
+<span>TVA 20%</span>
+<span id="vat">0 €</span>
+</div>
+
+<hr style="margin:15px 0">
+
+<div class="total-row grand">
+<span>Total TTC</span>
+<span id="grandTotal">0 €</span>
+</div>
+
+</div>
+</div>
+
+<div class="footer">
+Merci de votre confiance.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const items = [];
+
+document.getElementById("date").innerText =
+"Édité le " + new Date().toLocaleDateString("fr-FR");
+
+function updateCompany(){
+    document.getElementById("previewCompany").innerText =
+    document.getElementById("companyName").value;
+
+    document.getElementById("previewAddress").innerText =
+    document.getElementById("companyAddress").value;
+
+    document.getElementById("previewPhone").innerText =
+    document.getElementById("companyPhone").value;
+
+    document.getElementById("previewClient").innerText =
+    document.getElementById("clientName").value;
+
+    document.getElementById("previewClientAddress").innerText =
+    document.getElementById("clientAddress").value;
+}
+
+document.querySelectorAll("input").forEach(el=>{
+    el.addEventListener("input",updateCompany);
+});
+
+function addItem(){
+
+    const designation =
+    document.getElementById("designation").value;
+
+    const description =
+    document.getElementById("description").value;
+
+    const qty =
+    parseFloat(document.getElementById("qty").value);
+
+    const price =
+    parseFloat(document.getElementById("price").value);
+
+    const unit =
+    document.getElementById("unit").value;
+
+    const total = qty * price;
+
+    items.push({
+        designation,
+        description,
+        qty,
+        unit,
+        price,
+        total
+    });
+
+    renderItems();
+}
+
+function renderItems(){
+
+    const table =
+    document.getElementById("itemsTable");
+
+    table.innerHTML = "";
+
+    let subtotal = 0;
+
+    items.forEach(item=>{
+
+        subtotal += item.total;
+
+        table.innerHTML += `
+        <tr>
+            <td>${item.designation}</td>
+            <td>${item.description}</td>
+            <td>${item.qty} ${item.unit}</td>
+            <td>${item.price.toFixed(2)} €</td>
+            <td>${item.total.toFixed(2)} €</td>
+        </tr>
+        `;
+    });
+
+    const vat = subtotal * 0.20;
+    const grand = subtotal + vat;
+
+    document.getElementById("subtotal").innerText =
+    subtotal.toFixed(2) + " €";
+
+    document.getElementById("vat").innerText =
+    vat.toFixed(2) + " €";
+
+    document.getElementById("grandTotal").innerText =
+    grand.toFixed(2) + " €";
+}
+
+function clearItems(){
+    items.length = 0;
+    renderItems();
+}
+
+async function downloadPDF(){
+
+    const invoice =
+    document.getElementById("invoice");
+
+    const canvas =
+    await html2canvas(invoice,{scale:2});
+
+    const imgData =
+    canvas.toDataURL("image/png");
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf =
+    new jsPDF("p","mm","a4");
+
+    const width = 210;
+    const height =
+    canvas.height * width / canvas.width;
+
+    pdf.addImage(imgData,"PNG",0,0,width,height);
+
+    pdf.save("devis-carrelage.pdf");
+}
+
+function downloadExcel(){
+
+    const data = items.map(i=>({
+        Designation:i.designation,
+        Description:i.description,
+        Quantite:i.qty,
+        Unite:i.unit,
+        Prix:i.price,
+        Total:i.total
+    }));
+
+    const ws =
+    XLSX.utils.json_to_sheet(data);
+
+    const wb =
+    XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb,ws,"Devis");
+
+    XLSX.writeFile(wb,"devis-carrelage.xlsx");
+}
+
+</script>
+
+</body>
+</html>
