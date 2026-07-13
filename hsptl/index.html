@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hospital — Fast Patients Panel</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Hospital — Patients Panel</h1>
+    <div class="controls">
+      <button id="exportBtn" class="btn">Export JSON</button>
+      <label class="btn ghost" id="importLabel">Import JSON
+        <input id="importFile" type="file" accept="application/json" style="display:none">
+      </label>
+      <button id="clearAllBtn" class="btn ghost">Clear All</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="rooms-header">
+      <button id="addRoomBtn" class="btn">+ Add Room</button>
+      <div class="hint muted">Click any bed to open quick edit modal. Discharge clears bed (keeps history).</div>
+    </div>
+
+    <div id="roomsContainer" class="rooms"></div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <header class="modal-head">
+        <h2 id="modalTitle">Edit Patient</h2>
+        <button id="closeModal" class="btn ghost">✕</button>
+      </header>
+
+      <form id="patientForm" class="modal-body">
+        <div class="row">
+          <label>Room</label>
+          <select id="formRoom" required></select>
+          <label>Bed</label>
+          <select id="formBed" required></select>
+        </div>
+
+        <label>Name</label>
+        <input id="formName" autocomplete="off" required>
+
+        <div class="row">
+          <div style="flex:1">
+            <label>Age</label>
+            <input id="formAge" type="number" min="0">
+          </div>
+          <div style="flex:1">
+            <label>Gender</label>
+            <select id="formGender"><option></option><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+        </div>
+
+        <label>Diagnosis</label>
+        <input id="formDiagnosis">
+
+        <label>Medications (comma separated)</label>
+        <input id="formMeds">
+
+        <label>Notes</label>
+        <textarea id="formNotes" rows="2"></textarea>
+
+        <div class="row">
+          <div style="flex:1">
+            <label>Register (auto-filled)</label>
+            <input id="formRegister" type="datetime-local">
+          </div>
+          <div style="flex:1">
+            <label>Leaving (optional)</label>
+            <input id="formLeave" type="datetime-local">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn">Save</button>
+          <button id="dischargeBtn" type="button" class="btn ghost danger">Discharge</button>
+          <button id="resetForm" type="button" class="btn ghost">Reset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer muted">Tip: Export JSON to move data. App autosaves to browser localStorage.</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+:root{
+  --bg:#f6f8fb;
+  --card:#fff;
+  --accent:#0b63d6;
+  --danger:#e12d2d;
+  --muted:#64748b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Helvetica,Arial,sans-serif;background:var(--bg);color:#0b1a2b}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:#fff;border-bottom:1px solid #eef2f7}
+.topbar h1{margin:0;font-size:18px}
+.controls{display:flex;gap:8px;align-items:center}
+.wrap{max-width:1100px;margin:18px auto;padding:0 12px}
+.rooms-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.hint{font-size:13px;color:var(--muted)}
+.btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(11,99,214,.12)}
+.btn.danger{background:var(--danger);color:#fff}
+.muted{color:var(--muted)}
+.rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.room{background:var(--card);border-radius:10px;padding:10px;box-shadow:0 6px 18px rgba(2,6,23,.04);display:flex;flex-direction:column;gap:8px}
+.room-head{display:flex;justify-content:space-between;align-items:center}
+.room-title{font-weight:700}
+.beds{display:flex;flex-direction:column;gap:6px}
+.bed{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fbfdff;border:1px solid #eef6ff;cursor:pointer}
+.bed .left{display:flex;flex-direction:column}
+.bed .title{font-weight:700}
+.bed .meta{font-size:13px;color:var(--muted)}
+.room-actions{display:flex;gap:6px;align-items:center;margin-top:6px}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(2,6,23,.4);display:flex;align-items:center;justify-content:center;z-index:80}
+.hidden{display:none}
+.modal-card{width:680px;max-width:95%;background:#fff;border-radius:12px;padding:14px;box-shadow:0 20px 70px rgba(2,6,23,.35)}
+.modal-head{display:flex;justify-content:space-between;align-items:center}
+.modal-body{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.row{display:flex;gap:8px}
+input,select,textarea{padding:8px;border-radius:8px;border:1px solid #e6eef6;width:100%;font-size:14px}
+textarea{resize:vertical}
+.modal-actions{display:flex;gap:8px;align-items:center;margin-top:8px}
+.footer{padding:14px;text-align:center;color:var(--muted);font-size:13px}
+
+/* small screens */
+@media (max-width:640px){
+  .rooms{grid-template-columns:1fr}
+  .modal-card{width:95%}
+  .row{flex-direction:column}
+}
