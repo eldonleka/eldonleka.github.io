@@ -386,16 +386,17 @@
                 margin: 0;
             }
 
-            body {
+            html, body {
                 background: white !important;
                 padding: 0 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                font-size: 12px;
             }
 
             .cv-container {
                 display: grid;
-                grid-template-columns: 260px 1fr;
+                grid-template-columns: 220px 1fr;
                 gap: 0;
                 max-width: 100%;
                 box-shadow: none;
@@ -405,15 +406,164 @@
             }
 
             .sidebar {
-                padding: 30px 20px;
+                padding: 18px 14px;
                 background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%) !important;
             }
 
-            .content {
-                padding: 30px;
+            .sidebar img {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 12px;
             }
 
+            .sidebar-section {
+                margin-bottom: 14px;
+            }
 
+            .sidebar-heading {
+                font-size: 10px;
+                margin-bottom: 6px;
+            }
+
+            .info-row {
+                font-size: 10.5px;
+                line-height: 1.4;
+            }
+
+            .lang-item {
+                font-size: 10.5px;
+                margin-bottom: 4px;
+            }
+
+            .skills-group {
+                margin-bottom: 8px;
+            }
+
+            .skills-label {
+                font-size: 9px;
+                margin-bottom: 4px;
+            }
+
+            .tag {
+                font-size: 9px;
+                padding: 2px 5px;
+                margin-right: 3px;
+                margin-bottom: 3px;
+            }
+
+            .content {
+                padding: 18px 24px;
+            }
+
+            header {
+                margin-bottom: 14px;
+                padding-bottom: 10px;
+            }
+
+            header h1 {
+                font-size: 26px;
+                margin-bottom: 4px;
+            }
+
+            .header-subtitle {
+                font-size: 11px;
+            }
+
+            .profile-summary {
+                padding: 8px 14px;
+                margin-bottom: 14px;
+                font-size: 10.5px;
+                line-height: 1.4;
+            }
+
+            section {
+                margin-bottom: 14px;
+            }
+
+            .section-heading {
+                font-size: 12px;
+                margin-bottom: 10px;
+                padding-bottom: 4px;
+            }
+
+            .job {
+                margin-bottom: 12px;
+            }
+
+            .job-title-row {
+                margin-bottom: 3px;
+            }
+
+            .job-title {
+                font-size: 12px;
+            }
+
+            .job-date {
+                font-size: 10px;
+            }
+
+            .job-meta-row {
+                gap: 10px;
+                margin-bottom: 6px;
+            }
+
+            .job-company,
+            .job-location,
+            .job-sector {
+                font-size: 10px;
+            }
+
+            .job ul {
+                margin-left: 15px;
+            }
+
+            .job li {
+                margin-bottom: 3px;
+                font-size: 10.5px;
+                line-height: 1.35;
+            }
+
+            .edu-item {
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+            }
+
+            .edu-degree {
+                font-size: 11px;
+                margin-bottom: 3px;
+            }
+
+            .edu-sub {
+                font-size: 10px;
+                margin-bottom: 3px;
+            }
+
+            .edu-meta {
+                font-size: 10px;
+            }
+
+            .training-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            .training-card {
+                padding: 10px;
+            }
+
+            .training-card-icon {
+                font-size: 20px;
+                margin-bottom: 5px;
+            }
+
+            .training-card h3 {
+                font-size: 10.5px;
+                margin-bottom: 3px;
+            }
+
+            .training-card p {
+                font-size: 9.5px;
+            }
 
             a {
                 text-decoration: none;
@@ -422,10 +572,6 @@
 
             .job, .edu-item, section {
                 page-break-inside: avoid;
-            }
-
-            .training-grid {
-                grid-template-columns: repeat(3, 1fr);
             }
 
             .profile-summary {
