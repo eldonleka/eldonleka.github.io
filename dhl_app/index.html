@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Posta Ime — Regjistri i Punës</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F1E4;
+    --paper-dim:#ECE4D0;
+    --paper-deep:#DED2B2;
+    --ink:#1E2B3C;
+    --ink-2:#4A5A6E;
+    --stamp:#B23A2E;
+    --stamp-dim:#D8A79F;
+    --route:#3F6B52;
+    --route-dim:#B9CFC0;
+    --gold:#B8863B;
+    --gold-dim:#E4CFA0;
+    --line:#D8CFB8;
+    --white:#FFFDF8;
+    --shadow: 0 1px 0 rgba(30,43,60,.06), 0 6px 16px -8px rgba(30,43,60,.18);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0; letter-spacing:.2px}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  button{font-family:inherit; cursor:pointer}
+  input,select,textarea{font-family:inherit; font-size:15px}
+
+  .app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--paper); position:relative; box-shadow: 0 0 40px rgba(0,0,0,.06);}
+  @media (min-width:481px){ body{background:var(--paper-deep);} }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 18px 10px; border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:var(--paper); z-index:20;
+  }
+  .brand{display:flex; align-items:center; gap:9px}
+  .brand-mark{width:26px;height:26px;border-radius:50%;border:2px solid var(--ink); position:relative; flex:none}
+  .brand-mark::after{content:"";position:absolute; inset:4px; border:1px solid var(--ink); border-radius:50%; opacity:.6}
+  .brand-name{font-family:'Fraunces',serif; font-weight:600; font-size:17px; letter-spacing:.3px}
+  .clock{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-2); letter-spacing:.5px}
+
+  /* ---------- Content / views ---------- */
+  .content{flex:1; padding:16px 16px 90px; overflow-x:hidden}
+  .view{display:none; animation: fadeIn .25s ease}
+  .view.active{display:block}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{
+    background:var(--white); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; margin-bottom:14px; box-shadow:var(--shadow);
+  }
+  .card-title{font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:var(--ink-2); font-weight:600; margin-bottom:10px; font-family:'IBM Plex Mono',monospace}
+  .row{display:flex; gap:10px}
+  .row > *{flex:1}
+  .field{margin-bottom:12px}
+  .field label{display:block; font-size:12.5px; color:var(--ink-2); margin-bottom:5px; font-weight:500}
+  .field input, .field select, .field textarea{
+    width:100%; padding:10px 12px; border:1.4px solid var(--line); border-radius:9px;
+    background:var(--paper); color:var(--ink); outline:none; transition:border-color .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--ink)}
+  .hint{font-size:12px; color:var(--ink-2); margin-top:4px; line-height:1.5}
+  .divider{height:1px; background:var(--line); margin:14px 0; border:none}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    padding:12px 18px; border-radius:10px; border:1.4px solid transparent;
+    font-weight:600; font-size:14.5px; letter-spacing:.2px; width:100%;
+    transition:transform .08s ease, filter .15s ease;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:var(--stamp); color:var(--white)}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn-ghost{background:transparent; border-color:var(--ink); color:var(--ink)}
+  .btn-route{background:var(--route); color:var(--white)}
+  .btn-sm{width:auto; padding:8px 14px; font-size:13px; border-radius:8px}
+  .btn-danger{background:transparent; border-color:var(--stamp); color:var(--stamp)}
+  .btn[disabled]{opacity:.45; pointer-events:none}
+
+  .pill{display:inline-block; padding:3px 10px; border-radius:99px; font-size:11.5px; font-weight:600; letter-spacing:.3px; font-family:'IBM Plex Mono',monospace}
+  .pill-route{background:var(--route-dim); color:var(--route)}
+  .pill-stamp{background:var(--stamp-dim); color:var(--stamp)}
+  .pill-gold{background:var(--gold-dim); color:var(--gold)}
+  .pill-ink{background:var(--paper-deep); color:var(--ink-2)}
+
+  /* ---------- Postmark ---------- */
+  .postmark-wrap{display:flex; justify-content:center; padding:6px 0 4px}
+  .postmark-status{text-align:center; margin-top:-6px}
+
+  /* ---------- Today view ---------- */
+  .status-tabs{display:flex; gap:8px; margin-bottom:14px}
+  .status-tab{flex:1; padding:10px 4px; text-align:center; border-radius:10px; border:1.4px solid var(--line); background:var(--paper); font-size:12.5px; font-weight:600; color:var(--ink-2)}
+  .status-tab.on{border-color:var(--ink); color:var(--ink); background:var(--paper-dim)}
+
+  .quickbox{background:var(--ink); border-radius:var(--radius); padding:16px; margin-bottom:14px; color:var(--paper)}
+  .quickbox .card-title{color:var(--paper-deep)}
+  .quickbox-row{display:flex; gap:8px}
+  .quickbox input{background:var(--white); border:none; border-radius:9px; padding:12px; font-family:'IBM Plex Mono',monospace; font-size:18px; text-align:center; width:100%; color:var(--ink)}
+  .quickbox select{background:var(--white); border:none; border-radius:9px; padding:8px; font-size:12.5px; margin-bottom:8px; width:100%; color:var(--ink)}
+  .quickbox .btn-route{flex:none; width:auto; padding:0 18px}
+  .quickbox-hint{font-size:11.5px; color:var(--paper-deep); margin-top:8px; opacity:.85}
+
+  .progress-track{height:8px; background:var(--paper-dim); border-radius:99px; overflow:hidden; margin:8px 0}
+  .progress-fill{height:100%; background:var(--route); border-radius:99px; transition:width .3s ease}
+  .dotrow{display:flex; gap:6px; margin-top:8px}
+  .dot{width:10px;height:10px;border-radius:50%; background:var(--paper-deep)}
+  .dot.on{background:var(--route)}
+  .kpi-row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px}
+  .kpi-label{font-size:12.5px; color:var(--ink-2)}
+  .kpi-value{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:15px}
+
+  .result-banner{border-radius:10px; padding:12px 14px; margin-top:10px; font-size:13.5px; line-height:1.55}
+  .result-ok{background:var(--route-dim); color:var(--route)}
+  .result-warn{background:var(--gold-dim); color:var(--gold)}
+  .result-bad{background:var(--stamp-dim); color:var(--stamp)}
+
+  /* ---------- Calendar ---------- */
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
+  .cal-head button{background:var(--paper-dim); border:1px solid var(--line); border-radius:8px; width:36px; height:36px; font-size:16px; color:var(--ink)}
+  .cal-title{font-family:'Fraunces',serif; font-weight:600; font-size:18px}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center}
+  .cal-dow{font-size:10.5px; color:var(--ink-2); font-weight:600; padding-bottom:4px; font-family:'IBM Plex Mono',monospace}
+  .cal-cell{aspect-ratio:1; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border:1.4px solid transparent; background:var(--paper); font-size:13px; position:relative}
+  .cal-cell.empty{visibility:hidden}
+  .cal-cell.has-data{background:var(--paper-dim); cursor:pointer}
+  .cal-cell.today{border-color:var(--ink)}
+  .cal-cell:not(.empty){cursor:pointer}
+  .cal-num{font-family:'IBM Plex Mono',monospace; font-weight:600}
+  .cal-dot{width:6px; height:6px; border-radius:50%}
+  .cal-dot.work{background:var(--ink)}
+  .cal-dot.off{background:var(--route)}
+  .cal-dot.sick{background:var(--stamp)}
+  .cal-dot.comp{background:var(--gold)}
+  .legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; font-size:12px; color:var(--ink-2)}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .legend .cal-dot{width:8px;height:8px}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{position:fixed; inset:0; background:rgba(30,43,60,.55); display:flex; align-items:flex-end; justify-content:center; z-index:100}
+  .modal-overlay.hidden{display:none}
+  @media (min-width:481px){ .modal-overlay{align-items:center} }
+  .modal-card{background:var(--paper); width:100%; max-width:480px; border-radius:18px 18px 0 0; padding:20px 18px 26px; max-height:88vh; overflow-y:auto; animation:slideUp .22s ease}
+  @media (min-width:481px){ .modal-card{border-radius:18px; margin:0 16px} }
+  @keyframes slideUp{from{transform:translateY(24px); opacity:.4} to{transform:none; opacity:1}}
+  .modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px}
+  .modal-close{width:32px;height:32px;border-radius:50%; border:1px solid var(--line); background:var(--white); font-size:16px; color:var(--ink-2)}
+
+  /* ---------- Tours ---------- */
+  .tour-select-row{display:flex; gap:8px; margin-bottom:14px}
+  .neigh-table{width:100%; border-collapse:collapse; font-size:13.5px}
+  .neigh-table th{text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-2); padding:6px 8px; border-bottom:1.4px solid var(--line); font-family:'IBM Plex Mono',monospace}
+  .neigh-table td{padding:8px; border-bottom:1px solid var(--line); vertical-align:middle}
+  .neigh-table tr:last-child td{border-bottom:none}
+  .neigh-nr{font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--stamp)}
+  .row-actions{display:flex; gap:6px; justify-content:flex-end}
+  .icon-btn{width:28px;height:28px; border-radius:7px; border:1px solid var(--line); background:var(--paper); display:inline-flex; align-items:center; justify-content:center; color:var(--ink-2)}
+  .empty-state{text-align:center; padding:26px 10px; color:var(--ink-2)}
+  .empty-state svg{margin-bottom:10px; opacity:.5}
+  .empty-state p{font-size:13.5px; line-height:1.6; margin:0}
+
+  /* ---------- Pay ---------- */
+  .month-nav{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px}
+  .payline{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px}
+  .payline:last-child{border-bottom:none}
+  .payline.total{font-weight:700; font-size:17px; padding-top:14px; border-top:1.6px solid var(--ink); border-bottom:none; margin-top:4px}
+  .payline .amt{font-family:'IBM Plex Mono',monospace}
+  .payline .neg .amt{color:var(--stamp)}
+  .disclaimer{font-size:12px; color:var(--ink-2); line-height:1.6; background:var(--paper-dim); border-radius:10px; padding:11px 13px; margin-top:6px}
+
+  /* ---------- Settings ---------- */
+  .switch-row{display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--line)}
+  .switch-row:last-child{border-bottom:none}
+  .switch-label{font-size:14px}
+  .switch-sub{font-size:12px; color:var(--ink-2); margin-top:2px}
+  .toggle{width:44px; height:26px; border-radius:99px; background:var(--paper-deep); position:relative; border:none; flex:none}
+  .toggle.on{background:var(--route)}
+  .toggle::after{content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:var(--white); transition:left .15s ease}
+  .toggle.on::after{left:21px}
+
+  /* ---------- Bottom nav ---------- */
+  .bottomnav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px;
+    display:flex; background:var(--white); border-top:1px solid var(--line);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom)); z-index:30;
+  }
+  .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:var(--ink-2); padding:6px 2px; border-radius:10px}
+  .navbtn.on{color:var(--stamp)}
+  .navbtn svg{width:21px; height:21px}
+  .navbtn span{font-size:10px; font-weight:600; letter-spacing:.2px}
+
+  .toast{position:fixed; bottom:86px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:10px 18px; border-radius:99px; font-size:13px; z-index:200; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; max-width:90%; text-align:center}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px)}
+
+  .flex-between{display:flex; justify-content:space-between; align-items:center}
+  textarea{resize:vertical; min-height:80px; line-height:1.5}
+  .stamp-perf{border-top:2px dashed var(--line); margin:16px 0 4px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">Posta Ime</div>
+    </div>
+    <div class="clock mono" id="liveClock">--:--</div>
+  </div>
+
+  <main class="content">
+
+    <!-- ===================== SOT (TODAY) ===================== -->
+    <section class="view active" id="view-today">
+
+      <div class="postmark-wrap" id="postmarkWrap"></div>
+
+      <div class="card">
+        <div class="card-title">Statusi i sotëm</div>
+        <div class="status-tabs" id="statusTabs">
+          <button class="status-tab" data-status="work">Punë</button>
+          <button class="status-tab" data-status="off">Pushim</button>
+          <button class="status-tab" data-status="sick">Sëmurë</button>
+          <button class="status-tab" data-status="comp">Pushim (Bilanci)</button>
+        </div>
+
+        <div id="workFields">
+          <div class="row">
+            <div class="field">
+              <label>Fillimi</label>
+              <input type="time" id="inStart">
+            </div>
+            <div class="field">
+              <label>Mbarimi</label>
+              <input type="time" id="inEnd">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Pauzë (min)</label>
+              <input type="number" id="inBreak" min="0" step="5" value="0">
+            </div>
+            <div class="field">
+              <label>Touri i sotëm</label>
+              <select id="inTour"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:2px">
+          <label>Shënim (opsionale)</label>
+          <input type="text" id="inNote" placeholder="p.sh. diçka për t'u mbajtur mend">
+        </div>
+
+        <button class="btn btn-primary" id="btnSaveDay">Ruaj Ditën</button>
+        <div id="dayResult"></div>
+      </div>
+
+      <div class="quickbox">
+        <div class="card-title">Kërko Lagje — Shpejt</div>
+        <select id="quickTourSelect"></select>
+        <div class="quickbox-row">
+          <input type="number" id="quickNr" placeholder="Nr. i lagjes" inputmode="numeric" min="1">
+          <button class="btn btn-route" id="btnQuickGo">Hap Maps →</button>
+        </div>
+        <div class="quickbox-hint" id="quickHint"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Kjo Javë</div>
+        <div class="kpi-row">
+          <span class="kpi-label">Orë të punuara</span>
+          <span class="kpi-value" id="weekHoursTxt">0.0h / 31h</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="weekProgressFill" style="width:0%"></div></div>
+        <div class="dotrow" id="weekDots"></div>
+        <div class="divider"></div>
+        <div class="kpi-row">
+          <span class="kpi-label">Bilanci gjithsej (orë plus/minus)</span>
+          <span class="kpi-value" id="balanceTxt">+0:00</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===================== KALENDARI ===================== -->
+    <section class="view" id="view-calendar">
+      <div class="card">
+        <div class="cal-head">
+          <button id="calPrev">‹</button>
+          <div class="cal-title" id="calTitle">—</div>
+          <button id="calNext">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="legend">
+          <span><i class="cal-dot work"></i> Punë</span>
+          <span><i class="cal-dot off"></i> Pushim</span>
+          <span><i class="cal-dot sick"></i> Sëmurë</span>
+          <span><i class="cal-dot comp"></i> Pushim (Bilanci)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TOURAT ===================== -->
+    <section class="view" id="view-tours">
+      <div class="card">
+        <div class="card-title">Zgjidh Tourin</div>
+        <div class="tour-select-row">
+          <select id="tourSelect" style="flex:1; padding:10px 12px; border-radius:9px; border:1.4px solid var(--line); background:var(--paper)"></select>
+          <button class="btn btn-primary btn-sm" id="btnNewTour">+ Tour i Ri</button>
+        </div>
+      </div>
+
+      <div id="tourPanel"></div>
+    </section>
+
+    <!-- ===================== PAGA ===================== -->
+    <section class="view" id="view-pay">
+      <div class="card">
+        <div class="month-nav">
+          <button id="payPrev" style="background:var(--paper-dim); border:1px solid var(--line); border-radius:8px; width:36px; height:36px">‹</button>
+          <div class="cal-title" id="payTitle">—</div>
+          <button id="payNext" style="background:var(--paper-dim); border:1px solid var(--line); border-radius:8px; width:36px; height:36px">›</button>
+        </div>
+        <div class="payline"><span>Ditë të paguara</span><span class="amt mono" id="payDays">0</span></div>
+        <div class="payline"><span>Bruto</span><span class="amt mono" id="payGross">0,00 €</span></div>
+        <div class="payline neg"><span>Rentenversicherung (9,3%)</span><span class="amt mono" id="payRV">−0,00 €</span></div>
+        <div class="payline neg"><span>Arbeitslosenversicherung (1,3%)</span><span class="amt mono" id="payALV">−0,00 €</span></div>
+        <div class="payline neg"><span>Krankenversicherung</span><span class="amt mono" id="payKV">−0,00 €</span></div>
+        <div class="payline neg"><span>Pflegeversicherung</span><span class="amt mono" id="payPV">−0,00 €</span></div>
+        <div class="payline neg"><span>Lohnsteuer (vlerësim)</span><span class="amt mono" id="payLSt">−0,00 €</span></div>
+        <div class="payline neg"><span>Solidaritätszuschlag</span><span class="amt mono" id="paySoli">−0,00 €</span></div>
+        <div class="payline total"><span>Neto (vlerësim)</span><span class="amt mono" id="payNet">0,00 €</span></div>
+        <div class="disclaimer">Ky është vetëm një <strong>vlerësim</strong>, bazuar në Steuerklasse 4, i martuar, pa fëmijë, pa taksë kishe, sipas formulës zyrtare §32a EStG 2026. Paga reale mund të ndryshojë pak sipas kursit të saktë "Zusatzbeitrag" të sigurimit tënd shëndetësor (rregullo te Cilësimet).</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Bilanci i Orëve (Gleitzeitkonto)</div>
+        <div class="kpi-row"><span class="kpi-label">Bilanci gjithsej deri sot</span><span class="kpi-value" id="payBalance">+0:00</span></div>
+        <div class="hint">Orët plus mund t'i marrësh si pagesë shtesë (thjesht duke i punuar — llogariten automatikisht në bruto muajin kur i punon), ose t'i "shpenzosh" duke shënuar një ditë si <strong>Pushim (Bilanci)</strong> në kalendar.</div>
+      </div>
+    </section>
+
+    <!-- ===================== CILËSIMET ===================== -->
+    <section class="view" id="view-settings">
+
+      <div class="card">
+        <div class="card-title">Orari &amp; Paga</div>
+        <div class="row">
+          <div class="field"><label>Fillimi zyrtar</label><input type="time" id="setStart"></div>
+          <div class="field"><label>Mbarimi zyrtar</label><input type="time" id="setEnd"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Afati max i mbarimit</label><input type="time" id="setMaxEnd"></div>
+          <div class="field"><label>Paga / orë (€ bruto)</label><input type="number" id="setRate" step="0.01" min="0"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Ditë pune / javë</label><input type="number" id="setWorkdays" min="1" max="7"></div>
+          <div class="field"><label>Orë target / javë</label><input type="number" id="setWeeklyTarget" min="1" max="60"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Kërkimi në Maps</div>
+        <div class="field"><label>Qyteti (shtohet te kërkimi për saktësi)</label><input type="text" id="setCity" placeholder="p.sh. Hamburg"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Të Dhënat Tatimore</div>
+        <div class="row">
+          <div class="field"><label>Steuerklasse</label>
+            <select id="setTaxClass"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+          </div>
+          <div class="field"><label>Fëmijë (numri)</label><input type="number" id="setChildren" min="0" max="10"></div>
+        </div>
+        <div class="switch-row">
+          <div><div class="switch-label">I/E martuar</div></div>
+          <button class="toggle" id="setMarried"></button>
+        </div>
+        <div class="switch-row">
+          <div><div class="switch-label">Taksë kishe (Kirchensteuer)</div></div>
+          <button class="toggle" id="setChurch"></button>
+        </div>
+        <div class="switch-row">
+          <div><div class="switch-label">Zuschlag pa fëmijë (Pflegeversicherung)</div><div class="switch-sub">Vlen automatikisht nëse s'ke fëmijë dhe je mbi 23 vjeç</div></div>
+          <button class="toggle" id="setPvChildless"></button>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Zusatzbeitrag i sigurimit shëndetësor (%, mesatarja 2026 = 2,9)</label>
+          <input type="number" id="setZusatz" step="0.1" min="0" max="10">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Të Dhënat</div>
+        <button class="btn btn-ghost" id="btnExportAll">Eksporto Gjithçka (JSON)</button>
+        <div style="height:10px"></div>
+        <label class="btn btn-ghost" style="display:flex" for="fileImportAll">Importo nga JSON</label>
+        <input type="file" id="fileImportAll" accept="application/json" style="display:none">
+        <div class="hint">Importimi mbishkruan të dhënat aktuale në këtë pajisje. Bëj eksport para se të importosh diçka të re, nëse do backup.</div>
+        <div style="height:14px"></div>
+        <button class="btn btn-danger" id="btnResetAll">Fshi të Gjitha të Dhënat</button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <nav class="bottomnav">
+    <button class="navbtn on" data-view="today">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+      <span>Sot</span>
+    </button>
+    <button class="navbtn" data-view="calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+      <span>Kalendari</span>
+    </button>
+    <button class="navbtn" data-view="tours">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>
+      <span>Tourat</span>
+    </button>
+    <button class="navbtn" data-view="pay">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 15.5c.5 1 1.4 1.5 2.6 1.5 1.7 0 2.9-.9 2.9-2.2 0-1.4-1.2-1.9-2.9-2.3-1.6-.4-2.6-1-2.6-2.2 0-1.2 1.1-2 2.6-2 1.2 0 2 .5 2.5 1.4M12 7.5v9"/></svg>
+      <span>Paga</span>
+    </button>
+    <button class="navbtn" data-view="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.9 7.9 0 000-3l2-1.4-2-3.5-2.3.8a8 8 0 00-2.6-1.5L14 2h-4l-.5 2.4a8 8 0 00-2.6 1.5l-2.3-.8-2 3.5 2 1.4a7.9 7.9 0 000 3l-2 1.4 2 3.5 2.3-.8a8 8 0 002.6 1.5L10 22h4l.5-2.4a8 8 0 002.6-1.5l2.3.8 2-3.5-2-1.4z"/></svg>
+      <span>Cilësime</span>
+    </button>
+  </nav>
+
+</div>
+
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+var MONTHS = ["Janar","Shkurt","Mars","Prill","Maj","Qershor","Korrik","Gusht","Shtator","Tetor","Nëntor","Dhjetor"];
+var DOW_SHORT = ["Hën","Mar","Mër","Enj","Pre","Sht","Die"];
+var DOW_FULL = ["E HËNË","E MARTË","E MËRKURË","E ENJTE","E PREMTE","E SHTUNË","E DIEL"];
+var STATUS_LABEL = {work:"PUNË", off:"PUSHIM", sick:"SËMURË", comp:"BILANCI"};
+var STATUS_COLOR_VAR = {work:"--ink", off:"--route", sick:"--stamp", comp:"--gold"};
+
+var DEFAULT_SETTINGS = {
+  officialStart:"07:45",
+  officialEnd:"15:41",
+  maxEnd:"16:11",
+  hourlyRate:16.70,
+  workdaysPerWeek:4,
+  weeklyTarget:31,
+  city:"",
+  tax:{ taxClass:4, married:true, children:0, churchTax:false, pvChildless:true, zusatzbeitrag:2.9 }
+};
+
+var STATE = { settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)), days:{}, tours:[] };
+var calCursor = new Date();
+var payCursor = new Date();
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+function hasStorage(){ return typeof window.storage !== "undefined" && window.storage; }
+
+function loadKey(key, fallback){
+  if(!hasStorage()) return Promise.resolve(fallback);
+  return window.storage.get(key, false).then(function(res){
+    if(res && res.value) { try{ return JSON.parse(res.value); }catch(e){ return fallback; } }
+    return fallback;
+  }).catch(function(){ return fallback; });
+}
+function saveKey(key, value){
+  if(!hasStorage()) return Promise.resolve(null);
+  return window.storage.set(key, JSON.stringify(value), false).catch(function(){ return null; });
+}
+function saveSettings(){ return saveKey('settings', STATE.settings); }
+function saveDays(){ return saveKey('days', STATE.days); }
+function saveTours(){ return saveKey('tours', STATE.tours); }
+
+function loadAll(){
+  return Promise.all([
+    loadKey('settings', null),
+    loadKey('days', null),
+    loadKey('tours', null)
+  ]).then(function(r){
+    if(r[0]) STATE.settings = mergeDefaults(r[0]);
+    if(r[1]) STATE.days = r[1];
+    if(r[2]) STATE.tours = r[2];
+  });
+}
+function mergeDefaults(s){
+  var out = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  for(var k in s){ if(k==='tax'){ for(var t in s.tax){ out.tax[t]=s.tax[t]; } } else { out[k]=s[k]; } }
+  return out;
+}
+
+/* ============================================================
+   TIME / DATE HELPERS
+   ============================================================ */
+function pad2(n){ return (n<10?"0":"")+n; }
+function dateKey(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+function todayKey(){ return dateKey(new Date()); }
+function timeToMin(t){ if(!t) return null; var p=t.split(':'); return (+p[0])*60+(+p[1]); }
+function minToHHMM(min){
+  var sign = min<0 ? "-" : "+";
+  var m = Math.abs(Math.round(min));
+  return sign+Math.floor(m/60)+":"+pad2(m%60);
+}
+function minToHours1(min){ return (min/60).toFixed(1); }
+function fmtEUR(n){
+  var neg = n<0; n=Math.abs(n);
+  var s = n.toFixed(2).replace('.', ',');
+  var parts = s.split(',');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (neg?"−":"")+parts.join(',')+" €";
+}
+function sollMinutes(){ return timeToMin(STATE.settings.officialEnd) - timeToMin(STATE.settings.officialStart); }
+function mondayOf(date){
+  var d = new Date(date); var day = d.getDay(); var diff = (day===0? -6 : 1-day);
+  d.setDate(d.getDate()+diff); d.setHours(0,0,0,0); return d;
+}
+function addDays(date,n){ var d=new Date(date); d.setDate(d.getDate()+n); return d; }
+
+/* ============================================================
+   DAY / PAYROLL CALCULATIONS
+   ============================================================ */
+function computeWorkDay(entry){
+  if(!entry || entry.status!=='work' || !entry.start || !entry.end) return null;
+  var start = timeToMin(entry.start), end = timeToMin(entry.end);
+  var brk = entry.breakMin || 0;
+  var soll = sollMinutes();
+  var maxEndMin = timeToMin(STATE.settings.maxEnd);
+  var cappedEnd = Math.min(end, maxEndMin);
+  var creditedWorked = cappedEnd - start - brk;
+  var actualWorked = end - start - brk;
+  return {
+    actualWorked: actualWorked,
+    creditedWorked: creditedWorked,
+    soll: soll,
+    diff: creditedWorked - soll,
+    exceedsMax: end > maxEndMin,
+    negative: actualWorked < 0
+  };
+}
+
+function isPaidStatus(s){ return s==='work' || s==='off' || s==='sick' || s==='comp'; }
+
+function allTimeBalance(){
+  var bal = 0;
+  Object.keys(STATE.days).forEach(function(k){
+    var e = STATE.days[k];
+    if(e.status==='work'){ var r=computeWorkDay(e); if(r) bal += r.diff; }
+    if(e.status==='comp'){ bal -= sollMinutes(); }
+  });
+  return bal;
+}
+
+function monthPayroll(year, month){
+  var paidDays = 0;
+  Object.keys(STATE.days).forEach(function(k){
+    var d = new Date(k+"T00:00:00");
+    if(d.getFullYear()!==year || d.getMonth()!==month) return;
+    if(isPaidStatus(STATE.days[k].status)) paidDays++;
+  });
+  var sollHours = sollMinutes()/60;
+  var gross = paidDays * sollHours * STATE.settings.hourlyRate;
+  var tax = calcGermanTax(gross);
+  return Object.assign({paidDays:paidDays, gross:gross}, tax);
+}
+
+function calcGermanTax(monthlyGross){
+  var t = STATE.settings.tax;
+  var RV = 0.093, ALV = 0.013, KV_BASE = 0.073;
+  var KV_ZUSATZ = (t.zusatzbeitrag/100)/2;
+  var PV = t.pvChildless ? 0.025 : 0.019;
+
+  var rv = monthlyGross*RV, alv = monthlyGross*ALV;
+  var kv = monthlyGross*(KV_BASE+KV_ZUSATZ), pv = monthlyGross*PV;
+  var svTotal = rv+alv+kv+pv;
+
+  var ANP = 1230, SAP = 36; // Arbeitnehmer-Pauschbetrag, Sonderausgaben-Pauschbetrag (annual)
+  var taxableMonthly = Math.max(0, monthlyGross - svTotal - ANP/12 - SAP/12);
+  var zvE = Math.floor(taxableMonthly*12);
+
+  var estAnnual = 0;
+  if(zvE<=12348){ estAnnual=0; }
+  else if(zvE<=17799){ var y=(zvE-12348)/10000; estAnnual=(914.51*y+1400)*y; }
+  else if(zvE<=69878){ var z=(zvE-17799)/10000; estAnnual=(173.10*z+2397)*z+1034.87; }
+  else if(zvE<=277825){ estAnnual=0.42*zvE-11135.63; }
+  else{ estAnnual=0.45*zvE-19470.38; }
+  estAnnual = Math.floor(Math.max(0,estAnnual));
+
+  var soliAnnual = estAnnual>20350 ? estAnnual*0.055 : 0;
+  var lst = estAnnual/12, soli = soliAnnual/12;
+  var net = monthlyGross - svTotal - lst - soli;
+
+  return {rv:rv, alv:alv, kv:kv, pv:pv, lst:lst, soli:soli, net:net, zvE:zvE};
+}
+
+/* ============================================================
+   POSTMARK SVG
+   ============================================================ */
+function postmarkSVG(date, statusKey){
+  var dow = DOW_FULL[(date.getDay()+6)%7];
+  var day = date.getDate();
+  var mon = MONTHS[date.getMonth()].toUpperCase();
+  var yr = date.getFullYear();
+  var label = STATUS_LABEL[statusKey] || "—";
+  var ticks = [
+    [10,64,30,60],[6,84,28,82],[6,104,28,104],[6,124,28,126],[10,144,30,150]
+  ].map(function(p){ return '<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+p[2]+'" y2="'+p[3]+'"/>'; }).join('');
+  return ''+
+  '<svg viewBox="0 0 220 210" width="176" height="168">'+
+    '<circle cx="110" cy="104" r="92" fill="none" stroke="var(--ink)" stroke-width="3"/>'+
+    '<circle cx="110" cy="104" r="82" fill="none" stroke="var(--ink)" stroke-width="1.1"/>'+
+    '<text x="110" y="54" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="3" fill="var(--ink)" font-weight="600">'+dow+'</text>'+
+    '<text x="110" y="112" text-anchor="middle" font-family="Fraunces, serif" font-size="52" font-weight="600" fill="var(--ink)">'+day+'</text>'+
+    '<text x="110" y="140" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="3.5" fill="var(--ink)">'+mon+' '+yr+'</text>'+
+    '<line x1="66" y1="152" x2="154" y2="152" stroke="var(--stamp)" stroke-width="1.4"/>'+
+    '<text x="110" y="170" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" letter-spacing="2.5" fill="var(--stamp)" font-weight="700">'+label+'</text>'+
+    '<g stroke="var(--stamp)" stroke-width="2" opacity=".5" stroke-linecap="round">'+ticks+'</g>'+
+  '</svg>';
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+var toastTimer;
+function toast(msg){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2200);
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+function openModal(html){
+  document.getElementById('modalCard').innerHTML = html;
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.add('hidden'); }
+document.getElementById('modalOverlay').addEventListener('click', function(e){
+  if(e.target.id==='modalOverlay') closeModal();
+});
+
+/* ============================================================
+   VIEW SWITCHING
+   ============================================================ */
+function switchView(name){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.navbtn').forEach(function(b){ b.classList.toggle('on', b.dataset.view===name); });
+  if(name==='calendar') renderCalendar();
+  if(name==='tours') renderTours();
+  if(name==='pay') renderPay();
+  if(name==='settings') renderSettings();
+  if(name==='today') renderToday();
+}
+document.querySelectorAll('.navbtn').forEach(function(b){
+  b.addEventListener('click', function(){ switchView(b.dataset.view); });
+});
+
+/* ============================================================
+   RENDER: TODAY
+   ============================================================ */
+var currentStatus = 'work';
+
+function renderToday(){
+  var key = todayKey();
+  var entry = STATE.days[key] || {status:'work'};
+  currentStatus = entry.status || 'work';
+
+  document.getElementById('postmarkWrap').innerHTML = postmarkSVG(new Date(), currentStatus);
+
+  document.querySelectorAll('.status-tab').forEach(function(t){
+    t.classList.toggle('on', t.dataset.status===currentStatus);
+  });
+  document.getElementById('workFields').style.display = currentStatus==='work' ? '' : 'none';
+
+  document.getElementById('inStart').value = entry.start || STATE.settings.officialStart;
+  document.getElementById('inEnd').value = entry.end || '';
+  document.getElementById('inBreak').value = entry.breakMin || 0;
+  document.getElementById('inNote').value = entry.note || '';
+
+  var tourSel = document.getElementById('inTour');
+  tourSel.innerHTML = STATE.tours.length ? STATE.tours.map(function(t){ return '<option value="'+t.id+'">'+escapeHTML(t.name)+'</option>'; }).join('') : '<option value="">— asnjë tour —</option>';
+  if(entry.tourId) tourSel.value = entry.tourId;
+
+  renderDayResult(entry);
+  renderQuickBox();
+  renderWeekSummary();
+  renderBalance();
+}
+
+function renderDayResult(entry){
+  var box = document.getElementById('dayResult');
+  if(entry.status!=='work' || !entry.start || !entry.end){ box.innerHTML=''; return; }
+  var r = computeWorkDay(entry);
+  if(!r){ box.innerHTML=''; return; }
+  var cls = r.negative ? 'result-bad' : (r.exceedsMax ? 'result-warn' : (r.diff>=0?'result-ok':'result-warn'));
+  var html = 'Punuar: <strong>'+minToHours1(r.actualWorked)+'h</strong> · Soll: '+minToHours1(r.soll)+'h · Diferenca: <strong>'+minToHHMM(r.diff)+'</strong>';
+  if(r.exceedsMax) html += '<br>⚠️ Ke kaluar afatin maksimal ('+STATE.settings.maxEnd+'). Vetëm 30 min plus llogariten.';
+  box.innerHTML = '<div class="result-banner '+cls+'">'+html+'</div>';
+}
+
+document.querySelectorAll('.status-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    currentStatus = tab.dataset.status;
+    document.querySelectorAll('.status-tab').forEach(function(t){ t.classList.toggle('on', t===tab); });
+    document.getElementById('workFields').style.display = currentStatus==='work' ? '' : 'none';
+    document.getElementById('postmarkWrap').innerHTML = postmarkSVG(new Date(), currentStatus);
+  });
+});
+
+document.getElementById('btnSaveDay').addEventListener('click', function(){
+  var key = todayKey();
+  var entry = { status: currentStatus, note: document.getElementById('inNote').value.trim() };
+  if(currentStatus==='work'){
+    entry.start = document.getElementById('inStart').value;
+    entry.end = document.getElementById('inEnd').value;
+    entry.breakMin = parseInt(document.getElementById('inBreak').value)||0;
+    entry.tourId = document.getElementById('inTour').value;
+  }
+  STATE.days[key] = entry;
+  saveDays().then(function(){
+    toast('U ruajt dita e sotme ✓');
+    renderToday();
+  });
+});
+
+function renderWeekSummary(){
+  var mon = mondayOf(new Date());
+  var totalActual = 0, workedDays = 0;
+  for(var i=0;i<7;i++){
+    var k = dateKey(addDays(mon,i));
+    var e = STATE.days[k];
+    if(e && e.status==='work'){
+      var r = computeWorkDay(e);
+      if(r){ totalActual += Math.max(0,r.actualWorked); }
+      workedDays++;
+    }
+  }
+  var target = STATE.settings.weeklyTarget;
+  var hrs = totalActual/60;
+  document.getElementById('weekHoursTxt').textContent = hrs.toFixed(1)+'h / '+target+'h';
+  document.getElementById('weekProgressFill').style.width = Math.min(100,(hrs/target)*100)+'%';
+  var dotsHtml=''; var wd = STATE.settings.workdaysPerWeek;
+  for(var d=0; d<wd; d++){ dotsHtml += '<div class="dot'+(d<workedDays?' on':'')+'"></div>'; }
+  document.getElementById('weekDots').innerHTML = dotsHtml;
+}
+
+function renderBalance(){
+  var bal = allTimeBalance();
+  var el = document.getElementById('balanceTxt');
+  el.textContent = minToHHMM(bal);
+  el.style.color = bal<0 ? 'var(--stamp)' : 'var(--route)';
+}
+
+/* ---- Quick neighborhood search (Today tab) ---- */
+function renderQuickBox(){
+  var sel = document.getElementById('quickTourSelect');
+  if(!STATE.tours.length){
+    sel.innerHTML = '<option value="">Shto një tour te skeda "Tourat"</option>';
+    document.getElementById('quickHint').textContent = '';
+    return;
+  }
+  sel.innerHTML = STATE.tours.map(function(t){ return '<option value="'+t.id+'">'+escapeHTML(t.name)+'</option>'; }).join('');
+  var key = todayKey();
+  var todayTour = STATE.days[key] && STATE.days[key].tourId;
+  if(todayTour) sel.value = todayTour;
+  updateQuickHint();
+}
+function updateQuickHint(){
+  var hint = document.getElementById('quickHint');
+  hint.textContent = STATE.settings.city ? 'Kërkimi shtohet me: "'+STATE.settings.city+'"' : 'Shto qytetin te Cilësimet për rezultate më të sakta.';
+}
+document.getElementById('quickTourSelect').addEventListener('change', updateQuickHint);
+
+function goToMaps(tourId, nr){
+  var tour = STATE.tours.find(function(t){ return t.id===tourId; });
+  if(!tour){ toast('Zgjidh një tour fillimisht'); return; }
+  var n = tour.neighborhoods.find(function(x){ return String(x.nr)===String(nr); });
+  if(!n){ toast('Nuk u gjet numri '+nr+' në këtë tour'); return; }
+  var q = n.name + (STATE.settings.city ? (', '+STATE.settings.city) : '');
+  window.open('https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(q), '_blank');
+}
+document.getElementById('btnQuickGo').addEventListener('click', function(){
+  var tourId = document.getElementById('quickTourSelect').value;
+  var nr = document.getElementById('quickNr').value;
+  if(!nr){ toast('Shkruaj numrin e lagjes'); return; }
+  goToMaps(tourId, nr);
+});
+document.getElementById('quickNr').addEventListener('keydown', function(e){
+  if(e.key==='Enter'){ document.getElementById('btnQuickGo').click(); }
+});
+
+/* ============================================================
+   RENDER: CALENDAR
+   ============================================================ */
+function renderCalendar(){
+  var y = calCursor.getFullYear(), m = calCursor.getMonth();
+  document.getElementById('calTitle').textContent = MONTHS[m]+' '+y;
+  var first = new Date(y,m,1);
+  var startOffset = (first.getDay()+6)%7; // Monday=0
+  var daysInMonth = new Date(y,m+1,0).getDate();
+  var grid = document.getElementById('calGrid');
+  var html = DOW_SHORT.map(function(d){ return '<div class="cal-dow">'+d+'</div>'; }).join('');
+  for(var i=0;i<startOffset;i++){ html += '<div class="cal-cell empty"></div>'; }
+  var todK = todayKey();
+  for(var d=1; d<=daysInMonth; d++){
+    var dateObj = new Date(y,m,d);
+    var k = dateKey(dateObj);
+    var e = STATE.days[k];
+    var cls = 'cal-cell'+(e?' has-data':'')+(k===todK?' today':'');
+    var dot = e ? '<div class="cal-dot '+e.status+'"></div>' : '';
+    html += '<div class="'+cls+'" data-date="'+k+'"><span class="cal-num">'+d+'</span>'+dot+'</div>';
+  }
+  grid.innerHTML = html;
+  grid.querySelectorAll('.cal-cell:not(.empty)').forEach(function(cell){
+    cell.addEventListener('click', function(){ openDayEditor(cell.dataset.date); });
+  });
+}
+document.getElementById('calPrev').addEventListener('click', function(){ calCursor.setMonth(calCursor.getMonth()-1); renderCalendar(); });
+document.getElementById('calNext').addEventListener('click', function(){ calCursor.setMonth(calCursor.getMonth()+1); renderCalendar(); });
+
+function openDayEditor(key){
+  var e = STATE.days[key] || {status:'work'};
+  var d = new Date(key+"T00:00:00");
+  var label = d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  var tourOptions = STATE.tours.map(function(t){ return '<option value="'+t.id+'"'+(e.tourId===t.id?' selected':'')+'>'+escapeHTML(t.name)+'</option>'; }).join('');
+  var html = ''+
+    '<div class="modal-head"><h3>'+label+'</h3><button class="modal-close" id="mClose">✕</button></div>'+
+    '<div class="status-tabs" id="mStatusTabs">'+
+      ['work','off','sick','comp'].map(function(s){ return '<button class="status-tab'+(e.status===s?' on':'')+'" data-status="'+s+'">'+STATUS_LABEL[s].charAt(0)+STATUS_LABEL[s].slice(1).toLowerCase()+'</button>'; }).join('')+
+    '</div>'+
+    '<div id="mWorkFields" style="display:'+(e.status==='work'?'':'none')+'">'+
+      '<div class="row"><div class="field"><label>Fillimi</label><input type="time" id="mStart" value="'+(e.start||STATE.settings.officialStart)+'"></div>'+
+      '<div class="field"><label>Mbarimi</label><input type="time" id="mEnd" value="'+(e.end||'')+'"></div></div>'+
+      '<div class="row"><div class="field"><label>Pauzë (min)</label><input type="number" id="mBreak" value="'+(e.breakMin||0)+'" min="0"></div>'+
+      '<div class="field"><label>Tour</label><select id="mTour"><option value="">—</option>'+tourOptions+'</select></div></div>'+
+    '</div>'+
+    '<div class="field"><label>Shënim</label><input type="text" id="mNote" value="'+escapeAttr(e.note||'')+'"></div>'+
+    '<button class="btn btn-primary" id="mSave">Ruaj</button>'+
+    (STATE.days[key] ? '<div style="height:10px"></div><button class="btn btn-danger" id="mDelete">Fshi Ditën</button>' : '');
+  openModal(html);
+
+  var mStatus = e.status || 'work';
+  document.querySelectorAll('#mStatusTabs .status-tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      mStatus = tab.dataset.status;
+      document.querySelectorAll('#mStatusTabs .status-tab').forEach(function(t){ t.classList.toggle('on', t===tab); });
+      document.getElementById('mWorkFields').style.display = mStatus==='work' ? '' : 'none';
+    });
+  });
+  document.getElementById('mClose').addEventListener('click', closeModal);
+  document.getElementById('mSave').addEventListener('click', function(){
+    var entry = { status: mStatus, note: document.getElementById('mNote').value.trim() };
+    if(mStatus==='work'){
+      entry.start = document.getElementById('mStart').value;
+      entry.end = document.getElementById('mEnd').value;
+      entry.breakMin = parseInt(document.getElementById('mBreak').value)||0;
+      entry.tourId = document.getElementById('mTour').value;
+    }
+    STATE.days[key] = entry;
+    saveDays().then(function(){ closeModal(); renderCalendar(); toast('U ruajt ✓'); if(key===todayKey()) renderToday(); });
+  });
+  var delBtn = document.getElementById('mDelete');
+  if(delBtn) delBtn.addEventListener('click', function(){
+    delete STATE.days[key];
+    saveDays().then(function(){ closeModal(); renderCalendar(); toast('U fshi'); if(key===todayKey()) renderToday(); });
+  });
+}
+
+/* ============================================================
+   RENDER: TOURS
+   ============================================================ */
+var activeTourId = null;
+
+function renderTours(){
+  var sel = document.getElementById('tourSelect');
+  if(!STATE.tours.length){
+    sel.innerHTML = '<option value="">— asnjë tour —</option>';
+    document.getElementById('tourPanel').innerHTML = emptyTourState();
+    return;
+  }
+  if(!activeTourId || !STATE.tours.find(function(t){return t.id===activeTourId;})) activeTourId = STATE.tours[0].id;
+  sel.innerHTML = STATE.tours.map(function(t){ return '<option value="'+t.id+'"'+(t.id===activeTourId?' selected':'')+'>'+escapeHTML(t.name)+' ('+t.neighborhoods.length+')</option>'; }).join('');
+  renderTourPanel();
+}
+document.getElementById('tourSelect').addEventListener('change', function(e){ activeTourId = e.target.value; renderTourPanel(); });
+
+function emptyTourState(){
+  return '<div class="card"><div class="empty-state">'+
+    '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>'+
+    '<p>Nuk ke asnjë tour ende.<br>Shto të parin me butonin "+ Tour i Ri" më sipër.</p></div></div>';
+}
+
+function currentTour(){ return STATE.tours.find(function(t){ return t.id===activeTourId; }); }
+
+function renderTourPanel(){
+  var tour = currentTour();
+  var panel = document.getElementById('tourPanel');
+  if(!tour){ panel.innerHTML = emptyTourState(); return; }
+
+  var rows = tour.neighborhoods.map(function(n,idx){
+    return '<tr><td class="neigh-nr">'+n.nr+'</td><td>'+escapeHTML(n.name)+'</td><td>'+escapeHTML(n.houses||'')+'</td>'+
+    '<td><div class="row-actions">'+
+    '<button class="icon-btn" data-act="edit" data-idx="'+idx+'" title="Ndrysho">✎</button>'+
+    '<button class="icon-btn" data-act="del" data-idx="'+idx+'" title="Fshi">✕</button>'+
+    '</div></td></tr>';
+  }).join('');
+
+  panel.innerHTML = ''+
+  '<div class="card">'+
+    '<div class="card-title">Kërko Shpejt në ' + escapeHTML(tour.name) + '</div>'+
+    '<div class="quickbox-row" style="margin-bottom:0">'+
+      '<input type="number" id="tourQuickNr" placeholder="Nr. i lagjes" inputmode="numeric" style="background:var(--paper); color:var(--ink); border:1.4px solid var(--line); border-radius:9px; padding:12px; font-family:\'IBM Plex Mono\',monospace; font-size:18px; text-align:center;">'+
+      '<button class="btn btn-route" id="tourQuickGo" style="width:auto; padding:0 18px">Hap Maps →</button>'+
+    '</div>'+
+  '</div>'+
+  '<div class="card">'+
+    '<div class="flex-between" style="margin-bottom:10px"><div class="card-title" style="margin:0">Lagjet ('+tour.neighborhoods.length+')</div>'+
+    '<button class="btn btn-ghost btn-sm" id="btnExportTour">Eksporto</button></div>'+
+    (tour.neighborhoods.length ? '<table class="neigh-table"><thead><tr><th>Nr</th><th>Emri</th><th>Nr. Shtëpish</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>' : '<div class="hint">Ende pa lagje. Shtoji më poshtë, një nga një ose me ngjitje masive.</div>')+
+  '</div>'+
+  '<div class="card">'+
+    '<div class="card-title">Shto Lagje</div>'+
+    '<div class="row"><div class="field"><label>Nr</label><input type="number" id="addNr" min="1"></div>'+
+    '<div class="field" style="flex:2"><label>Emri</label><input type="text" id="addName" placeholder="p.sh. Hauptstraße"></div></div>'+
+    '<div class="field"><label>Numrat e shtëpive</label><input type="text" id="addHouses" placeholder="p.sh. 1-45"></div>'+
+    '<button class="btn btn-primary" id="btnAddNeigh">+ Shto</button>'+
+  '</div>'+
+  '<div class="card">'+
+    '<div class="card-title">Import Masiv (ngjit tekst)</div>'+
+    '<div class="hint" style="margin-bottom:8px">Një rresht për lagje: <span class="mono">nr, emri, numrat e shtëpive</span> — p.sh. <span class="mono">3, Bahnhofstraße, 12-40</span></div>'+
+    '<textarea id="bulkText" placeholder="1, Hauptstraße, 1-45&#10;2, Nebenstraße, 2-18"></textarea>'+
+    '<div style="height:10px"></div>'+
+    '<button class="btn btn-ghost" id="btnBulkImport">Importo Listën</button>'+
+  '</div>'+
+  '<div class="card">'+
+    '<button class="btn btn-danger" id="btnDeleteTour">Fshi Tourin "'+escapeHTML(tour.name)+'"</button>'+
+  '</div>';
+
+  document.getElementById('tourQuickGo').addEventListener('click', function(){
+    var nr = document.getElementById('tourQuickNr').value;
+    if(!nr){ toast('Shkruaj numrin'); return; }
+    goToMaps(tour.id, nr);
+  });
+  document.getElementById('tourQuickNr').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('tourQuickGo').click(); });
+
+  document.getElementById('btnAddNeigh').addEventListener('click', function(){
+    var nr = parseInt(document.getElementById('addNr').value);
+    var name = document.getElementById('addName').value.trim();
+    var houses = document.getElementById('addHouses').value.trim();
+    if(!nr || !name){ toast('Plotëso Nr dhe Emrin'); return; }
+    tour.neighborhoods.push({nr:nr, name:name, houses:houses});
+    tour.neighborhoods.sort(function(a,b){ return a.nr-b.nr; });
+    saveTours().then(function(){ renderTourPanel(); renderQuickBox(); toast('U shtua'); });
+  });
+
+  document.getElementById('btnBulkImport').addEventListener('click', function(){
+    var text = document.getElementById('bulkText').value;
+    var added = parseBulk(text);
+    if(!added.length){ toast('Nuk u gjet asnjë rresht i vlefshëm'); return; }
+    tour.neighborhoods = tour.neighborhoods.concat(added);
+    tour.neighborhoods.sort(function(a,b){ return a.nr-b.nr; });
+    saveTours().then(function(){ renderTourPanel(); renderQuickBox(); toast(added.length+' lagje u importuan'); });
+  });
+
+  panel.querySelectorAll('[data-act="del"]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = parseInt(btn.dataset.idx);
+      tour.neighborhoods.splice(idx,1);
+      saveTours().then(function(){ renderTourPanel(); renderQuickBox(); });
+    });
+  });
+  panel.querySelectorAll('[data-act="edit"]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = parseInt(btn.dataset.idx);
+      var n = tour.neighborhoods[idx];
+      openEditNeighborhood(tour, idx, n);
+    });
+  });
+
+  document.getElementById('btnExportTour').addEventListener('click', function(){
+    downloadJSON({name:tour.name, neighborhoods:tour.neighborhoods}, tour.name.replace(/[^a-z0-9]+/gi,'_')+'.json');
+  });
+  document.getElementById('btnDeleteTour').addEventListener('click', function(){
+    openConfirm('Fshi tourin "'+tour.name+'"? Kjo do fshijë edhe listën e lagjeve. Nuk kthehet mbrapa.', function(){
+      STATE.tours = STATE.tours.filter(function(t){ return t.id!==tour.id; });
+      activeTourId = null;
+      saveTours().then(function(){ renderTours(); toast('Touri u fshi'); });
+    });
+  });
+}
+
+function openEditNeighborhood(tour, idx, n){
+  var html = ''+
+    '<div class="modal-head"><h3>Ndrysho Lagjen</h3><button class="modal-close" id="mClose">✕</button></div>'+
+    '<div class="field"><label>Nr</label><input type="number" id="eNr" value="'+n.nr+'"></div>'+
+    '<div class="field"><label>Emri</label><input type="text" id="eName" value="'+escapeAttr(n.name)+'"></div>'+
+    '<div class="field"><label>Numrat e shtëpive</label><input type="text" id="eHouses" value="'+escapeAttr(n.houses||'')+'"></div>'+
+    '<button class="btn btn-primary" id="eSave">Ruaj</button>';
+  openModal(html);
+  document.getElementById('mClose').addEventListener('click', closeModal);
+  document.getElementById('eSave').addEventListener('click', function(){
+    n.nr = parseInt(document.getElementById('eNr').value)||n.nr;
+    n.name = document.getElementById('eName').value.trim();
+    n.houses = document.getElementById('eHouses').value.trim();
+    tour.neighborhoods.sort(function(a,b){ return a.nr-b.nr; });
+    saveTours().then(function(){ closeModal(); renderTourPanel(); });
+  });
+}
+
+function parseBulk(text){
+  return text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean).map(function(line){
+    var parts = line.split(/[,;\t]/).map(function(p){ return p.trim(); });
+    var nr = parseInt(parts[0]);
+    if(!nr || !parts[1]) return null;
+    return {nr:nr, name:parts[1], houses:parts[2]||''};
+  }).filter(Boolean);
+}
+
+document.getElementById('btnNewTour').addEventListener('click', function(){
+  openPrompt('Emri i Tourit të Ri', 'p.sh. Tour 1 - Zentrum', function(name){
+    if(!name) return;
+    var t = {id:'t_'+Date.now(), name:name, neighborhoods:[]};
+    STATE.tours.push(t);
+    activeTourId = t.id;
+    saveTours().then(function(){ renderTours(); toast('Touri u krijua'); });
+  });
+});
+
+/* ============================================================
+   RENDER: PAY
+   ============================================================ */
+function renderPay(){
+  var y = payCursor.getFullYear(), m = payCursor.getMonth();
+  document.getElementById('payTitle').textContent = MONTHS[m]+' '+y;
+  var p = monthPayroll(y,m);
+  document.getElementById('payDays').textContent = p.paidDays;
+  document.getElementById('payGross').textContent = fmtEUR(p.gross);
+  document.getElementById('payRV').textContent = '−'+fmtEUR(p.rv);
+  document.getElementById('payALV').textContent = '−'+fmtEUR(p.alv);
+  document.getElementById('payKV').textContent = '−'+fmtEUR(p.kv);
+  document.getElementById('payPV').textContent = '−'+fmtEUR(p.pv);
+  document.getElementById('payLSt').textContent = '−'+fmtEUR(p.lst);
+  document.getElementById('paySoli').textContent = '−'+fmtEUR(p.soli);
+  document.getElementById('payNet').textContent = fmtEUR(p.net);
+  var bal = allTimeBalance();
+  var balEl = document.getElementById('payBalance');
+  balEl.textContent = minToHHMM(bal);
+  balEl.style.color = bal<0 ? 'var(--stamp)' : 'var(--route)';
+}
+document.getElementById('payPrev').addEventListener('click', function(){ payCursor.setMonth(payCursor.getMonth()-1); renderPay(); });
+document.getElementById('payNext').addEventListener('click', function(){ payCursor.setMonth(payCursor.getMonth()+1); renderPay(); });
+
+/* ============================================================
+   RENDER: SETTINGS
+   ============================================================ */
+function renderSettings(){
+  var s = STATE.settings;
+  document.getElementById('setStart').value = s.officialStart;
+  document.getElementById('setEnd').value = s.officialEnd;
+  document.getElementById('setMaxEnd').value = s.maxEnd;
+  document.getElementById('setRate').value = s.hourlyRate;
+  document.getElementById('setWorkdays').value = s.workdaysPerWeek;
+  document.getElementById('setWeeklyTarget').value = s.weeklyTarget;
+  document.getElementById('setCity').value = s.city;
+  document.getElementById('setTaxClass').value = s.tax.taxClass;
+  document.getElementById('setChildren').value = s.tax.children;
+  document.getElementById('setZusatz').value = s.tax.zusatzbeitrag;
+  toggleSet('setMarried', s.tax.married);
+  toggleSet('setChurch', s.tax.churchTax);
+  toggleSet('setPvChildless', s.tax.pvChildless);
+}
+function toggleSet(id, on){ document.getElementById(id).classList.toggle('on', !!on); }
+
+['setMarried','setChurch','setPvChildless'].forEach(function(id){
+  document.getElementById(id).addEventListener('click', function(){
+    this.classList.toggle('on');
+    persistSettingsFromForm();
+  });
+});
+['setStart','setEnd','setMaxEnd','setRate','setWorkdays','setWeeklyTarget','setCity','setTaxClass','setChildren','setZusatz'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', persistSettingsFromForm);
+});
+
+function persistSettingsFromForm(){
+  var s = STATE.settings;
+  s.officialStart = document.getElementById('setStart').value || s.officialStart;
+  s.officialEnd = document.getElementById('setEnd').value || s.officialEnd;
+  s.maxEnd = document.getElementById('setMaxEnd').value || s.maxEnd;
+  s.hourlyRate = parseFloat(document.getElementById('setRate').value)||s.hourlyRate;
+  s.workdaysPerWeek = parseInt(document.getElementById('setWorkdays').value)||s.workdaysPerWeek;
+  s.weeklyTarget = parseInt(document.getElementById('setWeeklyTarget').value)||s.weeklyTarget;
+  s.city = document.getElementById('setCity').value.trim();
+  s.tax.taxClass = parseInt(document.getElementById('setTaxClass').value);
+  s.tax.children = parseInt(document.getElementById('setChildren').value)||0;
+  s.tax.zusatzbeitrag = parseFloat(document.getElementById('setZusatz').value)||0;
+  s.tax.married = document.getElementById('setMarried').classList.contains('on');
+  s.tax.churchTax = document.getElementById('setChurch').classList.contains('on');
+  s.tax.pvChildless = document.getElementById('setPvChildless').classList.contains('on');
+  saveSettings().then(function(){ toast('Cilësimet u ruajtën'); });
+}
+
+/* ---- Export / Import / Reset ---- */
+function downloadJSON(obj, filename){
+  var blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+document.getElementById('btnExportAll').addEventListener('click', function(){
+  downloadJSON({app:'PostaIme', version:1, exportedAt:new Date().toISOString(), settings:STATE.settings, days:STATE.days, tours:STATE.tours}, 'posta-ime-backup.json');
+});
+document.getElementById('fileImportAll').addEventListener('change', function(e){
+  var file = e.target.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var data = JSON.parse(reader.result);
+      openConfirm('Importimi do mbishkruajë të dhënat aktuale. Vazhdo?', function(){
+        if(data.settings) STATE.settings = mergeDefaults(data.settings);
+        if(data.days) STATE.days = data.days;
+        if(data.tours) STATE.tours = data.tours;
+        Promise.all([saveSettings(),saveDays(),saveTours()]).then(function(){
+          toast('Importimi u krye ✓'); renderSettings(); renderToday();
+        });
+      });
+    }catch(err){ toast('Skedari JSON s\'është i vlefshëm'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+document.getElementById('btnResetAll').addEventListener('click', function(){
+  openConfirm('Fshin PËRGJITHMONË gjithë të dhënat (ditët, tourat, cilësimet) nga kjo pajisje. Je i/e sigurt?', function(){
+    STATE = {settings:JSON.parse(JSON.stringify(DEFAULT_SETTINGS)), days:{}, tours:[]};
+    Promise.all([saveSettings(),saveDays(),saveTours()]).then(function(){
+      toast('U fshinë të gjitha'); renderSettings(); renderToday();
+    });
+  });
+});
+
+/* ============================================================
+   GENERIC PROMPT / CONFIRM MODALS
+   ============================================================ */
+function openPrompt(title, placeholder, cb){
+  var html = ''+
+    '<div class="modal-head"><h3>'+title+'</h3><button class="modal-close" id="mClose">✕</button></div>'+
+    '<div class="field"><input type="text" id="pInput" placeholder="'+placeholder+'"></div>'+
+    '<button class="btn btn-primary" id="pOk">Konfirmo</button>';
+  openModal(html);
+  var input = document.getElementById('pInput'); input.focus();
+  document.getElementById('mClose').addEventListener('click', closeModal);
+  document.getElementById('pOk').addEventListener('click', function(){ var v=input.value.trim(); closeModal(); cb(v); });
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('pOk').click(); });
+}
+function openConfirm(msg, cb){
+  var html = ''+
+    '<div class="modal-head"><h3>Konfirmo</h3><button class="modal-close" id="mClose">✕</button></div>'+
+    '<p style="font-size:14px; line-height:1.6; color:var(--ink-2)">'+msg+'</p>'+
+    '<div class="row"><button class="btn btn-ghost" id="cNo">Anulo</button><button class="btn btn-danger" id="cYes">Po, vazhdo</button></div>';
+  openModal(html);
+  document.getElementById('mClose').addEventListener('click', closeModal);
+  document.getElementById('cNo').addEventListener('click', closeModal);
+  document.getElementById('cYes').addEventListener('click', function(){ closeModal(); cb(); });
+}
+
+/* ============================================================
+   UTIL
+   ============================================================ */
+function escapeHTML(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+/* ============================================================
+   LIVE CLOCK
+   ============================================================ */
+function tickClock(){
+  var d = new Date();
+  document.getElementById('liveClock').textContent = pad2(d.getHours())+':'+pad2(d.getMinutes());
+}
+setInterval(tickClock, 1000*10);
+
+/* ============================================================
+   INIT
+   ============================================================ */
+loadAll().then(function(){
+  tickClock();
+  renderToday();
+});
+
+})();
+</script>
+</body>
+</html>
