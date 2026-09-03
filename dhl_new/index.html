@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shift Log — Time & Pay Tracker</title>
+<style>
+  :root{
+    --paper:#FAF7F0;
+    --panel:#FFFFFF;
+    --ink:#1C2024;
+    --slate:#63697A;
+    --line:#E4DFD4;
+    --yellow:#F5A800;
+    --yellow-deep:#B87600;
+    --navy:#1E2A4A;
+    --sick:#C24B3F;
+    --vac:#2E7D5B;
+    --hol:#6A5ACD;
+    --off:#D9D4C6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px;}
+
+  header.top{
+    display:flex; align-items:baseline; justify-content:space-between;
+    border-bottom:3px solid var(--navy); padding-bottom:14px; margin-bottom:22px;
+    flex-wrap:wrap; gap:10px;
+  }
+  header.top h1{
+    font-size:26px; margin:0; letter-spacing:-0.01em; font-weight:700;
+  }
+  header.top h1 span{color:var(--yellow-deep);}
+  header.top .sub{color:var(--slate); font-size:13.5px;}
+
+  .grid{display:grid; grid-template-columns:1fr 320px; gap:22px;}
+  @media (max-width:880px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:18px 20px; margin-bottom:18px;
+  }
+  .card h2{font-size:15px; margin:0 0 12px; color:var(--navy); font-weight:700;}
+
+  .month-nav{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .month-nav .label{font-size:19px; font-weight:700;}
+  .month-nav button{
+    border:1px solid var(--line); background:var(--paper); border-radius:7px;
+    width:32px; height:32px; cursor:pointer; font-size:16px; color:var(--navy);
+  }
+  .month-nav button:hover{background:var(--yellow); border-color:var(--yellow-deep);}
+
+  table.cal{width:100%; border-collapse:collapse;}
+  table.cal th{
+    font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--slate);
+    font-weight:600; padding:4px 0; text-align:center;
+  }
+  table.cal td{
+    border:1px solid var(--line); vertical-align:top; height:74px; width:14.28%;
+    padding:5px 6px; cursor:pointer; position:relative; transition:background .12s;
+  }
+  table.cal td:hover{background:#FFF7E6;}
+  table.cal td.empty{background:#F6F3EC; cursor:default;}
+  table.cal td.empty:hover{background:#F6F3EC;}
+  td .dnum{font-size:12.5px; font-weight:600; color:var(--slate);}
+  td.today .dnum{color:var(--yellow-deep);}
+  td .tag{
+    display:inline-block; margin-top:5px; font-size:10.5px; font-weight:700;
+    padding:2px 6px; border-radius:5px; color:white;
+  }
+  td .hrs{display:block; margin-top:4px; font-size:10.5px; color:var(--slate);}
+  .tag.work{background:var(--navy);}
+  .tag.vacation{background:var(--vac);}
+  .tag.sick{background:var(--sick);}
+  .tag.holiday{background:var(--hol);}
+  .tag.off{background:var(--off); color:var(--slate);}
+
+  .legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:14px; font-size:12px; color:var(--slate);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .legend i{width:10px; height:10px; border-radius:3px; display:inline-block;}
+
+  .stat-row{display:flex; justify-content:space-between; padding:6px 0; font-size:13.5px; border-bottom:1px dashed var(--line);}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-row .v{font-weight:700;}
+  .stat-row.total{font-size:15px; margin-top:4px; padding-top:10px; border-top:2px solid var(--navy); border-bottom:none;}
+  .stat-row.net .v{color:var(--vac);}
+  .note{font-size:11.5px; color:var(--slate); margin-top:10px; line-height:1.5;}
+
+  label{font-size:12.5px; color:var(--slate); display:block; margin:8px 0 3px;}
+  input, select{
+    width:100%; padding:7px 8px; border:1px solid var(--line); border-radius:6px;
+    font-size:13.5px; background:var(--paper); color:var(--ink);
+  }
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .chk{display:flex; align-items:center; gap:7px; margin-top:10px;}
+  .chk input{width:auto;}
+  .chk label{margin:0; font-size:13px; color:var(--ink);}
+
+  button.btn{
+    background:var(--yellow); border:1px solid var(--yellow-deep); color:var(--navy);
+    font-weight:700; padding:9px 14px; border-radius:7px; cursor:pointer; font-size:13px;
+    width:100%; margin-top:12px;
+  }
+  button.btn:hover{background:var(--yellow-deep); color:white;}
+  button.btn.ghost{background:var(--panel); color:var(--navy); border:1px solid var(--line); margin-top:8px;}
+  button.btn.ghost:hover{background:var(--paper);}
+  .btn-row{display:flex; gap:8px;}
+  .btn-row button{flex:1; margin-top:0;}
+
+  /* Modal */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,20,20,.45); display:none;
+    align-items:center; justify-content:center; z-index:50; padding:16px;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--panel); border-radius:10px; padding:22px; width:100%; max-width:380px;
+    border:1px solid var(--line);
+  }
+  .modal h3{margin:0 0 4px; font-size:16px;}
+  .modal .date-label{color:var(--slate); font-size:12.5px; margin-bottom:14px;}
+  .status-pick{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:6px;}
+  .status-pick button{
+    padding:8px 4px; border-radius:7px; border:1.5px solid var(--line); background:var(--paper);
+    font-size:12.5px; font-weight:600; cursor:pointer; color:var(--ink);
+  }
+  .status-pick button.active{border-color:var(--navy); background:var(--navy); color:white;}
+  .field-block{margin-top:12px;}
+  .computed{font-size:12.5px; color:var(--slate); margin-top:6px;}
+  .modal-actions{display:flex; gap:8px; margin-top:18px;}
+  .modal-actions button{flex:1;}
+  #fileImport{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Shift <span>Log</span></h1>
+      <div class="sub">Working hours · leave · pay estimate</div>
+    </div>
+    <div class="sub" id="payoutNote"></div>
+  </header>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <div class="month-nav">
+          <button id="prevMonth">‹</button>
+          <div class="label" id="monthLabel"></div>
+          <button id="nextMonth">›</button>
+        </div>
+        <table class="cal" id="calTable"></table>
+        <div class="legend">
+          <span><i style="background:var(--navy)"></i>Work</span>
+          <span><i style="background:var(--vac)"></i>Vacation</span>
+          <span><i style="background:var(--sick)"></i>Sick</span>
+          <span><i style="background:var(--hol)"></i>Holiday</span>
+          <span><i style="background:var(--off)"></i>Off</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Month summary</h2>
+        <div id="summaryBody"></div>
+      </div>
+
+      <div class="card">
+        <h2>Settings</h2>
+        <label>Gross hourly rate (€)</label>
+        <input type="number" step="0.01" id="setRate">
+        <div class="row2">
+          <div>
+            <label>Weekly hours</label>
+            <input type="number" step="0.1" id="setWeekly">
+          </div>
+          <div>
+            <label>Work days / week</label>
+            <input type="number" step="1" id="setDaysPerWeek">
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label>Default start</label>
+            <input type="time" id="setStart">
+          </div>
+          <div>
+            <label>Default end</label>
+            <input type="time" id="setEnd">
+          </div>
+        </div>
+        <label>Default unpaid break (minutes)</label>
+        <input type="number" step="1" id="setBreak">
+        <div class="row2">
+          <div>
+            <label>Tax class</label>
+            <select id="setTaxClass">
+              <option>1</option><option>2</option><option>3</option>
+              <option selected>4</option><option>5</option><option>6</option>
+            </select>
+          </div>
+          <div>
+            <label>Payday (day of next month)</label>
+            <input type="number" step="1" id="setPayday">
+          </div>
+        </div>
+        <div class="chk"><input type="checkbox" id="setMarried"><label for="setMarried">Married</label></div>
+        <div class="chk"><input type="checkbox" id="setChurch"><label for="setChurch">Church tax</label></div>
+        <div class="chk"><input type="checkbox" id="setChildless" checked><label for="setChildless">Childless (23+, care-insurance surcharge)</label></div>
+        <button class="btn" id="saveSettings">Save settings</button>
+        <div class="note">Net pay is a rough estimate (German 2024/25 income-tax formula, average health-fund add-on, standard social-insurance rates). Use an official Brutto-Netto-Rechner for exact figures.</div>
+      </div>
+
+      <div class="card">
+        <h2>Data</h2>
+        <div class="btn-row">
+          <button class="btn ghost" id="exportJson">Export JSON</button>
+          <button class="btn ghost" id="exportCsv">Export CSV</button>
+        </div>
+        <button class="btn ghost" id="importBtn">Import file</button>
+        <input type="file" id="fileImport" accept=".json,.csv">
+        <div class="note">Import accepts a JSON export from this app, or a CSV with columns: date,status,start,end,breakMin,hours.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalDate">—</h3>
+    <div class="date-label" id="modalDow"></div>
+    <div class="status-pick" id="statusPick">
+      <button data-s="work">Work</button>
+      <button data-s="vacation">Vacation</button>
+      <button data-s="sick">Sick</button>
+      <button data-s="holiday">Holiday</button>
+      <button data-s="off">Off</button>
+      <button data-s="clear">Clear</button>
+    </div>
+    <div id="workFields" class="field-block" style="display:none;">
+      <div class="row2">
+        <div><label>Start</label><input type="time" id="entryStart"></div>
+        <div><label>End</label><input type="time" id="entryEnd"></div>
+      </div>
+      <label>Unpaid break (minutes)</label>
+      <input type="number" step="1" id="entryBreak">
+      <div class="computed" id="workComputed"></div>
+    </div>
+    <div id="paidFields" class="field-block" style="display:none;">
+      <label>Paid hours credited</label>
+      <input type="number" step="0.01" id="entryPaidHours">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modalCancel">Cancel</button>
+      <button class="btn" id="modalSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const DEFAULT_SETTINGS = {
+    rate: 17.2,
+    weeklyHours: 31,
+    daysPerWeek: 4,
+    defaultStart: "07:45",
+    defaultEnd: "16:41",
+    defaultBreak: 71,
+    taxClass: "4",
+    married: true,
+    church: false,
+    childless: true,
+    payday: 15
+  };
+
+  let settings = {...DEFAULT_SETTINGS};
+  let entries = {}; // date string -> {status, start, end, breakMin, hours}
+  let viewYear, viewMonth; // 0-indexed month
+  let editingDate = null;
+  let pendingStatus = null;
+
+  const $ = (id)=>document.getElementById(id);
+
+  function pad(n){ return n<10 ? "0"+n : ""+n; }
+  function dateKey(y,m,d){ return `${y}-${pad(m+1)}-${pad(d)}`; }
+  function timeToMinutes(t){ if(!t) return null; const [h,m]=t.split(":").map(Number); return h*60+m; }
+  function defaultDailyHours(){ return settings.weeklyHours / settings.daysPerWeek; }
+
+  // ---------- storage ----------
+  async function loadData(){
+    try{
+      const s = await window.storage.get('settings', false);
+      if(s && s.value) settings = {...DEFAULT_SETTINGS, ...JSON.parse(s.value)};
+    }catch(e){ /* no settings yet */ }
+    try{
+      const e = await window.storage.get('entries', false);
+      if(e && e.value) entries = JSON.parse(e.value);
+    }catch(e){ /* no entries yet */ }
+  }
+  async function saveSettingsToStorage(){
+    try{ await window.storage.set('settings', JSON.stringify(settings), false); }
+    catch(e){ console.error('save settings failed', e); }
+  }
+  async function saveEntriesToStorage(){
+    try{ await window.storage.set('entries', JSON.stringify(entries), false); }
+    catch(e){ console.error('save entries failed', e); }
+  }
+
+  // ---------- settings form ----------
+  function fillSettingsForm(){
+    $('setRate').value = settings.rate;
+    $('setWeekly').value = settings.weeklyHours;
+    $('setDaysPerWeek').value = settings.daysPerWeek;
+    $('setStart').value = settings.defaultStart;
+    $('setEnd').value = settings.defaultEnd;
+    $('setBreak').value = settings.defaultBreak;
+    $('setTaxClass').value = settings.taxClass;
+    $('setMarried').checked = settings.married;
+    $('setChurch').checked = settings.church;
+    $('setChildless').checked = settings.childless;
+    $('setPayday').value = settings.payday;
+  }
+  $('saveSettings').addEventListener('click', async ()=>{
+    settings.rate = parseFloat($('setRate').value)||0;
+    settings.weeklyHours = parseFloat($('setWeekly').value)||0;
+    settings.daysPerWeek = parseFloat($('setDaysPerWeek').value)||1;
+    settings.defaultStart = $('setStart').value;
+    settings.defaultEnd = $('setEnd').value;
+    settings.defaultBreak = parseFloat($('setBreak').value)||0;
+    settings.taxClass = $('setTaxClass').value;
+    settings.married = $('setMarried').checked;
+    settings.church = $('setChurch').checked;
+    settings.childless = $('setChildless').checked;
+    settings.payday = parseInt($('setPayday').value)||15;
+    await saveSettingsToStorage();
+    renderPayoutNote();
+    renderCalendar();
+    renderSummary();
+  });
+
+  // ---------- calendar rendering ----------
+  const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+  function renderPayoutNote(){
+    const monthName = MONTH_NAMES[viewMonth];
+    let nm = viewMonth+1, ny = viewYear;
+    if(nm>11){ nm=0; ny++; } else { }
+    const payMonth = MONTH_NAMES[(viewMonth+1)%12];
+    $('payoutNote').textContent = `Pay for ${monthName} is disbursed around the ${settings.payday}${ordSuffix(settings.payday)} of ${payMonth}`;
+  }
+  function ordSuffix(n){
+    if(n%10===1 && n!==11) return "st";
+    if(n%10===2 && n!==12) return "nd";
+    if(n%10===3 && n!==13) return "rd";
+    return "th";
+  }
+
+  function statusLabel(s){
+    return {work:"Work", vacation:"Vacation", sick:"Sick", holiday:"Holiday", off:"Off"}[s] || "";
+  }
+
+  function computeWorkHours(entry){
+    const s = timeToMinutes(entry.start), e = timeToMinutes(entry.end);
+    if(s===null || e===null) return 0;
+    const brk = entry.breakMin || 0;
+    let mins = e - s - brk;
+    if(mins<0) mins = 0;
+    return Math.round((mins/60)*100)/100;
+  }
+
+  function renderCalendar(){
+    $('monthLabel').textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+    renderPayoutNote();
+    const table = $('calTable');
+    table.innerHTML = "";
+    const thead = document.createElement('tr');
+    DOW.forEach(d=>{ const th=document.createElement('th'); th.textContent=d; thead.appendChild(th); });
+    table.appendChild(thead);
+
+    const firstDay = new Date(viewYear, viewMonth, 1);
+    let startOffset = firstDay.getDay(); // 0=Sun
+    startOffset = (startOffset===0) ? 6 : startOffset-1; // convert to Mon=0
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+
+    const todayKey = dateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+    let cellsUsed = 0;
+    let row = document.createElement('tr');
+    for(let i=0;i<startOffset;i++){
+      const td = document.createElement('td');
+      td.className = 'empty';
+      row.appendChild(td);
+      cellsUsed++;
+    }
+    for(let d=1; d<=daysInMonth; d++){
+      if(cellsUsed>0 && cellsUsed%7===0){ table.appendChild(row); row=document.createElement('tr'); }
+      const key = dateKey(viewYear, viewMonth, d);
+      const td = document.createElement('td');
+      if(key===todayKey) td.classList.add('today');
+      const dow = new Date(viewYear, viewMonth, d).getDay(); // 0=Sun
+      let entry = entries[key];
+      // auto Sunday = off, if not otherwise set
+      if(!entry && dow===0){ entry = {status:'off', auto:true}; }
+
+      let html = `<span class="dnum">${d}</span>`;
+      if(entry){
+        html += `<span class="tag ${entry.status}">${statusLabel(entry.status)}</span>`;
+        if(entry.status==='work'){
+          const h = entry.hours!=null ? entry.hours : computeWorkHours(entry);
+          html += `<span class="hrs">${h}h · ${entry.start||''}–${entry.end||''}</span>`;
+        } else if(entry.status==='vacation' || entry.status==='sick' || entry.status==='holiday'){
+          const h = entry.hours!=null ? entry.hours : defaultDailyHours();
+          html += `<span class="hrs">${Math.round(h*100)/100}h paid</span>`;
+        }
+      }
+      td.innerHTML = html;
+      td.addEventListener('click', ()=>openModal(key));
+      row.appendChild(td);
+      cellsUsed++;
+    }
+    while(cellsUsed%7!==0){
+      const td = document.createElement('td');
+      td.className='empty';
+      row.appendChild(td);
+      cellsUsed++;
+    }
+    table.appendChild(row);
+  }
+
+  // ---------- summary + net pay ----------
+  function grundtarifAnnualTax(zve){
+    if(zve<=11784) return 0; // 2025 basic allowance approx
+    if(zve<=17005){
+      const y=(zve-11784)/10000;
+      return Math.round((932.30*y+1400)*y*100)/100;
+    }
+    if(zve<=66760){
+      const z=(zve-17005)/10000;
+      return Math.round(((176.64*z+2397)*z+1015.13)*100)/100;
+    }
+    if(zve<=277825){
+      return Math.round((0.42*zve-10911.92)*100)/100;
+    }
+    return Math.round((0.45*zve-19246.67)*100)/100;
+  }
+
+  function estimateNet(grossMonth){
+    const grossAnnual = grossMonth*12;
+    // employee social insurance shares (2025 approx)
+    const pension = 0.093;
+    const unemployment = 0.013;
+    const health = 0.073 + 0.0125; // base + avg additional (half)
+    const care = 0.018 + (settings.childless ? 0.006 : 0);
+    const svRate = pension+unemployment+health+care;
+    const svAnnual = grossAnnual*svRate;
+    // rough taxable income after Vorsorgepauschale-style deduction
+    let taxable = grossAnnual - svAnnual;
+    if(taxable<0) taxable=0;
+    let tax = grundtarifAnnualTax(taxable);
+    // Steuerklasse 4 ~ behaves like class 1 curve individually (no splitting advantage taken here)
+    const soli = tax>18130 ? (tax-18130)*0.055 : 0; // soli mostly phased out below this
+    let churchTax = settings.church ? tax*0.08 : 0;
+    const totalTaxAnnual = tax+soli+churchTax;
+    const netAnnual = grossAnnual - svAnnual - totalTaxAnnual;
+    return {
+      net: Math.round((netAnnual/12)*100)/100,
+      svMonth: Math.round((svAnnual/12)*100)/100,
+      taxMonth: Math.round((totalTaxAnnual/12)*100)/100
+    };
+  }
+
+  function renderSummary(){
+    let workHours=0, workDays=0, vacDays=0, vacHours=0, sickDays=0, sickHours=0, holDays=0, holHours=0;
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    for(let d=1; d<=daysInMonth; d++){
+      const key = dateKey(viewYear, viewMonth, d);
+      const dow = new Date(viewYear, viewMonth, d).getDay();
+      let entry = entries[key];
+      if(!entry && dow===0) continue; // auto sunday off, not counted
+      if(!entry) continue;
+      if(entry.status==='work'){
+        workDays++;
+        workHours += entry.hours!=null ? entry.hours : computeWorkHours(entry);
+      } else if(entry.status==='vacation'){
+        vacDays++; vacHours += entry.hours!=null ? entry.hours : defaultDailyHours();
+      } else if(entry.status==='sick'){
+        sickDays++; sickHours += entry.hours!=null ? entry.hours : defaultDailyHours();
+      } else if(entry.status==='holiday'){
+        holDays++; holHours += entry.hours!=null ? entry.hours : defaultDailyHours();
+      }
+    }
+    const paidHours = workHours+vacHours+sickHours+holHours;
+    const gross = Math.round(paidHours*settings.rate*100)/100;
+    const est = estimateNet(gross);
+
+    $('summaryBody').innerHTML = `
+      <div class="stat-row"><span>Work days</span><span class="v">${workDays} (${round2(workHours)}h)</span></div>
+      <div class="stat-row"><span>Vacation days</span><span class="v">${vacDays} (${round2(vacHours)}h)</span></div>
+      <div class="stat-row"><span>Sick days</span><span class="v">${sickDays} (${round2(sickHours)}h)</span></div>
+      <div class="stat-row"><span>Holiday days</span><span class="v">${holDays} (${round2(holHours)}h)</span></div>
+      <div class="stat-row total"><span>Total paid hours</span><span class="v">${round2(paidHours)}h</span></div>
+      <div class="stat-row"><span>Gross pay</span><span class="v">€${gross.toFixed(2)}</span></div>
+      <div class="stat-row"><span>Social insurance (est.)</span><span class="v">−€${est.svMonth.toFixed(2)}</span></div>
+      <div class="stat-row"><span>Income tax (est.)</span><span class="v">−€${est.taxMonth.toFixed(2)}</span></div>
+      <div class="stat-row total net"><span>Estimated net pay</span><span class="v">€${est.net.toFixed(2)}</span></div>
+    `;
+  }
+  function round2(n){ return Math.round(n*100)/100; }
+
+  // ---------- modal ----------
+  function openModal(key){
+    editingDate = key;
+    const entry = entries[key] || null;
+    const d = new Date(key+"T00:00:00");
+    $('modalDate').textContent = key;
+    $('modalDow').textContent = d.toLocaleDateString('en-GB', {weekday:'long'});
+    pendingStatus = entry ? entry.status : null;
+    updateStatusButtons();
+    if(entry && entry.status==='work'){
+      $('entryStart').value = entry.start || settings.defaultStart;
+      $('entryEnd').value = entry.end || settings.defaultEnd;
+      $('entryBreak').value = entry.breakMin!=null ? entry.breakMin : settings.defaultBreak;
+    } else {
+      $('entryStart').value = settings.defaultStart;
+      $('entryEnd').value = settings.defaultEnd;
+      $('entryBreak').value = settings.defaultBreak;
+    }
+    if(entry && ['vacation','sick','holiday'].includes(entry.status)){
+      $('entryPaidHours').value = entry.hours!=null ? entry.hours : defaultDailyHours();
+    } else {
+      $('entryPaidHours').value = round2(defaultDailyHours());
+    }
+    updateFieldVisibility();
+    updateWorkComputed();
+    $('overlay').classList.add('show');
+  }
+  function closeModal(){
+    $('overlay').classList.remove('show');
+    editingDate = null;
+  }
+  function updateStatusButtons(){
+    document.querySelectorAll('#statusPick button').forEach(b=>{
+      b.classList.toggle('active', b.dataset.s===pendingStatus);
+    });
+  }
+  function updateFieldVisibility(){
+    $('workFields').style.display = pendingStatus==='work' ? 'block' : 'none';
+    $('paidFields').style.display = ['vacation','sick','holiday'].includes(pendingStatus) ? 'block' : 'none';
+  }
+  function updateWorkComputed(){
+    const h = computeWorkHours({start:$('entryStart').value, end:$('entryEnd').value, breakMin: parseFloat($('entryBreak').value)||0});
+    $('workComputed').textContent = `Computed paid hours: ${h}h`;
+  }
+  document.querySelectorAll('#statusPick button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      pendingStatus = b.dataset.s==='clear' ? null : b.dataset.s;
+      updateStatusButtons();
+      updateFieldVisibility();
+      updateWorkComputed();
+    });
+  });
+  ['entryStart','entryEnd','entryBreak'].forEach(id=>{
+    $(id).addEventListener('input', updateWorkComputed);
+  });
+  $('modalCancel').addEventListener('click', closeModal);
+  $('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') closeModal(); });
+
+  $('modalSave').addEventListener('click', async ()=>{
+    if(!editingDate) return;
+    if(pendingStatus===null){
+      delete entries[editingDate];
+    } else if(pendingStatus==='work'){
+      const start=$('entryStart').value, end=$('entryEnd').value, breakMin=parseFloat($('entryBreak').value)||0;
+      entries[editingDate] = { status:'work', start, end, breakMin, hours: computeWorkHours({start,end,breakMin}) };
+    } else if(['vacation','sick','holiday'].includes(pendingStatus)){
+      entries[editingDate] = { status: pendingStatus, hours: parseFloat($('entryPaidHours').value)||0 };
+    } else {
+      entries[editingDate] = { status: pendingStatus };
+    }
+    await saveEntriesToStorage();
+    renderCalendar();
+    renderSummary();
+    closeModal();
+  });
+
+  // ---------- month nav ----------
+  $('prevMonth').addEventListener('click', ()=>{
+    viewMonth--; if(viewMonth<0){ viewMonth=11; viewYear--; }
+    renderCalendar(); renderSummary();
+  });
+  $('nextMonth').addEventListener('click', ()=>{
+    viewMonth++; if(viewMonth>11){ viewMonth=0; viewYear++; }
+    renderCalendar(); renderSummary();
+  });
+
+  // ---------- export / import ----------
+  $('exportJson').addEventListener('click', ()=>{
+    const data = { settings, entries };
+    downloadFile(`shiftlog-export.json`, JSON.stringify(data, null, 2), 'application/json');
+  });
+  $('exportCsv').addEventListener('click', ()=>{
+    let rows = ["date,status,start,end,breakMin,hours"];
+    Object.keys(entries).sort().forEach(k=>{
+      const e = entries[k];
+      rows.push([k, e.status, e.start||'', e.end||'', e.breakMin!=null?e.breakMin:'', e.hours!=null?e.hours:''].join(','));
+    });
+    downloadFile('shiftlog-export.csv', rows.join('\n'), 'text/csv');
+  });
+  function downloadFile(name, content, type){
+    const blob = new Blob([content], {type});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  $('importBtn').addEventListener('click', ()=> $('fileImport').click());
+  $('fileImport').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev)=>{
+      const text = ev.target.result;
+      try{
+        if(file.name.endsWith('.json')){
+          const data = JSON.parse(text);
+          if(data.settings) settings = {...DEFAULT_SETTINGS, ...data.settings};
+          if(data.entries) entries = data.entries;
+        } else {
+          const lines = text.split('\n').filter(l=>l.trim().length);
+          lines.shift(); // header
+          lines.forEach(line=>{
+            const [date, status, start, end, breakMin, hours] = line.split(',');
+            if(!date) return;
+            entries[date] = {
+              status: status,
+              start: start||undefined,
+              end: end||undefined,
+              breakMin: breakMin? parseFloat(breakMin): undefined,
+              hours: hours? parseFloat(hours): undefined
+            };
+          });
+        }
+        await saveSettingsToStorage();
+        await saveEntriesToStorage();
+        fillSettingsForm();
+        renderCalendar();
+        renderSummary();
+      }catch(err){
+        alert('Could not read that file. Check the format and try again.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  // ---------- init ----------
+  async function init(){
+    await loadData();
+    fillSettingsForm();
+    const now = new Date();
+    viewYear = now.getFullYear();
+    viewMonth = now.getMonth();
+    renderCalendar();
+    renderSummary();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
