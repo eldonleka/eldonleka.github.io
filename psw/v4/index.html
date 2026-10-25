@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vault">
+<meta name="theme-color" content="#0a0f1c">
+<title>Vault Native</title>
+<style>
+:root{--bg:#0a0f1c;--s1:#111827;--s2:#1a2234;--bd:rgba(255,255,255,.08);--tx:#f1f5f9;--mu:#8b98ad;--ac:#34d399;--on:#04130d;--dn:#f87171;--wn:#fbbf24;color-scheme:dark}
+@media(prefers-color-scheme:light){:root{--bg:#f4f6fa;--s1:#fff;--s2:#eef1f6;--bd:rgba(0,0,0,.09);--tx:#0f172a;--mu:#5b6678;--ac:#059669;--on:#fff;--dn:#dc2626;--wn:#b45309;color-scheme:light}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);min-height:100vh}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+input,textarea,button{font:inherit;color:inherit}
+input,textarea{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 14px;outline:none;font-size:16px;resize:none}
+input:focus,textarea:focus{border-color:var(--ac)}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:600;background:var(--s2);cursor:pointer}
+button:active{transform:scale(.98)}
+.pri{background:var(--ac);color:var(--on)}
+.dng{color:var(--dn)}
+.lnk{background:none;color:var(--mu);font-weight:500;padding:8px;font-size:14px}
+.stack>*+*{margin-top:12px}
+.logo{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--ac),#60a5fa);display:grid;place-items:center;font-size:26px;margin:0 auto}
+.center{text-align:center}
+.mu{color:var(--mu);font-size:13px}
+.err{color:var(--dn);font-size:13px;min-height:18px}
+#lock{min-height:100vh;display:flex;align-items:center}
+#lock .wrap{width:100%}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:14px}
+header{position:sticky;top:0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);z-index:5;padding-top:env(safe-area-inset-top)}
+.bar{display:flex;align-items:center;gap:10px}
+.bar .t{flex:1}
+.ic{width:42px;height:42px;padding:0;font-size:18px}
+#list{padding-bottom:96px}
+.e{display:flex;gap:12px;margin-bottom:10px}
+.av{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-weight:700;color:#fff;font-size:18px}
+.e .m{flex:1;min-width:0}
+.e b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw{font-family:ui-monospace,Menlo,monospace;font-size:14px;margin-top:6px;word-break:break-all}
+.acts{display:flex;gap:8px;margin-top:10px}
+.acts button{padding:8px 12px;font-size:13px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;margin:4px 4px 0 0;background:color-mix(in srgb,var(--wn) 18%,transparent);color:var(--wn);font-weight:600}
+.empty{text-align:center;color:var(--mu);padding:48px 16px}
+.fab{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;font-size:30px;padding:0;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+#sheet{width:100%;max-width:560px;max-height:92vh;overflow:auto;background:var(--s1);border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:17px}
+.sh button{padding:6px 12px}
+.meter{display:flex;gap:4px;margin-top:8px}
+.meter i{flex:1;height:5px;border-radius:3px;background:var(--s2)}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.row>.sm{flex:none}
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 18px;border-radius:99px;font-weight:600;font-size:14px;z-index:30;max-width:90vw}
+</style>
+</head>
+<body>
+
+<section id="lock"><div class="wrap stack" id="lockBox"></div></section>
+
+<section id="app" hidden>
+  <header><div class="wrap stack" style="padding-bottom:8px">
+    <div class="bar">
+      <div class="t"><b style="font-size:20px">Vault</b><div class="mu" id="cnt"></div></div>
+      <button class="ic" id="menuBtn" aria-label="Menu">⋯</button>
+      <button class="ic" id="lockBtn" aria-label="Kyç">🔒</button>
+    </div>
+    <input id="q" type="search" placeholder="Kërko llogari…" autocomplete="off">
+  </div></header>
+  <div class="wrap"><div id="list"></div></div>
+  <button class="fab pri" id="addBtn" aria-label="Shto">+</button>
+</section>
+
+<div id="ov" hidden><div id="sheet"></div></div>
+<div id="toast" hidden></div>
+<input id="file" type="file" accept=".json,application/json" hidden>
+
+<script>
+'use strict';
+const SK='vault_native_v1', IT=600000, AUTO=120000, AWAY=30000, CLIP=20000;
+const te=new TextEncoder(), td=new TextDecoder();
+const $=s=>document.querySelector(s);
+const h=(t,p={},...c)=>{const e=document.createElement(t);for(const k in p){if(k==='class')e.className=p[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),p[k]);else e[k]=p[k]}c.flat().forEach(x=>x!=null&&e.append(x));return e};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+let creating=false, vault=null, key=null, entries=[], fails=0, idleT=null, hiddenAt=0, toastT=null;
+
+/* ---------- crypto ---------- */
+const b64=b=>{const u=new Uint8Array(b);let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function derive(pw,salt,it){
+  const k=await crypto.subtle.importKey('raw',te.encode(pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:it,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function openVault(k,v){
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(v.iv)},k,unb64(v.ct));
+  return JSON.parse(td.decode(pt));
+}
+async function save(){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,te.encode(JSON.stringify(entries)));
+  vault.iv=b64(iv); vault.ct=b64(ct);
+  try{localStorage.setItem(SK,JSON.stringify(vault))}catch{toast('Ruajtja lokale dështoi — eksporto kopje!')}
+}
+async function freshKey(pw){ // new salt + current iteration count, then save
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  vault={v:2,it:IT,salt:b64(salt)};
+  key=await derive(pw,salt,IT);
+  await save();
+}
+
+/* ---------- random / password tools ---------- */
+function rnd(n){const lim=Math.floor(4294967296/n)*n,a=new Uint32Array(1);do{crypto.getRandomValues(a)}while(a[0]>=lim);return a[0]%n}
+function genPw(len=20){
+  const sets=['abcdefghijkmnopqrstuvwxyz','ABCDEFGHJKLMNPQRSTUVWXYZ','23456789','!@#$%^&*-_=+?'];
+  const all=sets.join('');
+  const out=sets.map(s=>s[rnd(s.length)]);
+  while(out.length<len)out.push(all[rnd(all.length)]);
+  for(let i=out.length-1;i>0;i--){const j=rnd(i+1);[out[i],out[j]]=[out[j],out[i]]}
+  return out.join('');
+}
+const COL=['','#f87171','#fbbf24','#60a5fa','#34d399'], LBL=['','Dobët','Mesatar','Mirë','Shumë i fortë'];
+function strength(p){
+  if(!p)return 0;
+  let pool=0;
+  if(/[a-z]/.test(p))pool+=26; if(/[A-Z]/.test(p))pool+=26; if(/\d/.test(p))pool+=10; if(/[^a-zA-Z0-9]/.test(p))pool+=32;
+  const bits=p.length*Math.log2(pool||1);
+  return bits<40?1:bits<60?2:bits<80?3:4;
+}
+function meter(){
+  const bars=h('div',{class:'meter'},h('i'),h('i'),h('i'),h('i'));
+  const lab=h('div',{class:'mu',style:'margin-top:4px;min-height:18px'});
+  return {node:h('div',{},bars,lab),set(p){const s=strength(p);[...bars.children].forEach((c,i)=>c.style.background=i<s?COL[s]:'');lab.textContent=LBL[s]}};
+}
+
+/* ---------- UI helpers ---------- */
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,1800)}
+function sheet(title,...nodes){
+  $('#sheet').replaceChildren(h('div',{class:'sh'},h('b',{},title),h('button',{onclick:closeSheet},'✕')),h('div',{class:'stack'},nodes));
+  $('#ov').hidden=false;
+}
+function closeSheet(){$('#ov').hidden=true;$('#sheet').replaceChildren()}
+$('#ov').addEventListener('click',e=>{if(e.target.id==='ov')closeSheet()});
+async function copy(text,label){
+  try{await navigator.clipboard.writeText(text)}catch{const t=h('textarea',{value:text});document.body.append(t);t.select();document.execCommand('copy');t.remove()}
+  toast(label+' u kopjua · pastrohet pas 20s');
+  setTimeout(()=>{navigator.clipboard&&navigator.clipboard.writeText('').catch(()=>{})},CLIP);
+}
+
+/* ---------- auto-lock ---------- */
+function arm(){clearTimeout(idleT);if(key)idleT=setTimeout(lock,AUTO)}
+['pointerdown','keydown','scroll'].forEach(ev=>addEventListener(ev,arm,{passive:true}));
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)hiddenAt=Date.now();
+  else if(key&&Date.now()-hiddenAt>AWAY)lock();
+});
+function lock(){
+  key=null;entries=[];clearTimeout(idleT);
+  $('#list').replaceChildren();$('#q').value='';closeSheet();showLock();
+}
+
+/* ---------- lock screen ---------- */
+function showLock(msg){
+  $('#app').hidden=true;$('#lock').hidden=false;
+  const exists=!!vault, box=$('#lockBox');
+  if(!exists&&!creating){
+    box.replaceChildren(
+      h('div',{class:'logo'},'🔐'),
+      h('div',{class:'center'},h('b',{style:'font-size:24px'},'Vault Native'),h('div',{class:'mu'},'Mirë se erdhe')),
+      h('div',{class:'card stack'},
+        h('button',{class:'pri',style:'width:100%',onclick:()=>$('#file').click()},'Kam vault — hyr'),
+        h('div',{class:'mu center'},'Zgjidh skedarin vault-….json që ke eksportuar më parë, pastaj shkruaj master password-in tënd.'),
+        h('button',{style:'width:100%',onclick:()=>{creating=true;showLock()}},'Krijo vault të ri')),
+      h('div',{class:'center mu'},'AES-256-GCM · PBKDF2 600k · të dhënat mbeten në këtë pajisje'));
+    return;
+  }
+  const pw=h('input',{type:'password',placeholder:'Master password',autocomplete:exists?'current-password':'new-password'});
+  const pw2=h('input',{type:'password',placeholder:'Përsërite master password',autocomplete:'new-password',hidden:exists});
+  const m=meter(); m.node.hidden=exists;
+  const err=h('div',{class:'err'},msg||'');
+  const go=h('button',{class:'pri',style:'width:100%'},exists?'Zhblloko':'Krijo vault');
+  pw.addEventListener('input',()=>m.set(pw.value));
+  async function submit(){
+    err.textContent='';go.disabled=true;
+    try{
+      if(exists){
+        try{
+          const k=await derive(pw.value,unb64(vault.salt),vault.it||200000);
+          entries=await openVault(k,vault);key=k;fails=0;
+          if((vault.v||1)<2)await freshKey(pw.value); // upgrade old vaults
+        }catch{
+          fails++;err.textContent='Fjalëkalim i gabuar ose skedar i dëmtuar';
+          await sleep(Math.min(fails*1000,8000));go.disabled=false;return;
+        }
+      }else{
+        if(pw.value.length<10){err.textContent='Minimumi 10 karaktere';go.disabled=false;return}
+        if(pw.value!==pw2.value){err.textContent='Fjalëkalimet nuk përputhen';go.disabled=false;return}
+        entries=[];await freshKey(pw.value);
+      }
+      pw.value=pw2.value='';enter();
+    }finally{go.disabled=false}
+  }
+  go.onclick=submit;
+  [pw,pw2].forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')submit()}));
+  box.replaceChildren(
+    h('div',{class:'logo'},'🔐'),
+    h('div',{class:'center'},h('b',{style:'font-size:24px'},'Vault Native'),h('div',{class:'mu'},exists?'Futu për të zhbllokuar vault-in':'Krijo vault-in tënd të enkriptuar')),
+    h('div',{class:'card stack'},pw,pw2,m.node,err,go),
+    h('div',{class:'center'},
+      exists?h('button',{class:'lnk',onclick:newVault},'Krijo vault të ri'):h('button',{class:'lnk',onclick:()=>{creating=false;showLock()}},'← Kam vault ekzistues'),
+      exists?h('button',{class:'lnk',onclick:()=>$('#file').click()},'Importo skedar tjetër'):null,
+      h('div',{class:'mu',style:'margin-top:8px'},'AES-256-GCM · PBKDF2 600k · të dhënat mbeten në këtë pajisje'))
+  );
+}
+function newVault(){
+  if(!confirm('Kjo FSHIN vault-in aktual nga kjo pajisje. Vazhdo vetëm nëse ke eksportuar kopje. Të vazhdoj?'))return;
+  localStorage.removeItem(SK);vault=null;creating=true;key=null;entries=[];showLock();
+}
+
+/* ---------- main list ---------- */
+function enter(){creating=false;$('#lock').hidden=true;$('#app').hidden=false;render();arm()}
+const hue=s=>{let x=0;for(const c of s)x=(x*31+c.charCodeAt(0))%360;return x};
+function render(){
+  const q=$('#q').value.trim().toLowerCase(), list=$('#list');
+  const cnt={};entries.forEach(e=>cnt[e.password]=(cnt[e.password]||0)+1);
+  $('#cnt').textContent=entries.length+' llogari';
+  const vis=entries.map((e,i)=>[e,i]).filter(([e])=>!q||(e.service+' '+e.username+' '+(e.note||'')).toLowerCase().includes(q));
+  list.replaceChildren();
+  if(!vis.length){list.append(h('div',{class:'empty'},entries.length?'Asnjë rezultat':'Vault-i është bosh. Shtyp + për të shtuar llogarinë e parë.'));return}
+  vis.forEach(([e,i])=>{
+    const pwLine=h('div',{class:'pw',hidden:true},e.password);
+    const tags=h('div',{});
+    if(strength(e.password)<=1)tags.append(h('span',{class:'tag'},'Dobët'));
+    if(cnt[e.password]>1)tags.append(h('span',{class:'tag'},'Përsëritur'));
+    list.append(h('div',{class:'card e'},
+      h('div',{class:'av',style:`background:hsl(${hue(e.service)} 55% 45%)`},(e.service[0]||'?').toUpperCase()),
+      h('div',{class:'m'},
+        h('b',{},e.service),h('div',{class:'mu',style:'overflow:hidden;text-overflow:ellipsis'},e.username),
+        e.note?h('div',{class:'mu'},e.note):null,tags,pwLine,
+        h('div',{class:'acts'},
+          h('button',{class:'pri',onclick:()=>copy(e.password,'Fjalëkalimi')},'Kopjo'),
+          h('button',{onclick:()=>copy(e.username,'Përdoruesi')},'Përdoruesi'),
+          h('button',{onclick:()=>pwLine.hidden=!pwLine.hidden},'Shiko'),
+          h('button',{onclick:()=>editSheet(i)},'Ndrysho')))
+    ));
+  });
+}
+$('#q').addEventListener('input',render);
+$('#addBtn').onclick=()=>editSheet(null);
+$('#lockBtn').onclick=lock;
+
+/* ---------- add / edit ---------- */
+function editSheet(i){
+  const e=i==null?{service:'',username:'',password:'',note:''}:entries[i];
+  const s=h('input',{placeholder:'Shërbimi / Faqja',value:e.service,autocapitalize:'off',autocomplete:'off'});
+  const u=h('input',{placeholder:'Përdoruesi / Email',value:e.username,autocapitalize:'off',autocomplete:'off',spellcheck:false});
+  const p=h('input',{type:'password',placeholder:'Fjalëkalimi',value:e.password,autocomplete:'off',autocapitalize:'off',spellcheck:false});
+  const n=h('textarea',{placeholder:'Shënim (opsionale)',rows:2,value:e.note||''});
+  const m=meter();m.set(p.value);p.addEventListener('input',()=>m.set(p.value));
+  const err=h('div',{class:'err'});
+  const eye=h('button',{class:'sm',onclick:()=>{p.type=p.type==='password'?'text':'password'}},'👁');
+  const gen=h('button',{class:'sm',onclick:()=>{p.value=genPw(20);p.type='text';m.set(p.value)}},'Gjenero');
+  const sv=h('button',{class:'pri',onclick:async()=>{
+    if(!s.value.trim()||!p.value){err.textContent='Shërbimi dhe fjalëkalimi janë të detyrueshëm';return}
+    const o={service:s.value.trim(),username:u.value.trim(),password:p.value,note:n.value.trim(),updated:Date.now()};
+    if(i==null)entries.unshift(o);else entries[i]=o;
+    await save();render();closeSheet();toast('U ruajt');
+  }},'Ruaj');
+  const nodes=[s,u,h('div',{class:'row'},p,eye,gen),m.node,n,err,sv];
+  if(i!=null)nodes.push(h('button',{class:'dng',onclick:async()=>{
+    if(!confirm('Të fshihet kjo llogari?'))return;
+    entries.splice(i,1);await save();render();closeSheet();toast('U fshi');
+  }},'Fshi'));
+  sheet(i==null?'Llogari e re':'Ndrysho llogarinë',...nodes);
+  if(i==null)s.focus();
+}
+
+/* ---------- menu ---------- */
+$('#menuBtn').onclick=()=>sheet('Menu',
+  h('button',{onclick:exportVault},'⬇ Eksporto kopje të enkriptuar'),
+  h('button',{onclick:()=>$('#file').click()},'⬆ Importo skedar vault'),
+  h('button',{onclick:changeMaster},'🔑 Ndrysho master password'),
+  h('button',{class:'dng',onclick:()=>{closeSheet();newVault()}},'Fshi vault-in nga kjo pajisje'),
+  h('div',{class:'mu center'},'Kyçje automatike pas 2 min pa aktivitet'));
+
+function exportVault(){
+  const url=URL.createObjectURL(new Blob([JSON.stringify(vault,null,2)],{type:'application/json'}));
+  const a=h('a',{href:url,download:'vault-'+new Date().toISOString().slice(0,10)+'.json'});
+  document.body.append(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1000);
+  closeSheet();toast('Eksporti filloi');
+}
+function changeMaster(){
+  const cur=h('input',{type:'password',placeholder:'Master password aktual',autocomplete:'current-password'});
+  const np=h('input',{type:'password',placeholder:'Master password i ri (min 10)',autocomplete:'new-password'});
+  const np2=h('input',{type:'password',placeholder:'Përsërite të riun',autocomplete:'new-password'});
+  const m=meter();np.addEventListener('input',()=>m.set(np.value));
+  const err=h('div',{class:'err'});
+  const go=h('button',{class:'pri',onclick:async()=>{
+    err.textContent='';
+    try{await openVault(await derive(cur.value,unb64(vault.salt),vault.it||200000),vault)}catch{err.textContent='Fjalëkalimi aktual është i gabuar';return}
+    if(np.value.length<10){err.textContent='Minimumi 10 karaktere';return}
+    if(np.value!==np2.value){err.textContent='Fjalëkalimet nuk përputhen';return}
+    await freshKey(np.value);closeSheet();toast('Master password u ndryshua');
+  }},'Ndrysho');
+  sheet('Ndrysho master password',cur,np,m.node,np2,err,go);
+}
+
+/* ---------- import ---------- */
+$('#file').onchange=async ev=>{
+  const f=ev.target.files[0];ev.target.value='';if(!f)return;
+  try{
+    const o=JSON.parse(await f.text());
+    if(![o.salt,o.iv,o.ct].every(x=>typeof x==='string'))throw 0;
+    if(vault&&!confirm('Importi do ta zëvendësojë vault-in aktual në këtë pajisje. Vazhdo?'))return;
+    vault={v:o.v||1,it:o.it||200000,salt:o.salt,iv:o.iv,ct:o.ct};
+    localStorage.setItem(SK,JSON.stringify(vault));
+    creating=false;key=null;entries=[];closeSheet();showLock();toast('U importua — zhblloko me master password');
+  }catch{toast('Skedar i pavlefshëm')}
+};
+
+/* ---------- init ---------- */
+try{const r=JSON.parse(localStorage.getItem(SK)||'null');if(r&&r.salt&&r.iv&&r.ct)vault=r}catch{}
+showLock();
+</script>
+</body>
+</html>
