@@ -246,7 +246,7 @@
       <span><i style="background:var(--off)"></i>Off</span>
       <span><i style="background:var(--accent)"></i>OT leave</span>
     </div>
-    <div class="note">Tap any day to log a shift or mark leave. Sundays are off automatically. Orange numbers (+0.5) are overtime hours after the overtime time set in Settings.</div>
+    <div class="note">Tap any day to log a shift or mark leave. Sundays are off automatically. Orange numbers (+0.5) are overtime hours after the overtime time set in Settings; red numbers (−0.5) are minutes missing when you finish before the minus time.</div>
   </div>
 
   <div class="screen" id="screen-summary">
@@ -309,7 +309,7 @@
 
     <div class="group-label">History</div>
     <div class="group" style="padding:2px 14px;" id="otHistory"></div>
-    <div class="note">Overtime is everything worked after the overtime time (Settings). "Put in salary" adds those hours to that month's pay; "Take leave" credits them as paid hours on the day you take off.</div>
+    <div class="note">Overtime is everything worked after the overtime time (Settings); finishing before the minus time subtracts those minutes from the balance. "Put in salary" adds those hours to that month's pay; "Take leave" credits them as paid hours on the day you take off.</div>
   </div>
 
   <div class="screen" id="screen-settings">
@@ -327,6 +327,7 @@
       <div class="row"><span class="rlabel">End</span><input type="time" id="setEnd"></div>
       <div class="row"><span class="rlabel">Unpaid break (min)</span><input type="number" step="1" id="setBreak"></div>
       <div class="row"><span class="rlabel">Paid until (overtime after)</span><input type="time" id="setOtAfter"></div>
+      <div class="row"><span class="rlabel">Minus if finished before</span><input type="time" id="setMinusBefore"></div>
     </div>
 
     <div class="group-label">Tax profile</div>
@@ -433,6 +434,7 @@
     defaultEnd: "16:41",
     defaultBreak: 30,
     otAfter: "16:11",
+    minusBefore: "15:41",
     taxClass: "4",
     married: true,
     church: false,
@@ -454,6 +456,7 @@
   function timeToMinutes(t){ if(!t) return null; const [h,m]=t.split(":").map(Number); return h*60+m; }
   function defaultDailyHours(){ return settings.weeklyHours / settings.daysPerWeek; }
   function round2(n){ return Math.round(n*100)/100; }
+  function sg(n){ return (n<0?"−":"+")+Math.abs(round2(n)); }
   function monthKeyOf(y,m){ return `${y}-${pad(m+1)}`; }
   function todayKey(){ const n=new Date(); return dateKey(n.getFullYear(), n.getMonth(), n.getDate()); }
 
@@ -502,6 +505,7 @@
     $('setEnd').value = settings.defaultEnd;
     $('setBreak').value = settings.defaultBreak;
     $('setOtAfter').value = settings.otAfter;
+    $('setMinusBefore').value = settings.minusBefore;
     $('setTaxClass').value = settings.taxClass;
     $('setMarried').checked = settings.married;
     $('setChurch').checked = settings.church;
@@ -516,6 +520,7 @@
     settings.defaultEnd = $('setEnd').value;
     settings.defaultBreak = parseFloat($('setBreak').value)||0;
     settings.otAfter = $('setOtAfter').value || "16:11";
+    settings.minusBefore = $('setMinusBefore').value || "15:41";
     settings.taxClass = $('setTaxClass').value;
     settings.married = $('setMarried').checked;
     settings.church = $('setChurch').checked;
@@ -554,7 +559,10 @@
     let e = timeToMinutes(entry.end);
     if(e<s) e += 1440;
     const limit = timeToMinutes(settings.otAfter || "16:11");
-    return round2(Math.max(0, e - Math.max(s, limit))/60);
+    const minus = timeToMinutes(settings.minusBefore || "15:41");
+    if(e>limit) return round2((e - Math.max(s, limit))/60);
+    if(e<minus) return -round2((minus - e)/60);
+    return 0;
   }
   function totalWorkHours(entry){
     return entry.hours!=null ? entry.hours : computeWorkHours(entry);
@@ -607,7 +615,7 @@
         html += `<span class="tag ${entry.status}">${statusLabel(entry.status)}</span>`;
         if(entry.status==='work'){
           const ot = otHours(entry);
-          html += `<span class="hrs">${paidWorkHours(entry)}h${ot>0 ? ` <b>+${ot}</b>` : ''}</span>`;
+          html += `<span class="hrs">${paidWorkHours(entry)}h${ot!==0 ? ` <b style="color:${ot<0?'var(--sick)':'var(--accent)'}">${sg(ot)}</b>` : ''}</span>`;
         } else if(entry.status==='otleave'){
           html += `<span class="hrs">${round2(entry.hours)}h</span>`;
         } else if(entry.status==='vacation' || entry.status==='sick' || entry.status==='holiday'){
@@ -716,7 +724,7 @@
     const earned = {};
     Object.keys(entries).forEach(k=>{
       const o = otHours(entries[k]);
-      if(o>0) earned[k.slice(0,7)] = (earned[k.slice(0,7)]||0) + o;
+      if(o!==0) earned[k.slice(0,7)] = (earned[k.slice(0,7)]||0) + o;
     });
     const used = {};
     otlog.forEach(o=>{
@@ -738,13 +746,13 @@
       const [y, mo] = m.split('-').map(Number);
       const row = document.createElement('div');
       row.className = 'breakdown-row';
-      row.innerHTML = `<span class="lbl">${MONTH_NAMES[mo-1].slice(0,3)} ${y}</span><span class="val">+${e} −${p} −${l} = ${round2(e-p-l)}h</span>`;
+      row.innerHTML = `<span class="lbl">${MONTH_NAMES[mo-1].slice(0,3)} ${y}</span><span class="val">${sg(e)} −${p} −${l} = ${round2(e-p-l)}h</span>`;
       box.appendChild(row);
     });
     if(months.length){
       const row = document.createElement('div');
       row.className = 'breakdown-row total';
-      row.innerHTML = `<span class="lbl">Total</span><span class="val">+${round2(tE)} −${round2(tP)} −${round2(tL)} = ${round2(tE-tP-tL)}h</span>`;
+      row.innerHTML = `<span class="lbl">Total</span><span class="val">${sg(tE)} −${round2(tP)} −${round2(tL)} = ${round2(tE-tP-tL)}h</span>`;
       box.appendChild(row);
     }
     tE=round2(tE); tP=round2(tP); tL=round2(tL);
@@ -839,7 +847,7 @@
     const e = {status:'work', start:$('entryStart').value, end:$('entryEnd').value, breakMin: parseFloat($('entryBreak').value)||0};
     const total = computeWorkHours(e), ot = otHours(e);
     $('workComputed').textContent = `Paid hours: ${round2(Math.max(0, total-ot))}h`;
-    $('otComputed').textContent = ot>0 ? `Overtime: +${ot}h` : '';
+    $('otComputed').textContent = ot!==0 ? `Overtime: ${sg(ot)}h` : '';
   }
   document.querySelectorAll('#statusPick button').forEach(b=>{
     b.addEventListener('click', ()=>{
