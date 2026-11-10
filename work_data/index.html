@@ -71,9 +71,9 @@
   }
   .row:last-child{border-bottom:none;}
   .row .rlabel{font-size:15px; color:var(--ink);}
-  .row input[type=number], .row input[type=time]{
+  .row input[type=number], .row input[type=time], .row input[type=date]{
     text-align:right; border:none; background:transparent; font-size:15px; color:var(--slate);
-    width:100px; padding:2px 0; font-family:inherit;
+    width:130px; padding:2px 0; font-family:inherit;
   }
   .row input:focus{outline:none; color:var(--ink);}
   .row select{
@@ -110,7 +110,7 @@
     font-weight:700; padding:2px 0 6px; text-align:center;
   }
   table.cal td{
-    background:var(--bg); border-radius:9px; vertical-align:top; height:56px; width:14.28%;
+    background:var(--bg); border-radius:9px; vertical-align:top; height:60px; width:14.28%;
     padding:4px 3px; position:relative;
   }
   table.cal td.filled{cursor:pointer;}
@@ -123,11 +123,13 @@
     padding:2px 4px; border-radius:4px; color:white; line-height:1.3; letter-spacing:.01em;
   }
   td .hrs{display:block; margin-top:2px; font-size:7.5px; color:var(--slate); line-height:1.3;}
+  td .hrs b{color:var(--accent);}
   .tag.work{background:var(--navy);}
   .tag.vacation{background:var(--vac);}
   .tag.sick{background:var(--sick);}
   .tag.holiday{background:var(--hol);}
   .tag.off{background:var(--off); color:#6b6f78;}
+  .tag.otleave{background:var(--accent);}
 
   .legend{display:flex; gap:9px; flex-wrap:wrap; margin-top:14px; padding:0 2px; font-size:10.5px; color:var(--slate);}
   .legend span{display:inline-flex; align-items:center; gap:4px;}
@@ -142,12 +144,20 @@
   .stat-tile.hero .l{color:#B9C0D6;}
   .stat-tile.net{background:linear-gradient(135deg,#2FA971,#1F8557); color:#fff;}
   .stat-tile.net .l{color:#DCF5E9;}
+  .stat-tile.ot{background:linear-gradient(135deg,#F5A31A,#E88A00); color:#fff;}
+  .stat-tile.ot .l{color:#FFF1D6;}
 
-  .breakdown-row{display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:0.5px solid var(--line);}
+  .breakdown-row{display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:0.5px solid var(--line); gap:8px;}
   .breakdown-row:last-child{border-bottom:none;}
   .breakdown-row .dot{width:9px; height:9px; border-radius:3px; display:inline-block; margin-right:8px;}
   .breakdown-row .lbl{display:flex; align-items:center; font-size:14.5px;}
-  .breakdown-row .val{font-weight:700; font-size:14.5px; font-variant-numeric:tabular-nums;}
+  .breakdown-row .val{font-weight:700; font-size:14.5px; font-variant-numeric:tabular-nums; text-align:right;}
+  .breakdown-row.total{font-weight:800;}
+  .breakdown-row .del{
+    border:none; background:var(--bg); color:var(--sick); font-weight:700; font-size:12px;
+    border-radius:8px; padding:6px 10px; margin-left:8px; font-family:inherit;
+  }
+  .breakdown-row .sub{font-size:11.5px; color:var(--slate); font-weight:600;}
 
   .note{font-size:12px; color:var(--slate); margin:14px 4px 0; line-height:1.5;}
 
@@ -205,6 +215,7 @@
     font-size:16px; background:var(--bg); color:var(--ink); font-family:inherit; margin-bottom:10px;
   }
   .computed{font-size:13.5px; color:var(--vac); margin-top:2px; font-weight:700;}
+  .computed.ot{color:var(--accent);}
   .modal-actions{display:flex; gap:10px; margin-top:16px;}
   .modal-actions button{flex:1;}
   .btn-danger{color:var(--sick);}
@@ -233,8 +244,9 @@
       <span><i style="background:var(--sick)"></i>Sick</span>
       <span><i style="background:var(--hol)"></i>Holiday</span>
       <span><i style="background:var(--off)"></i>Off</span>
+      <span><i style="background:var(--accent)"></i>OT leave</span>
     </div>
-    <div class="note">Tap any day to log a shift or mark leave. Sundays are off automatically.</div>
+    <div class="note">Tap any day to log a shift or mark leave. Sundays are off automatically. Orange numbers (+0.5) are overtime hours after the overtime time set in Settings.</div>
   </div>
 
   <div class="screen" id="screen-summary">
@@ -246,10 +258,17 @@
 
     <div class="group-label">Breakdown</div>
     <div class="group" style="padding:2px 14px;">
-      <div class="breakdown-row"><span class="lbl"><i class="dot" style="background:var(--navy)"></i>Work days</span><span class="val" id="bWork">—</span></div>
+      <div class="breakdown-row"><span class="lbl"><i class="dot" style="background:var(--navy)"></i>Work days (paid hours)</span><span class="val" id="bWork">—</span></div>
       <div class="breakdown-row"><span class="lbl"><i class="dot" style="background:var(--vac)"></i>Vacation days</span><span class="val" id="bVac">—</span></div>
       <div class="breakdown-row"><span class="lbl"><i class="dot" style="background:var(--sick)"></i>Sick days</span><span class="val" id="bSick">—</span></div>
       <div class="breakdown-row"><span class="lbl"><i class="dot" style="background:var(--hol)"></i>Holiday days</span><span class="val" id="bHol">—</span></div>
+    </div>
+
+    <div class="group-label">Overtime this month</div>
+    <div class="group" style="padding:2px 14px;">
+      <div class="breakdown-row"><span class="lbl"><i class="dot" style="background:var(--accent)"></i>Earned (not paid yet)</span><span class="val" id="bOtEarned">—</span></div>
+      <div class="breakdown-row"><span class="lbl"><i class="dot" style="background:var(--accent)"></i>Paid out in salary</span><span class="val" id="bOtPay">—</span></div>
+      <div class="breakdown-row"><span class="lbl"><i class="dot" style="background:var(--accent)"></i>Taken as leave</span><span class="val" id="bOtLeave">—</span></div>
     </div>
 
     <div class="group-label">Deductions (estimate)</div>
@@ -262,7 +281,35 @@
     <div class="group" style="padding:2px 14px;">
       <div class="breakdown-row"><span class="lbl">Disbursed on</span><span class="val" id="bPayout">—</span></div>
     </div>
-    <div class="note">Net pay is a rough estimate (German income-tax formula, average health-fund add-on, standard social-insurance rates for your settings). Use an official Brutto-Netto-Rechner for exact figures.</div>
+    <div class="note">Paid hours include overtime paid out or taken as leave in this month. Net pay is a rough estimate (German income-tax formula, average health-fund add-on, standard social-insurance rates for your settings). Use an official Brutto-Netto-Rechner for exact figures.</div>
+  </div>
+
+  <div class="screen" id="screen-overtime">
+    <div class="stat-grid">
+      <div class="stat-tile ot wide"><div class="n" id="otBalance">—</div><div class="l" id="otBalanceSub">Overtime balance (remaining)</div></div>
+      <div class="stat-tile"><div class="n" id="otEarnedTotal">—</div><div class="l">Total earned</div></div>
+      <div class="stat-tile"><div class="n" id="otUsedTotal">—</div><div class="l">Paid out + leave</div></div>
+    </div>
+
+    <div class="group-label">Use overtime</div>
+    <div class="group">
+      <div class="row"><span class="rlabel">Date</span><input type="date" id="otDate"></div>
+      <div class="row"><span class="rlabel">Hours</span><input type="number" step="0.01" min="0" id="otHoursInput" placeholder="0"></div>
+      <div class="row"><span class="rlabel">Type</span>
+        <select id="otType">
+          <option value="pay">Put in salary</option>
+          <option value="leave">Take leave</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn" id="otAdd">Add</button>
+
+    <div class="group-label">Per month</div>
+    <div class="group" style="padding:2px 14px;" id="otMonths"></div>
+
+    <div class="group-label">History</div>
+    <div class="group" style="padding:2px 14px;" id="otHistory"></div>
+    <div class="note">Overtime is everything worked after the overtime time (Settings). "Put in salary" adds those hours to that month's pay; "Take leave" credits them as paid hours on the day you take off.</div>
   </div>
 
   <div class="screen" id="screen-settings">
@@ -279,6 +326,7 @@
       <div class="row"><span class="rlabel">Start</span><input type="time" id="setStart"></div>
       <div class="row"><span class="rlabel">End</span><input type="time" id="setEnd"></div>
       <div class="row"><span class="rlabel">Unpaid break (min)</span><input type="number" step="1" id="setBreak"></div>
+      <div class="row"><span class="rlabel">Paid until (overtime after)</span><input type="time" id="setOtAfter"></div>
     </div>
 
     <div class="group-label">Tax profile</div>
@@ -301,7 +349,7 @@
     </div>
 
     <button class="btn" id="saveSettings">Save settings</button>
-    <div class="note">These figures drive the calendar defaults and the pay estimate on the Summary tab.</div>
+    <div class="note">These figures drive the calendar defaults, the overtime calculation and the pay estimate on the Summary tab.</div>
   </div>
 
   <div class="screen" id="screen-data">
@@ -314,7 +362,7 @@
       <button class="btn ghost" id="importBtn" style="margin-top:10px;">Import file</button>
       <input type="file" id="fileImport" accept=".json,.csv">
     </div>
-    <div class="note">Import accepts a JSON export from this app, or a CSV with columns: date, status, start, end, breakMin, hours. Everything is stored privately for your account.</div>
+    <div class="note">Import accepts a JSON export from this app, or a CSV with columns: date, status, start, end, breakMin, hours. Overtime payouts and leave are exported as status otpay / otleave. Everything is stored privately for your account.</div>
   </div>
 
   <div class="tabbar">
@@ -325,6 +373,10 @@
     <button class="tab" data-screen="summary" data-title="Summary">
       <svg viewBox="0 0 24 24" fill="none"><path d="M5 19V10M12 19V5M19 19v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       Summary
+    </button>
+    <button class="tab" data-screen="overtime" data-title="Overtime">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Overtime
     </button>
     <button class="tab" data-screen="settings" data-title="Settings">
       <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.2a1.7 1.7 0 00-1.6 1z" stroke="currentColor" stroke-width="1.5"/></svg>
@@ -358,6 +410,7 @@
       <label>Unpaid break (minutes)</label>
       <input type="number" step="1" id="entryBreak">
       <div class="computed" id="workComputed"></div>
+      <div class="computed ot" id="otComputed"></div>
     </div>
     <div id="paidFields" class="field-block" style="display:none;">
       <label>Paid hours credited</label>
@@ -379,6 +432,7 @@
     defaultStart: "07:45",
     defaultEnd: "16:41",
     defaultBreak: 30,
+    otAfter: "16:11",
     taxClass: "4",
     married: true,
     church: false,
@@ -388,6 +442,7 @@
 
   let settings = {...DEFAULT_SETTINGS};
   let entries = {};
+  let otlog = [];   // [{id, date, type:'pay'|'leave', hours}]
   let viewYear, viewMonth;
   let editingDate = null;
   let pendingStatus = null;
@@ -399,6 +454,8 @@
   function timeToMinutes(t){ if(!t) return null; const [h,m]=t.split(":").map(Number); return h*60+m; }
   function defaultDailyHours(){ return settings.weeklyHours / settings.daysPerWeek; }
   function round2(n){ return Math.round(n*100)/100; }
+  function monthKeyOf(y,m){ return `${y}-${pad(m+1)}`; }
+  function todayKey(){ const n=new Date(); return dateKey(n.getFullYear(), n.getMonth(), n.getDate()); }
 
   document.querySelectorAll('.tab').forEach(tab=>{
     tab.addEventListener('click', ()=>{
@@ -419,6 +476,10 @@
       const e = await window.storage.get('entries', false);
       if(e && e.value) entries = JSON.parse(e.value);
     }catch(e){}
+    try{
+      const o = await window.storage.get('otlog', false);
+      if(o && o.value) otlog = JSON.parse(o.value);
+    }catch(e){}
   }
   async function saveSettingsToStorage(){
     try{ await window.storage.set('settings', JSON.stringify(settings), false); }
@@ -428,6 +489,10 @@
     try{ await window.storage.set('entries', JSON.stringify(entries), false); }
     catch(e){ console.error('save entries failed', e); }
   }
+  async function saveOtlogToStorage(){
+    try{ await window.storage.set('otlog', JSON.stringify(otlog), false); }
+    catch(e){ console.error('save otlog failed', e); }
+  }
 
   function fillSettingsForm(){
     $('setRate').value = settings.rate;
@@ -436,6 +501,7 @@
     $('setStart').value = settings.defaultStart;
     $('setEnd').value = settings.defaultEnd;
     $('setBreak').value = settings.defaultBreak;
+    $('setOtAfter').value = settings.otAfter;
     $('setTaxClass').value = settings.taxClass;
     $('setMarried').checked = settings.married;
     $('setChurch').checked = settings.church;
@@ -449,14 +515,14 @@
     settings.defaultStart = $('setStart').value;
     settings.defaultEnd = $('setEnd').value;
     settings.defaultBreak = parseFloat($('setBreak').value)||0;
+    settings.otAfter = $('setOtAfter').value || "16:11";
     settings.taxClass = $('setTaxClass').value;
     settings.married = $('setMarried').checked;
     settings.church = $('setChurch').checked;
     settings.childless = $('setChildless').checked;
     settings.payday = parseInt($('setPayday').value)||15;
     await saveSettingsToStorage();
-    renderCalendar();
-    renderSummary();
+    renderAll();
     $('saveSettings').textContent = 'Saved ✓';
     setTimeout(()=>{ $('saveSettings').textContent = 'Save settings'; }, 1200);
   });
@@ -471,7 +537,7 @@
     return "th";
   }
   function statusLabel(s){
-    return {work:"Work", vacation:"Vacation", sick:"Sick", holiday:"Holiday", off:"Off"}[s] || "";
+    return {work:"Work", vacation:"Vacation", sick:"Sick", holiday:"Holiday", off:"Off", otleave:"OT leave"}[s] || "";
   }
   function computeWorkHours(entry){
     const s = timeToMinutes(entry.start), e = timeToMinutes(entry.end);
@@ -480,6 +546,26 @@
     let mins = e - s - brk;
     if(mins<0) mins = 0;
     return round2(mins/60);
+  }
+  // Overtime = time worked after the "paid until" time
+  function otHours(entry){
+    if(!entry || entry.status!=='work' || !entry.start || !entry.end) return 0;
+    const s = timeToMinutes(entry.start);
+    let e = timeToMinutes(entry.end);
+    if(e<s) e += 1440;
+    const limit = timeToMinutes(settings.otAfter || "16:11");
+    return round2(Math.max(0, e - Math.max(s, limit))/60);
+  }
+  function totalWorkHours(entry){
+    return entry.hours!=null ? entry.hours : computeWorkHours(entry);
+  }
+  function paidWorkHours(entry){
+    return round2(Math.max(0, totalWorkHours(entry) - otHours(entry)));
+  }
+  function leaveDates(){
+    const m = {};
+    otlog.forEach(o=>{ if(o.type==='leave') m[o.date] = (m[o.date]||0) + o.hours; });
+    return m;
   }
 
   function renderCalendar(){
@@ -494,7 +580,8 @@
     let startOffset = firstDay.getDay();
     startOffset = (startOffset===0) ? 6 : startOffset-1;
     const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
-    const todayKey = dateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    const tKey = todayKey();
+    const leaves = leaveDates();
 
     let cellsUsed = 0;
     let row = document.createElement('tr');
@@ -509,17 +596,20 @@
       const key = dateKey(viewYear, viewMonth, d);
       const td = document.createElement('td');
       td.classList.add('filled');
-      if(key===todayKey) td.classList.add('today');
+      if(key===tKey) td.classList.add('today');
       const dow = new Date(viewYear, viewMonth, d).getDay();
       let entry = entries[key];
+      if(!entry && leaves[key]){ entry = {status:'otleave', hours:leaves[key]}; }
       if(!entry && dow===0){ entry = {status:'off', auto:true}; }
 
       let html = `<span class="dnum">${d}</span>`;
       if(entry){
         html += `<span class="tag ${entry.status}">${statusLabel(entry.status)}</span>`;
         if(entry.status==='work'){
-          const h = entry.hours!=null ? entry.hours : computeWorkHours(entry);
-          html += `<span class="hrs">${h}h</span>`;
+          const ot = otHours(entry);
+          html += `<span class="hrs">${paidWorkHours(entry)}h${ot>0 ? ` <b>+${ot}</b>` : ''}</span>`;
+        } else if(entry.status==='otleave'){
+          html += `<span class="hrs">${round2(entry.hours)}h</span>`;
         } else if(entry.status==='vacation' || entry.status==='sick' || entry.status==='holiday'){
           const h = entry.hours!=null ? entry.hours : defaultDailyHours();
           html += `<span class="hrs">${round2(h)}h</span>`;
@@ -577,18 +667,21 @@
     };
   }
 
+  function sumOtlog(type, mKey){
+    return round2(otlog.filter(o=>o.type===type && o.date.slice(0,7)===mKey).reduce((s,o)=>s+o.hours,0));
+  }
+
   function renderSummary(){
-    let workHours=0, workDays=0, vacDays=0, vacHours=0, sickDays=0, sickHours=0, holDays=0, holHours=0;
+    let workHours=0, otEarned=0, workDays=0, vacDays=0, vacHours=0, sickDays=0, sickHours=0, holDays=0, holHours=0;
     const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
     for(let d=1; d<=daysInMonth; d++){
       const key = dateKey(viewYear, viewMonth, d);
-      const dow = new Date(viewYear, viewMonth, d).getDay();
-      let entry = entries[key];
-      if(!entry && dow===0) continue;
+      const entry = entries[key];
       if(!entry) continue;
       if(entry.status==='work'){
         workDays++;
-        workHours += entry.hours!=null ? entry.hours : computeWorkHours(entry);
+        workHours += paidWorkHours(entry);
+        otEarned += otHours(entry);
       } else if(entry.status==='vacation'){
         vacDays++; vacHours += entry.hours!=null ? entry.hours : defaultDailyHours();
       } else if(entry.status==='sick'){
@@ -597,7 +690,9 @@
         holDays++; holHours += entry.hours!=null ? entry.hours : defaultDailyHours();
       }
     }
-    const paidHours = workHours+vacHours+sickHours+holHours;
+    const mKey = monthKeyOf(viewYear, viewMonth);
+    const otPay = sumOtlog('pay', mKey), otLeave = sumOtlog('leave', mKey);
+    const paidHours = workHours+vacHours+sickHours+holHours+otPay+otLeave;
     const gross = round2(paidHours*settings.rate);
     const est = estimateNet(gross);
 
@@ -608,10 +703,97 @@
     $('bVac').textContent = `${vacDays} · ${round2(vacHours)}h`;
     $('bSick').textContent = `${sickDays} · ${round2(sickHours)}h`;
     $('bHol').textContent = `${holDays} · ${round2(holHours)}h`;
+    $('bOtEarned').textContent = `${round2(otEarned)}h`;
+    $('bOtPay').textContent = `${otPay}h · €${round2(otPay*settings.rate).toFixed(2)}`;
+    $('bOtLeave').textContent = `${otLeave}h`;
     $('bSV').textContent = '−€'+est.svMonth.toFixed(2);
     $('bTax').textContent = '−€'+est.taxMonth.toFixed(2);
     const payMonth = MONTH_NAMES[(viewMonth+1)%12];
     $('bPayout').textContent = `${settings.payday}${ordSuffix(settings.payday)} ${payMonth}`;
+  }
+
+  function renderOvertime(){
+    const earned = {};
+    Object.keys(entries).forEach(k=>{
+      const o = otHours(entries[k]);
+      if(o>0) earned[k.slice(0,7)] = (earned[k.slice(0,7)]||0) + o;
+    });
+    const used = {};
+    otlog.forEach(o=>{
+      const m = o.date.slice(0,7);
+      used[m] = used[m] || {pay:0, leave:0};
+      used[m][o.type] += o.hours;
+    });
+    const months = [...new Set([...Object.keys(earned), ...Object.keys(used)])].sort();
+
+    let tE=0, tP=0, tL=0;
+    const box = $('otMonths');
+    box.innerHTML = '';
+    if(!months.length){
+      box.innerHTML = '<div class="breakdown-row"><span class="lbl sub">No overtime yet</span></div>';
+    }
+    months.forEach(m=>{
+      const e = round2(earned[m]||0), p = round2((used[m]||{}).pay||0), l = round2((used[m]||{}).leave||0);
+      tE+=e; tP+=p; tL+=l;
+      const [y, mo] = m.split('-').map(Number);
+      const row = document.createElement('div');
+      row.className = 'breakdown-row';
+      row.innerHTML = `<span class="lbl">${MONTH_NAMES[mo-1].slice(0,3)} ${y}</span><span class="val">+${e} −${p} −${l} = ${round2(e-p-l)}h</span>`;
+      box.appendChild(row);
+    });
+    if(months.length){
+      const row = document.createElement('div');
+      row.className = 'breakdown-row total';
+      row.innerHTML = `<span class="lbl">Total</span><span class="val">+${round2(tE)} −${round2(tP)} −${round2(tL)} = ${round2(tE-tP-tL)}h</span>`;
+      box.appendChild(row);
+    }
+    tE=round2(tE); tP=round2(tP); tL=round2(tL);
+    const bal = round2(tE-tP-tL);
+    $('otBalance').textContent = bal+'h';
+    $('otBalanceSub').textContent = `Overtime balance · ≈ €${round2(bal*settings.rate).toFixed(2)}`;
+    $('otEarnedTotal').textContent = tE+'h';
+    $('otUsedTotal').textContent = round2(tP+tL)+'h';
+
+    const hist = $('otHistory');
+    hist.innerHTML = '';
+    if(!otlog.length){
+      hist.innerHTML = '<div class="breakdown-row"><span class="lbl sub">Nothing used yet</span></div>';
+    }
+    otlog.slice().sort((a,b)=>b.date.localeCompare(a.date)).forEach(o=>{
+      const row = document.createElement('div');
+      row.className = 'breakdown-row';
+      const d = new Date(o.date+"T00:00:00").toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+      row.innerHTML = `<span class="lbl">${d}<span class="sub" style="margin-left:8px;">${o.type==='pay' ? 'Salary' : 'Leave'}</span></span>`;
+      const right = document.createElement('span');
+      right.style.display = 'flex'; right.style.alignItems = 'center';
+      right.innerHTML = `<span class="val">${o.hours}h</span>`;
+      const del = document.createElement('button');
+      del.className = 'del'; del.textContent = 'Delete';
+      del.addEventListener('click', async ()=>{
+        if(!confirm('Delete this record?')) return;
+        otlog = otlog.filter(x=>x.id!==o.id);
+        await saveOtlogToStorage();
+        renderAll();
+      });
+      right.appendChild(del);
+      row.appendChild(right);
+      hist.appendChild(row);
+    });
+  }
+
+  $('otAdd').addEventListener('click', async ()=>{
+    const date = $('otDate').value, hours = parseFloat($('otHoursInput').value);
+    if(!date || !(hours>0)) return;
+    otlog.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), date, type: $('otType').value, hours: round2(hours) });
+    await saveOtlogToStorage();
+    $('otHoursInput').value = '';
+    renderAll();
+  });
+
+  function renderAll(){
+    renderCalendar();
+    renderSummary();
+    renderOvertime();
   }
 
   function openModal(key){
@@ -654,8 +836,10 @@
     $('paidFields').style.display = ['vacation','sick','holiday'].includes(pendingStatus) ? 'block' : 'none';
   }
   function updateWorkComputed(){
-    const h = computeWorkHours({start:$('entryStart').value, end:$('entryEnd').value, breakMin: parseFloat($('entryBreak').value)||0});
-    $('workComputed').textContent = `Computed paid hours: ${h}h`;
+    const e = {status:'work', start:$('entryStart').value, end:$('entryEnd').value, breakMin: parseFloat($('entryBreak').value)||0};
+    const total = computeWorkHours(e), ot = otHours(e);
+    $('workComputed').textContent = `Paid hours: ${round2(Math.max(0, total-ot))}h`;
+    $('otComputed').textContent = ot>0 ? `Overtime: +${ot}h` : '';
   }
   document.querySelectorAll('#statusPick button').forEach(b=>{
     b.addEventListener('click', ()=>{
@@ -684,8 +868,7 @@
       entries[editingDate] = { status: pendingStatus };
     }
     await saveEntriesToStorage();
-    renderCalendar();
-    renderSummary();
+    renderAll();
     closeModal();
   });
 
@@ -699,7 +882,7 @@
   });
 
   $('exportJson').addEventListener('click', ()=>{
-    const data = { settings, entries };
+    const data = { settings, entries, otlog };
     downloadFile(`shiftlog-export.json`, JSON.stringify(data, null, 2), 'application/json');
   });
   $('exportCsv').addEventListener('click', ()=>{
@@ -707,6 +890,9 @@
     Object.keys(entries).sort().forEach(k=>{
       const e = entries[k];
       rows.push([k, e.status, e.start||'', e.end||'', e.breakMin!=null?e.breakMin:'', e.hours!=null?e.hours:''].join(','));
+    });
+    otlog.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(o=>{
+      rows.push([o.date, o.type==='pay'?'otpay':'otleave', '', '', '', o.hours].join(','));
     });
     downloadFile('shiftlog-export.csv', rows.join('\n'), 'text/csv');
   });
@@ -730,12 +916,17 @@
           const data = JSON.parse(text);
           if(data.settings) settings = {...DEFAULT_SETTINGS, ...data.settings};
           if(data.entries) entries = data.entries;
+          if(data.otlog) otlog = data.otlog;
         } else {
           const lines = text.split('\n').filter(l=>l.trim().length);
           lines.shift();
           lines.forEach(line=>{
             const [date, status, start, end, breakMin, hours] = line.split(',');
             if(!date) return;
+            if(status==='otpay' || status==='otleave'){
+              otlog.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), date, type: status==='otpay'?'pay':'leave', hours: parseFloat(hours)||0 });
+              return;
+            }
             entries[date] = {
               status: status,
               start: start||undefined,
@@ -747,9 +938,9 @@
         }
         await saveSettingsToStorage();
         await saveEntriesToStorage();
+        await saveOtlogToStorage();
         fillSettingsForm();
-        renderCalendar();
-        renderSummary();
+        renderAll();
       }catch(err){
         alert('Could not read that file. Check the format and try again.');
       }
@@ -764,8 +955,8 @@
     const now = new Date();
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
-    renderCalendar();
-    renderSummary();
+    $('otDate').value = todayKey();
+    renderAll();
   }
   init();
 })();
