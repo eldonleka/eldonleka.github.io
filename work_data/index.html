@@ -328,6 +328,7 @@
       <div class="row"><span class="rlabel">Unpaid break (min)</span><input type="number" step="1" id="setBreak"></div>
       <div class="row"><span class="rlabel">Paid until (overtime after)</span><input type="time" id="setOtAfter"></div>
       <div class="row"><span class="rlabel">Minus if finished before</span><input type="time" id="setMinusBefore"></div>
+      <div class="row"><span class="rlabel">Count work from</span><input type="time" id="setCountFrom"></div>
     </div>
 
     <div class="group-label">Tax profile</div>
@@ -435,6 +436,7 @@
     defaultBreak: 30,
     otAfter: "16:11",
     minusBefore: "15:41",
+    countFrom: "07:45",
     taxClass: "4",
     married: true,
     church: false,
@@ -506,6 +508,7 @@
     $('setBreak').value = settings.defaultBreak;
     $('setOtAfter').value = settings.otAfter;
     $('setMinusBefore').value = settings.minusBefore;
+    $('setCountFrom').value = settings.countFrom;
     $('setTaxClass').value = settings.taxClass;
     $('setMarried').checked = settings.married;
     $('setChurch').checked = settings.church;
@@ -521,6 +524,7 @@
     settings.defaultBreak = parseFloat($('setBreak').value)||0;
     settings.otAfter = $('setOtAfter').value || "16:11";
     settings.minusBefore = $('setMinusBefore').value || "15:41";
+    settings.countFrom = $('setCountFrom').value || "07:45";
     settings.taxClass = $('setTaxClass').value;
     settings.married = $('setMarried').checked;
     settings.church = $('setChurch').checked;
@@ -545,7 +549,9 @@
     return {work:"Work", vacation:"Vacation", sick:"Sick", holiday:"Holiday", off:"Off", otleave:"OT leave"}[s] || "";
   }
   function computeWorkHours(entry){
-    const s = timeToMinutes(entry.start), e = timeToMinutes(entry.end);
+    let s = timeToMinutes(entry.start); const e = timeToMinutes(entry.end);
+    // Real scanner time is kept; minutes before "Count work from" are not counted
+    if(s!==null){ const cf = timeToMinutes(settings.countFrom || "07:45"); if(s<cf) s = cf; }
     if(s===null || e===null) return 0;
     const brk = entry.breakMin || 0;
     let mins = e - s - brk;
@@ -565,7 +571,7 @@
     return 0;
   }
   function totalWorkHours(entry){
-    return entry.hours!=null ? entry.hours : computeWorkHours(entry);
+    return (entry.start && entry.end) ? computeWorkHours(entry) : (entry.hours!=null ? entry.hours : 0);
   }
   function paidWorkHours(entry){
     return round2(Math.max(0, totalWorkHours(entry) - otHours(entry)));
@@ -846,7 +852,8 @@
   function updateWorkComputed(){
     const e = {status:'work', start:$('entryStart').value, end:$('entryEnd').value, breakMin: parseFloat($('entryBreak').value)||0};
     const total = computeWorkHours(e), ot = otHours(e);
-    $('workComputed').textContent = `Paid hours: ${round2(Math.max(0, total-ot))}h`;
+    const early = e.start && timeToMinutes(e.start) < timeToMinutes(settings.countFrom || "07:45");
+    $('workComputed').textContent = `Paid hours: ${round2(Math.max(0, total-ot))}h` + (early ? ` (counted from ${settings.countFrom})` : '');
     $('otComputed').textContent = ot!==0 ? `Overtime: ${sg(ot)}h` : '';
   }
   document.querySelectorAll('#statusPick button').forEach(b=>{
