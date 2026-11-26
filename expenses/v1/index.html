@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Expense Tracker Pro</title>
+<style>
+:root{--bg:#f2f2f7;--card:#fff;--text:#111;--blue:#007aff;--green:#34c759;--orange:#ff9500;--red:#ff3b30;--border:#e5e5ea}
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+body{margin:0;background:var(--bg);padding:16px;color:var(--text);max-width:900px;margin:auto}
+h1,h2{margin:8px 0}
+.card{background:var(--card);border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+input,select,button{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);font-size:16px;margin:6px 0}
+button{border:none;background:var(--blue);color:#fff;font-weight:600}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#fafafa;padding:10px;border-radius:12px;text-align:center}
+.progress{height:18px;background:#ddd;border-radius:999px;overflow:hidden}
+.bar{height:100%;width:0%}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+.row:last-child{border-bottom:none}
+.small{font-size:12px;color:#666}
+.danger{background:var(--red)}
+.green{background:var(--green)}
+.orange{background:var(--orange)}
+canvas{width:100%;max-height:260px}
+</style>
+</head>
+<body>
+<h1>💸 Expense Tracker Pro</h1>
+
+<div class="card">
+<h2>Buxheti</h2>
+<input id="budget" type="number" placeholder="Vendos buxhetin (€)">
+<button onclick="saveBudget()">Ruaj Buxhetin</button>
+<div class="stats">
+<div class="stat"><div>Total</div><b id="spent">€0</b></div>
+<div class="stat"><div>Mbetur</div><b id="remaining">€0</b></div>
+</div>
+<p id="usage">0%</p>
+<div class="progress"><div id="bar" class="bar green"></div></div>
+</div>
+
+<div class="card">
+<h2>Shto Shpenzim</h2>
+<input type="date" id="date">
+<input type="text" id="desc" placeholder="Përshkrimi">
+<select id="cat">
+<option>🍔 Ushqim</option>
+<option>☕ Kafe</option>
+<option>🚕 Transport</option>
+<option>🏨 Hotel</option>
+<option>🎟️ Aktivitete</option>
+<option>🛍️ Shopping</option>
+<option>📦 Tjetër</option>
+</select>
+<input type="number" id="amount" placeholder="Shuma (€)" step="0.01">
+<button onclick="addExpense()">Shto</button>
+</div>
+
+<div class="card">
+<div class="grid">
+<input id="search" placeholder="Kërko..." oninput="render()">
+<select id="filter" onchange="render()">
+<option value="">Të gjitha</option>
+<option>🍔 Ushqim</option>
+<option>☕ Kafe</option>
+<option>🚕 Transport</option>
+<option>🏨 Hotel</option>
+<option>🎟️ Aktivitete</option>
+<option>🛍️ Shopping</option>
+<option>📦 Tjetër</option>
+</select>
+</div>
+</div>
+
+<div class="card">
+<h2>Statistika sipas kategorive</h2>
+<canvas id="chart" width="600" height="250"></canvas>
+<div id="catStats"></div>
+</div>
+
+<div class="card">
+<h2>Shpenzimet</h2>
+<div id="list"></div>
+<button class="danger" onclick="clearAll()">Fshi të gjitha</button>
+</div>
+
+<div class="card">
+<div class="grid">
+<button class="green" onclick="exportData()">Export JSON</button>
+<button class="orange" onclick="document.getElementById('file').click()">Import JSON</button>
+</div>
+<input id="file" type="file" accept=".json" style="display:none" onchange="importData(event)">
+</div>
+
+<script>
+let data=JSON.parse(localStorage.getItem('tripTracker')||'{"budget":0,"expenses":[]}');
+date.value=new Date().toISOString().split('T')[0];
+
+function save(){localStorage.setItem('tripTracker',JSON.stringify(data));}
+function euro(v){return '€'+Number(v).toFixed(2);}
+
+function saveBudget(){
+ data.budget=Number(budget.value||0); save(); render();
+}
+
+function addExpense(){
+ if(!desc.value||!amount.value) return alert('Plotëso fushat');
+ data.expenses.unshift({
+ id:Date.now(),
+ date:date.value,
+ desc:desc.value,
+ cat:cat.value,
+ amount:Number(amount.value)
+ });
+ desc.value=''; amount.value='';
+ save(); render();
+}
+
+function del(id){
+ data.expenses=data.expenses.filter(x=>x.id!=id);
+ save(); render();
+}
+
+function clearAll(){
+ if(confirm('Fshi të gjitha?')){
+   data.expenses=[]; save(); render();
+ }
+}
+
+function render(){
+ budget.value=data.budget||'';
+ const q=search.value.toLowerCase();
+ const f=filter.value;
+
+ let items=data.expenses.filter(x=>
+ (!q || x.desc.toLowerCase().includes(q)) &&
+ (!f || x.cat===f)
+ );
+
+ list.innerHTML=items.map(x=>`
+ <div class="row">
+   <div>
+     <b>${x.desc}</b>
+     <div class="small">${x.cat} • ${x.date}</div>
+   </div>
+   <div>
+     <b>${euro(x.amount)}</b>
+     <button class="danger" style="width:auto;padding:8px 10px" onclick="del(${x.id})">✕</button>
+   </div>
+ </div>`).join('') || '<p>Nuk ka shpenzime.</p>';
+
+ const total=data.expenses.reduce((a,b)=>a+b.amount,0);
+ spent.textContent=euro(total);
+ remaining.textContent=euro((data.budget||0)-total);
+
+ const pct=data.budget?Math.round(total/data.budget*100):0;
+ usage.textContent='Përdorur: '+pct+'%';
+ bar.style.width=Math.min(pct,100)+'%';
+ bar.className='bar '+(pct>=100?'danger':pct>=80?'orange':'green');
+
+ drawChart();
+ save();
+}
+
+function drawChart(){
+ const c=document.getElementById('chart');
+ const ctx=c.getContext('2d');
+ ctx.clearRect(0,0,c.width,c.height);
+
+ const totals={};
+ data.expenses.forEach(e=>totals[e.cat]=(totals[e.cat]||0)+e.amount);
+
+ const entries=Object.entries(totals);
+ catStats.innerHTML=entries.map(x=>`<div>${x[0]}: ${euro(x[1])}</div>`).join('');
+
+ if(!entries.length) return;
+
+ const max=Math.max(...entries.map(x=>x[1]));
+ const w=80;
+ entries.forEach((e,i)=>{
+   const h=(e[1]/max)*180;
+   const x=20+i*90;
+   ctx.fillRect(x,220-h,w,h);
+   ctx.fillText(e[0].slice(0,2),x,240);
+ });
+}
+
+function exportData(){
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='expense-backup.json';
+ a.click();
+}
+
+function importData(ev){
+ const file=ev.target.files[0];
+ if(!file) return;
+ const r=new FileReader();
+ r.onload=e=>{
+   try{
+     data=JSON.parse(e.target.result);
+     save(); render();
+     alert('Import u krye me sukses');
+   }catch{
+     alert('JSON i pavlefshëm');
+   }
+ };
+ r.readAsText(file);
+}
+
+render();
+</script>
+</body>
+</html>
